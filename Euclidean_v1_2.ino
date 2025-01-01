@@ -163,7 +163,7 @@
 */
 
 // Debug Flag
-int debug = 1; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
+int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
 // Encoder Pins for the Encoder.h library
 Encoder EncK(9, 10);					//	Density
