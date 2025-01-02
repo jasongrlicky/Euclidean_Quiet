@@ -626,23 +626,17 @@ void loop()
       Serial.print("Active channel: ");
       Serial.println(active_channel);
     }
-
-    lc.setRow(0, 6, false); //clear row 7
     
-    if (active_channel == 0)
-    {
+    if (active_channel == 0) {
       lc.setRow(0, 6, B00001111);
-    }
-    if (active_channel == 1)
-    {
+    } else if (active_channel == 1) {
       lc.setRow(0, 6, B00111100);
-    }
-    if (active_channel == 2)
-    {
+    } else if (active_channel == 2) {
       lc.setRow(0, 6, B11110000);
+    } else {
+      lc.setRow(0, 6, false); //clear row
     }
   }
-
 }
 
 // Euclid calculation function
