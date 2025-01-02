@@ -478,7 +478,7 @@ void loop()
 
   // READ K KNOB
 
-  kknob = EncodeReadK();
+  kknob = encoder_read(EncK);
   if (kknob != 0 && time - last_read > read_delay && active_channel != 3) {
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
@@ -513,7 +513,7 @@ void loop()
 
   // READ N KNOB
 
-  nknob = EncodeReadN();
+  nknob = encoder_read(EncN);
   if (channelbeats[active_channel][0] > 16)
   {
     channelbeats[active_channel][0] = 16;
@@ -566,7 +566,7 @@ void loop()
 
   // READ O KNOB
 
-  oknob = EncodeReadO();
+  oknob = encoder_read(EncO);
   if (oknob != 0 && time - last_read > read_delay && active_channel != 3) {
     // Sense check o encoder reading to prevent crashes
 
@@ -904,58 +904,21 @@ void Sync() {
   
 }
 
-/* 3 functions to read each encoder
+/* Read an encoder
   returns +1, 0 or -1 dependent on direction
   Contains no internal debounce, so calls should be delayed
 */
-
-int EncodeReadK() {
+int encoder_read(Encoder& enc) {
   int result = 0;
-  if (EncK.read() == 0) {
-    EncK.write(0);
+  if (enc.read() == 0) {
+    enc.write(0);
     result = 0;
-  }
-  else if (EncK.read() < -2) {
+  } else if (enc.read() < -2) {
     result = -1;
-    EncK.write(0);
-  }
-  else if (EncK.read() > 2) {
+    enc.write(0);
+  } else if (enc.read() > 2) {
     result = 1;
-    EncK.write(0);
-  }
-  return result;
-}
-
-int EncodeReadN() {
-  int result = 0;
-  if (EncN.read() == 0) {
-    EncN.write(0);
-    result = 0;
-  }
-  else if (EncN.read() < -2) {
-    result = -1;
-    EncN.write(0);
-  }
-  else if (EncN.read() > 2) {
-    result = 1;
-    EncN.write(0);
-  }
-  return result;
-}
-
-int EncodeReadO() {
-  int result = 0;
-  if (EncO.read() == 0) {
-    EncO.write(0);
-    result = 0;
-  }
-  else if (EncO.read() < -2) {
-    result = -1;
-    EncO.write(0);
-  }
-  else if (EncO.read() > 2) {
-    result = 1;
-    EncO.write(0);
+    enc.write(0);
   }
   return result;
 }
