@@ -7,6 +7,7 @@
 
   Changes from official v1.2 firmware:
   - The internal clock no longer starts when the module starts up.
+  - Made channel selection easier to see (two dots instead of 4 overlapping)
 */
 
 /* Sebsongs Modular Euclidean v. 1.2. Dec 2 2022.
@@ -628,11 +629,11 @@ void loop()
     }
     
     if (active_channel == 0) {
-      lc.setRow(0, 6, B00001111);
+      lc.setRow(0, 6, B00000011);
     } else if (active_channel == 1) {
-      lc.setRow(0, 6, B00111100);
+      lc.setRow(0, 6, B00011000);
     } else if (active_channel == 2) {
-      lc.setRow(0, 6, B11110000);
+      lc.setRow(0, 6, B11000000);
     } else {
       lc.setRow(0, 6, false); //clear row
     }
