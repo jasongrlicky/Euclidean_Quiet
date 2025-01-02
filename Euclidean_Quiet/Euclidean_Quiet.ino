@@ -910,13 +910,14 @@ void Sync() {
 */
 int encoder_read(Encoder& enc) {
   int result = 0;
-  if (enc.read() == 0) {
+  int32_t value_read = enc.read();
+  if (value_read == 0) {
     enc.write(0);
     result = 0;
-  } else if (enc.read() < -2) {
+  } else if (value_read < -2) {
     result = -1;
     enc.write(0);
-  } else if (enc.read() > 2) {
+  } else if (value_read > 2) {
     result = 1;
     enc.write(0);
   }
