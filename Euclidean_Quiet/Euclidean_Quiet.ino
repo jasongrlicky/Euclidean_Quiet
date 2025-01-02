@@ -2,6 +2,13 @@
 #include <Encoder.h>
 #include <LedControl.h>
 
+/* 
+  Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
+
+  Changes from official v1.2 firmware:
+  - The internal clock no longer starts when the module starts up.
+*/
+
 /* Sebsongs Modular Euclidean v. 1.2. Dec 2 2022.
  *  
  * Revision notes:
