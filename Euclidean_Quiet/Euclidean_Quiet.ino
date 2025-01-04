@@ -188,8 +188,8 @@ int length = 50; //pulse length
 #define PIN_ENC_3B 5
 
 // Input pin definitions
-int PIN_IN_TRIG = A0;
-int PIN_IN_CHANNEL_SWITCH = A2;
+#define PIN_IN_TRIG A0
+#define PIN_IN_CHANNEL_SWITCH A2
 
 // Output pin definitions
 #define PIN_OUT_OFFBEAT 17
