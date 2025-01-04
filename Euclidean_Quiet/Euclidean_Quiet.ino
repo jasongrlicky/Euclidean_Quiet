@@ -190,7 +190,7 @@ Encoder EncO(5, 6);						//	Offset
 
 LedControl lc = LedControl(2, 3, 4, 1); // Matrix LED pins
 #define LED_ADDR 0 // Address of LED Matrix
-#define brightness 5	//	From 0 (low) to 15
+#define LED_BRIGHTNESS 5	//	From 0 (low) to 15
 
 #define display_update 1000 // how long active channel display is shown
 
@@ -271,7 +271,7 @@ void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
   lc.shutdown(LED_ADDR, true);
-  lc.setIntensity(LED_ADDR, brightness);
+  lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
   lc.clearDisplay(LED_ADDR);
 }
 
