@@ -201,11 +201,15 @@
 /* SOFTWARE CONSTANTS */
 
 #define NUM_CHANNELS 3
-int maxn = 16; // maximums and minimums for n and k
-int minn = 1;
-int mink = 0;
-int maxo = 15; // maximums and minimums for o
-int mino = 0;
+// Maximums and minimums for the three parameters
+// N: Beat Length
+#define BEAT_LENGTH_MAX 16
+#define BEAT_LENGTH_MIN 1
+// K: DENSITY
+#define BEAT_DENSITY_MIN 0
+// O: OFFSET
+#define BEAT_OFFSET_MAX 15
+#define BEAT_OFFSET_MIN 0
 
 /* GLOBALS */
 
@@ -516,7 +520,7 @@ void loop()
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
     }; // check within limits
-    if (channelbeats[active_channel][1] + kknob < mink) {
+    if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
     };
 
@@ -555,15 +559,15 @@ void loop()
   if (nknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check n encoder reading to prevent crashes
 
-    if (nn >= maxn) {
-      nn = maxn;
+    if (nn >= BEAT_LENGTH_MAX) {
+      nn = BEAT_LENGTH_MAX;
     }; // Check for eeprom values over maximum.
-    if (nn + nknob > maxn) {
+    if (nn + nknob > BEAT_LENGTH_MAX) {
       nknob = 0;
-    }; // check below maxn
-    if (nn + nknob < minn) {
+    }; // check below BEAT_LENGTH_MAX
+    if (nn + nknob < BEAT_LENGTH_MIN) {
       nknob = 0;
-    }; // check above minn
+    }; // check above BEAT_LENGTH_MIN
 
     if (debug == 2) {
       Serial.print("nknob: ");
@@ -605,10 +609,10 @@ void loop()
 
     if (oo + oknob > nn - 1) {
       oknob = 0;
-    }; // check below maxo
-    if (oo + oknob < mino) {
+    }; // check below BEAT_OFFSET_MAX
+    if (oo + oknob < BEAT_OFFSET_MIN) {
       oknob = 0;
-    }; // check above minn
+    }; // check above BEAT_LENGTH_MIN
 
     if (debug == 2) {
       Serial.print("oknob: ");
