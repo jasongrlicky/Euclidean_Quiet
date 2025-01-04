@@ -173,18 +173,18 @@
 // Debug Flag
 int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
-// Encoder Pins for the Encoder.h library
-Encoder EncK(9, 10);					//	Density
-Encoder EncN(7, 8);						//	Length
-Encoder EncO(5, 6);						//	Offset
-
-// Encoder Pins for internal use (must correspond to the previous pins)
+// Encoder pin definitions
 #define PIN_ENC_1A 10
 #define PIN_ENC_1B 9
 #define PIN_ENC_2A 8
 #define PIN_ENC_2B 7
 #define PIN_ENC_3A 6
 #define PIN_ENC_3B 5
+
+// Encoder objects for the Encoder.h library
+Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
+Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
+Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
 
 #define sparepin 17 // Offbeat pin
 
