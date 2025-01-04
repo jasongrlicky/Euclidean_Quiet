@@ -201,20 +201,19 @@
 /* SOFTWARE CONSTANTS */
 
 #define NUM_CHANNELS 3
-// Maximums and minimums for the three parameters
+// Bounds for three channel parameters
 // N: Beat Length
 #define BEAT_LENGTH_MAX 16
 #define BEAT_LENGTH_MIN 1
-// K: DENSITY
+// K: Density
 #define BEAT_DENSITY_MIN 0
-// O: OFFSET
-#define BEAT_OFFSET_MAX 15
+// O: Offset
 #define BEAT_OFFSET_MIN 0
 
 /* GLOBALS */
 
 // Debug Flag
-int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
+int debug = 1; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
@@ -293,7 +292,7 @@ int btn2holdtimer = 0;
 void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
-  lc.shutdown(LED_ADDR, true);
+  lc.shutdown(LED_ADDR, false);
   lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
   lc.clearDisplay(LED_ADDR);
 }
