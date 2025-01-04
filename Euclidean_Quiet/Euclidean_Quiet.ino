@@ -200,7 +200,7 @@
 
 /* SOFTWARE CONSTANTS */
 
-int channels = 3;
+#define NUM_CHANNELS 3
 int maxn = 16; // maximums and minimums for n and k
 int minn = 1;
 int mink = 0;
@@ -354,7 +354,7 @@ void setup() {
   io_pins_init();
 
   // Initialise beat holders
-  for (int a = 0; a < channels; a++) {
+  for (int a = 0; a < NUM_CHANNELS; a++) {
     beat_holder[a] = euclid(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
   }
 
@@ -413,7 +413,7 @@ void loop()
   // RESET INPUT & BUTTON
   
   if (reset_timer == 0 && reset_button > 100 && channelbeats[0][2] > 0) {
-    for (a = 0; a < channels; a++) {
+    for (a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
     reset_timer++;
@@ -446,7 +446,7 @@ void loop()
 
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (time - last_sync > length && lights_active == true) {
-    for (a = 0; a < channels; a++) {
+    for (a = 0; a < NUM_CHANNELS; a++) {
       lc.setLed(LED_ADDR, 7, 5 - (a * 2), false);
       lc.setLed(LED_ADDR, 7, 4, false); // spare pin flash
     }
@@ -456,7 +456,7 @@ void loop()
 
   // FINISH ANY PULSES THAT ARE ACTIVE
   if (time - last_sync > (length) && pulses_active == true) {
-    for (a = 0; a < channels; a++) {
+    for (a = 0; a < NUM_CHANNELS; a++) {
       digitalWrite(11 + a, LOW);
       storePulses[a] = 0;
     }
@@ -852,7 +852,7 @@ void Sync() {
   }
 
   // Cycle through channels
-  for (a = 0; a < channels; a++) {
+  for (a = 0; a < NUM_CHANNELS; a++) {
     read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
     
     if (a != active_channel || time - last_changed > ACTIVE_CHANNEL_DISPLAY_TIME) // don't clear or draw cursor if channel is being changed
@@ -902,7 +902,7 @@ void Sync() {
     }
 
     if(a >= 2){
-      for (int i = 0; i < channels; i++) {
+      for (int i = 0; i < NUM_CHANNELS; i++) {
         digitalWrite(11 + i, storePulses[i]); // pulse out
       }
       length = constrain(((time - last_sync) / 5), 2, 5);
