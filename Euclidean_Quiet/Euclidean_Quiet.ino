@@ -174,7 +174,6 @@
 
 #define LED_BRIGHTNESS 5	//	From 0 (low) to 15
 #define display_update 1000 // how long active channel display is shown
-int length = 50; //pulse length
 #define read_delay 50 // for debouncing
 
 /* HARDWARE CONSTANTS */
@@ -267,6 +266,7 @@ unsigned long channelPressedCounter = 0;
 boolean pulses_active = false; // is active while a beat pulse is playing
 boolean lights_active = false;
 
+int length = 50; //Pulse length, set based on the time since last trigger
 int storePulses[4] = {0};
 
 int kknob;
