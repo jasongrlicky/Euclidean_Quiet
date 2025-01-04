@@ -332,7 +332,6 @@ void setup() {
   pinMode(pulseinput, INPUT);
 
   //  initialise beat holders
-
   for (int a = 0; a < channels; a++) {
     beat_holder[a] = euclid(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
   }
