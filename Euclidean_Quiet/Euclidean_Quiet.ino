@@ -189,7 +189,7 @@ Encoder EncO(5, 6);						//	Offset
 #define sparepin 17 // Offbeat pin
 
 LedControl lc = LedControl(2, 3, 4, 1); // Matrix LED pins
-
+#define LED_ADDR 0 // Address of LED Matrix
 #define brightness 5	//	From 0 (low) to 15
 
 #define display_update 1000 // how long active channel display is shown
@@ -270,9 +270,9 @@ int btn2holdtimer = 0;
 void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
-  lc.shutdown(0, true);
-  lc.setIntensity(0, brightness);
-  lc.clearDisplay(0);
+  lc.shutdown(LED_ADDR, true);
+  lc.setIntensity(LED_ADDR, brightness);
+  lc.clearDisplay(LED_ADDR);
 }
 
 /// If there is faulty data in the eeprom, clear it and reset to default values
@@ -382,7 +382,7 @@ void loop()
   if (zleep == false && time - last_sync > 300000)
   {
     sleepanim();
-    lc.shutdown(0, true);
+    lc.shutdown(LED_ADDR, true);
     zleep = true;
   }
 
@@ -428,10 +428,10 @@ void loop()
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (time - last_sync > length && lights_active == true) {
     for (a = 0; a < channels; a++) {
-      lc.setLed(0, 7, 5 - (a * 2), false);
-      lc.setLed(0, 7, 4, false); // spare pin flash
+      lc.setLed(LED_ADDR, 7, 5 - (a * 2), false);
+      lc.setLed(LED_ADDR, 7, 4, false); // spare pin flash
     }
-    lc.setRow(0, 7, 0);
+    lc.setRow(LED_ADDR, 7, 0);
     lights_active = false;
   }
 
@@ -450,16 +450,16 @@ void loop()
 
   if (changes > 0) {
     beat_holder[active_channel] = euclid(nn, kk, oo);
-    lc.setRow(0, active_channel * 2 + 1, 0);//clear active row
-    lc.setRow(0, active_channel * 2, 0);//clear line above active row
+    lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
+    lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
     if (changes == 1) {  // 1 = K changes - display beats in the active channel
       for (a = 0; a < 8; a++) {
         if (bitRead(beat_holder[active_channel], nn - 1 - a) == 1 && a < nn) {
-          lc.setLed(0, active_channel * 2, 7 - a, true);
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
         if (bitRead(beat_holder[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
-          lc.setLed(0, active_channel * 2 + 1, 7 - a, true);
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
     }
@@ -467,10 +467,10 @@ void loop()
     if (changes == 2) { // 2 = N changes, display total length of beat
       for (a = 0; a < 8; a++) {
         if (a < nn) {
-          lc.setLed(0, active_channel * 2, 7 - a, true);
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
         if (a + 8 < nn) {
-          lc.setLed(0, active_channel * 2 + 1, 7 - a, true);
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
     }
@@ -478,10 +478,10 @@ void loop()
     if (changes == 3) {  // 3 = Offset changes - display beats in the active channel
       for (a = 0; a < 8; a++) {
         if (bitRead(beat_holder[active_channel], nn - 1 - a) == 1 && a < nn) {
-          lc.setLed(0, active_channel * 2, 7 - a, true);
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
         if (bitRead(beat_holder[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
-          lc.setLed(0, active_channel * 2 + 1, 7 - a, true);
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
     }
@@ -642,13 +642,13 @@ void loop()
     }
     
     if (active_channel == 0) {
-      lc.setRow(0, 6, B00000011);
+      lc.setRow(LED_ADDR, 6, B00000011);
     } else if (active_channel == 1) {
-      lc.setRow(0, 6, B00011000);
+      lc.setRow(LED_ADDR, 6, B00011000);
     } else if (active_channel == 2) {
-      lc.setRow(0, 6, B11000000);
+      lc.setRow(LED_ADDR, 6, B11000000);
     } else {
-      lc.setRow(0, 6, false); //clear row
+      lc.setRow(LED_ADDR, 6, false); //clear row
     }
   }
 }
@@ -820,16 +820,16 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
 void Sync() {
   if (zleep == true)// wake up routine & animation
   {
-    lc.shutdown(0, false);
+    lc.shutdown(LED_ADDR, false);
     zleep = false;
     wakeanim();
   }
 
   if (masterclock % 2 == 0) { // tick bottom left corner on and off with clock
-    lc.setLed(0, 7, 7, true);
+    lc.setLed(LED_ADDR, 7, 7, true);
   }
   else {
-    lc.setLed(0, 7, 7, false);
+    lc.setLed(LED_ADDR, 7, 7, false);
   }
 
   // Cycle through channels
@@ -838,30 +838,30 @@ void Sync() {
     
     if (a != active_channel || time - last_changed > display_update) // don't clear or draw cursor if channel is being changed
     {
-      lc.setRow(0, a * 2, 0);//clear line above active row
+      lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
 
       if (channelbeats[a][2] < 8) {
         for (int c = 0; c < 8; c++) {
           if (bitRead(beat_holder[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
-            lc.setLed(0, a * 2, 7 - c, true);
+            lc.setLed(LED_ADDR, a * 2, 7 - c, true);
           }
         }
       }
       else {
         for (int c = 8; c < 16; c++) {
           if (bitRead(beat_holder[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
-            lc.setLed(0, a * 2, 15 - c, true);
+            lc.setLed(LED_ADDR, a * 2, 15 - c, true);
           }
         }
       }
 
-      lc.setRow(0, a * 2 + 1, 0);//clear active row
+      lc.setRow(LED_ADDR, a * 2 + 1, 0);//clear active row
       // draw cursor
       if (channelbeats[a][2] < 8) {
-        lc.setLed(0, a * 2 + 1, 7 - channelbeats[a][2], true); // write cursor less than 8
+        lc.setLed(LED_ADDR, a * 2 + 1, 7 - channelbeats[a][2], true); // write cursor less than 8
       }
       else if (channelbeats[a][2] >= 8 && channelbeats[a][2] < 16) {
-        lc.setLed(0, a * 2 + 1, 15 - channelbeats[a][2], true); // write cursor more than 8
+        lc.setLed(LED_ADDR, a * 2 + 1, 15 - channelbeats[a][2], true); // write cursor more than 8
       }
     }
     // turn on pulses on channels where a beat is present
@@ -870,13 +870,13 @@ void Sync() {
       storePulses[a] = 1;
 
       if (a == 0) {
-        lc.setLed(0, 7, 5, true);
+        lc.setLed(LED_ADDR, 7, 5, true);
       }
       if (a == 1) {
-        lc.setLed(0, 7, 2, true);
+        lc.setLed(LED_ADDR, 7, 2, true);
       }
       if (a == 2) {
-        lc.setLed(0, 7, 0, true);
+        lc.setLed(LED_ADDR, 7, 0, true);
       }
       pulses_active = true;
       lights_active = true;
@@ -895,7 +895,7 @@ void Sync() {
       digitalWrite(sparepin, HIGH); // pulse out
       storePulses[3] = 1;
       
-      lc.setLed(0, 7, 4, true); // bottom row flash
+      lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
       pulses_active = true;
       lights_active = true;
     }
@@ -942,20 +942,20 @@ int encoder_read(Encoder& enc) {
 
 void wakeanim() { 
   for (a = 4; a >= 0; a--) {
-    lc.setRow(0, a, 255);
-    lc.setRow(0, 7 - a, 255);
+    lc.setRow(LED_ADDR, a, 255);
+    lc.setRow(LED_ADDR, 7 - a, 255);
     delay(100);
-    lc.setRow(0, a, 0);
-    lc.setRow(0, 7 - a, 0);
+    lc.setRow(LED_ADDR, a, 0);
+    lc.setRow(LED_ADDR, 7 - a, 0);
   }
 }
 void sleepanim() {
   for (a = 0; a < 4; a++) {
-    lc.setRow(0, a, 255);
-    lc.setRow(0, 7 - a, 255);
+    lc.setRow(LED_ADDR, a, 255);
+    lc.setRow(LED_ADDR, 7 - a, 255);
     delay(200);
-    lc.setRow(0, a, 0);
-    lc.setRow(0, 7 - a, 0);
+    lc.setRow(LED_ADDR, a, 0);
+    lc.setRow(LED_ADDR, 7 - a, 0);
   }
 }
 
