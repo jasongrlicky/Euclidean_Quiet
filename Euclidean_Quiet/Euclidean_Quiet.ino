@@ -186,7 +186,7 @@ Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
 Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
 Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
 
-#define sparepin 17 // Offbeat pin
+#define PIN_OUT_OFFBEAT 17 // Offbeat output
 
 LedControl lc = LedControl(2, 3, 4, 1); // Matrix LED pins
 #define LED_ADDR 0 // Address of LED Matrix
@@ -317,7 +317,7 @@ void io_pins_init(void) {
   }
 
   // DEFINE SPARE PIN AS OUTPUT PIN
-  pinMode(sparepin, OUTPUT);
+  pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 
   // DEFINE ANALOG 0 PIN AS INPUT PIN
   pinMode(pulseinput, INPUT);
@@ -441,7 +441,7 @@ void loop()
       digitalWrite(11 + a, LOW);
       storePulses[a] = 0;
     }
-    digitalWrite(sparepin, LOW);
+    digitalWrite(PIN_OUT_OFFBEAT, LOW);
     storePulses[3] = 0;
     pulses_active = false;
   }
@@ -892,7 +892,7 @@ void Sync() {
 
     // send off pulses to spare output for the first channel
     if (bitRead(beat_holder[a], read_head) == 0 && a == 0) { // only relates to first channel
-      digitalWrite(sparepin, HIGH); // pulse out
+      digitalWrite(PIN_OUT_OFFBEAT, HIGH); // pulse out
       storePulses[3] = 1;
       
       lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
