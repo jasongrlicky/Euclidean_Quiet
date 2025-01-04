@@ -266,17 +266,19 @@ int channel_switch_read;
 
 int btn2holdtimer = 0;
 
-void setup() {
-  /*
-    The MAX72XX is in power-saving mode on startup,
-    we have to do a wakeup call
-  */  
-  
+// Initialize the MAX72XX LED Matrix
+void led_init(void) {
+  // The LED matrix is in power-saving mode on startup.
+  // Set power-saving mode to false to wake it up
   lc.shutdown(0, true);
-  /* Set the brightness to a medium values */
+  // Set the brightness to a medium value
   lc.setIntensity(0, brightness);
-  /* and clear the display */
+  // Clear the display
   lc.clearDisplay(0);
+}
+
+void setup() {
+  led_init();
 
   // If there is faulty data in the eeprom, clear all eeprom and reset to default values.
   if ((EEPROM.read(1) > 16) || (EEPROM.read(2) > 16) || (EEPROM.read(3) > 16) || (EEPROM.read(4) > 16) || (EEPROM.read(5) > 16) || (EEPROM.read(6) > 16) || (EEPROM.read(7) > 15) || (EEPROM.read(8) > 15) || (EEPROM.read(9) > 15)) { // if eprom is blank / corrupted, write some startup amounts
