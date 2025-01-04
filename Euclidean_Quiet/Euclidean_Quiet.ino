@@ -266,7 +266,7 @@ int channel_switch_read;
 
 int btn2holdtimer = 0;
 
-// Initialize the MAX72XX LED Matrix
+/// Initialize the MAX72XX LED Matrix
 void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
