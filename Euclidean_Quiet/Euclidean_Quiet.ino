@@ -173,7 +173,9 @@
 // Debug Flag
 int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
-// Encoder pin definitions
+/* PIN DEFINITIONS */
+
+// Encoder pins
 #define PIN_ENC_1A 10
 #define PIN_ENC_1B 9
 #define PIN_ENC_2A 8
@@ -181,12 +183,13 @@ int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 #define PIN_ENC_3A 6
 #define PIN_ENC_3B 5
 
+// Output pins
+#define PIN_OUT_OFFBEAT 17
+
 // Encoder objects for the Encoder.h library
 Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
 Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
 Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
-
-#define PIN_OUT_OFFBEAT 17 // Offbeat output
 
 LedControl lc = LedControl(2, 3, 4, 1); // Matrix LED pins
 #define LED_ADDR 0 // Address of LED Matrix
