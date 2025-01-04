@@ -177,7 +177,6 @@
 int length = 50; //pulse length
 #define read_delay 50 // for debouncing
 
-
 /* HARDWARE CONSTANTS */
 
 // Encoder pin definitions
@@ -197,7 +196,6 @@ int channelSwitchInput = A2;
 
 #define LED_ADDR 0 // Address of LED Matrix
 
-
 /* SOFTWARE CONSTANTS */
 
 int channels = 3;
@@ -206,7 +204,6 @@ int minn = 1;
 int mink = 0;
 int maxo = 15; // maximums and minimums for o
 int mino = 0;
-
 
 /* GLOBALS */
 
