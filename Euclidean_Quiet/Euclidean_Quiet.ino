@@ -350,9 +350,9 @@ void setup() {
   eeprom_init();
   encoders_init();
 
-  //if (debug == 2) {
+  if (debug == 2) {
     Serial.begin(9600);
-  //}
+  }
 
   io_pins_init();
 
