@@ -188,8 +188,8 @@ int length = 50; //pulse length
 #define PIN_ENC_3B 5
 
 // Input pin definitions
-int pulseinput = A0;
-int channelSwitchInput = A2;
+int PIN_IN_TRIG = A0;
+int PIN_IN_CHANNEL_SWITCH = A2;
 
 // Output pin definitions
 #define PIN_OUT_OFFBEAT 17
@@ -339,7 +339,7 @@ void io_pins_init(void) {
   pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 
   // DEFINE ANALOG 0 PIN AS INPUT PIN
-  pinMode(pulseinput, INPUT);
+  pinMode(PIN_IN_TRIG, INPUT);
 }
 
 void setup() {
@@ -407,7 +407,7 @@ void loop()
 
   // READ TRIG AND RESET INPUTS
   
-  newpulse = digitalRead(pulseinput); // Pulse input
+  newpulse = digitalRead(PIN_IN_TRIG); // Pulse input
   reset_button = analogRead(A1); //reset_button = analogReadFast(A1);
 
   // RESET INPUT & BUTTON
@@ -635,7 +635,7 @@ void loop()
 
   //	Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
 
-  channel_switch_read = analogRead(channelSwitchInput); //channel_switch_read = analogReadFast(channelSwitchInput);
+  channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing Pressed. Was 3 in original.
     channelPressedCounter = 0;
