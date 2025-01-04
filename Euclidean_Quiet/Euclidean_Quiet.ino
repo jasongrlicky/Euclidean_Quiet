@@ -193,6 +193,9 @@ int channelSwitchInput = A2;
 
 // Output pin definitions
 #define PIN_OUT_OFFBEAT 17
+#define PIN_OUT_LED_DATA 2
+#define PIN_OUT_LED_CLOCK 3
+#define PIN_OUT_LED_SELECT 4
 
 #define LED_ADDR 0 // Address of LED Matrix
 
@@ -210,12 +213,16 @@ int mino = 0;
 // Debug Flag
 int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
-// Encoder objects for the Encoder.h library
+// Initialize objects for reading encoders
+// (from the Encoder.h library)
 Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
 Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
 Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
 
-LedControl lc = LedControl(2, 3, 4, 1); // Matrix LED pins
+// Initialize objects for controlling LED matrix
+// (from LedControl.h library)
+// 1 is maximum number of devices that can be controlled
+LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
 unsigned long time;
 unsigned long last_sync;
