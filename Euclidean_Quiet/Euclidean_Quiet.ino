@@ -224,11 +224,6 @@ Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
-unsigned long time;
-unsigned long last_sync;
-
-unsigned int beat_holder[3];
-
 /*
   Eeprom schema:
   Channel 1: n = 1 k = 2 position = 7
@@ -247,6 +242,11 @@ unsigned int channelbeats[3][5] = {
     EEPROM.read(5), EEPROM.read(6), 0, EEPROM.read(9), EEPROM.read(12)
   }
 }; // 0=n, 1=k, 2 = position , 3 = offset
+
+unsigned long time;
+unsigned long last_sync;
+
+unsigned int beat_holder[3];
 
 int a;
 int changes = 0;
