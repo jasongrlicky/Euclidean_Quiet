@@ -277,22 +277,12 @@ void led_init(void) {
   lc.clearDisplay(0);
 }
 
-/// Turn on pull-up resistors for encoders
-void encoders_init(void) {
-  digitalWrite(enc1a, HIGH);
-  digitalWrite(enc1b, HIGH);
-  digitalWrite(enc2a, HIGH);
-  digitalWrite(enc2b, HIGH);
-  digitalWrite(enc3a, HIGH);
-  digitalWrite(enc3b, HIGH);
-}
-
-void setup() {
-  led_init();
-
-  // If there is faulty data in the eeprom, clear all eeprom and reset to default values.
-  if ((EEPROM.read(1) > 16) || (EEPROM.read(2) > 16) || (EEPROM.read(3) > 16) || (EEPROM.read(4) > 16) || (EEPROM.read(5) > 16) || (EEPROM.read(6) > 16) || (EEPROM.read(7) > 15) || (EEPROM.read(8) > 15) || (EEPROM.read(9) > 15)) { // if eprom is blank / corrupted, write some startup amounts
-    // write a 0 to all 512 bytes of the EEPROM
+/// If there is faulty data in the eeprom, clear it and reset to default values
+void eeprom_init(void) {
+  if ((EEPROM.read(1) > 16) || (EEPROM.read(2) > 16) || (EEPROM.read(3) > 16) ||
+      (EEPROM.read(4) > 16) || (EEPROM.read(5) > 16) || (EEPROM.read(6) > 16) ||
+      (EEPROM.read(7) > 15) || (EEPROM.read(8) > 15) || (EEPROM.read(9) > 15)) {
+    // write a 0 to all bytes of the EEPROM
     for (int i = 0; i < 1024; i++){
       EEPROM.write(i, 0);
     }
@@ -310,7 +300,21 @@ void setup() {
     EEPROM.write(11, 0);
     EEPROM.write(12, 0);
   }
+}
 
+/// Turn on pull-up resistors for encoders
+void encoders_init(void) {
+  digitalWrite(enc1a, HIGH);
+  digitalWrite(enc1b, HIGH);
+  digitalWrite(enc2a, HIGH);
+  digitalWrite(enc2b, HIGH);
+  digitalWrite(enc3a, HIGH);
+  digitalWrite(enc3b, HIGH);
+}
+
+void setup() {
+  led_init();
+  eeprom_init();
   encoders_init();
 
   //if (debug == 2) {
