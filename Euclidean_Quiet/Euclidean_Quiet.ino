@@ -179,12 +179,12 @@ Encoder EncN(7, 8);						//	Length
 Encoder EncO(5, 6);						//	Offset
 
 // Encoder Pins for internal use (must correspond to the previous pins)
-#define enc1a 10
-#define enc1b 9
-#define enc2a 8
-#define enc2b 7
-#define enc3a 6
-#define enc3b 5
+#define PIN_ENC_1A 10
+#define PIN_ENC_1B 9
+#define PIN_ENC_2A 8
+#define PIN_ENC_2B 7
+#define PIN_ENC_3A 6
+#define PIN_ENC_3B 5
 
 #define sparepin 17 // Offbeat pin
 
@@ -302,12 +302,12 @@ void eeprom_init(void) {
 
 /// Turn on pull-up resistors for encoders
 void encoders_init(void) {
-  digitalWrite(enc1a, HIGH);
-  digitalWrite(enc1b, HIGH);
-  digitalWrite(enc2a, HIGH);
-  digitalWrite(enc2b, HIGH);
-  digitalWrite(enc3a, HIGH);
-  digitalWrite(enc3b, HIGH);
+  digitalWrite(PIN_ENC_1A, HIGH);
+  digitalWrite(PIN_ENC_1B, HIGH);
+  digitalWrite(PIN_ENC_2A, HIGH);
+  digitalWrite(PIN_ENC_2B, HIGH);
+  digitalWrite(PIN_ENC_3A, HIGH);
+  digitalWrite(PIN_ENC_3B, HIGH);
 }
 
 /// Set up IO pins
