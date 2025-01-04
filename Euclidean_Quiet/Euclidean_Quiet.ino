@@ -173,8 +173,8 @@
 /* CONFIGURATION */
 
 #define LED_BRIGHTNESS 5	//	From 0 (low) to 15
-#define display_update 1000 // how long active channel display is shown
-#define read_delay 50 // for debouncing
+#define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // how long active channel display is shown, in ms
+#define READ_DELAY 50 // for debouncing
 
 /* HARDWARE CONSTANTS */
 
@@ -512,7 +512,7 @@ void loop()
   // READ K KNOB
 
   kknob = encoder_read(EncK);
-  if (kknob != 0 && time - last_read > read_delay && active_channel != 3) {
+  if (kknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
     }; // check within limits
@@ -552,7 +552,7 @@ void loop()
     channelbeats[active_channel][0] = 16;
   };
 
-  if (nknob != 0 && time - last_read > read_delay && active_channel != 3) {
+  if (nknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check n encoder reading to prevent crashes
 
     if (nn >= maxn) {
@@ -600,7 +600,7 @@ void loop()
   // READ O KNOB
 
   oknob = encoder_read(EncO);
-  if (oknob != 0 && time - last_read > read_delay && active_channel != 3) {
+  if (oknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check o encoder reading to prevent crashes
 
     if (oo + oknob > nn - 1) {
@@ -855,7 +855,7 @@ void Sync() {
   for (a = 0; a < channels; a++) {
     read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
     
-    if (a != active_channel || time - last_changed > display_update) // don't clear or draw cursor if channel is being changed
+    if (a != active_channel || time - last_changed > ACTIVE_CHANNEL_DISPLAY_TIME) // don't clear or draw cursor if channel is being changed
     {
       lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
 
