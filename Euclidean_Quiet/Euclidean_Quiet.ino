@@ -277,6 +277,16 @@ void led_init(void) {
   lc.clearDisplay(0);
 }
 
+/// Turn on pull-up resistors for encoders
+void encoders_init(void) {
+  digitalWrite(enc1a, HIGH);
+  digitalWrite(enc1b, HIGH);
+  digitalWrite(enc2a, HIGH);
+  digitalWrite(enc2b, HIGH);
+  digitalWrite(enc3a, HIGH);
+  digitalWrite(enc3b, HIGH);
+}
+
 void setup() {
   led_init();
 
@@ -301,12 +311,7 @@ void setup() {
     EEPROM.write(12, 0);
   }
 
-  digitalWrite(enc1a, HIGH);       // turn on pullup resistor
-  digitalWrite(enc1b, HIGH);       // turn on pullup resistor
-  digitalWrite(enc2a, HIGH);       // turn on pullup resistor
-  digitalWrite(enc2b, HIGH);       // turn on pullup resistor
-  digitalWrite(enc3a, HIGH);       // turn on pullup resistor
-  digitalWrite(enc3b, HIGH);       // turn on pullup resistor
+  encoders_init();
 
   //if (debug == 2) {
     Serial.begin(9600);
