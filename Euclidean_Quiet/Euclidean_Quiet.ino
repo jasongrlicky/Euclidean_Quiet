@@ -312,15 +312,8 @@ void encoders_init(void) {
   digitalWrite(enc3b, HIGH);
 }
 
-void setup() {
-  led_init();
-  eeprom_init();
-  encoders_init();
-
-  //if (debug == 2) {
-    Serial.begin(9600);
-  //}
-
+/// @brief Set up IO pins
+void io_pins_init(void) {
   for (a = 11; a < 14; a++) {
     pinMode(a, OUTPUT);
   }
@@ -330,6 +323,18 @@ void setup() {
 
   // DEFINE ANALOG 0 PIN AS INPUT PIN
   pinMode(pulseinput, INPUT);
+}
+
+void setup() {
+  led_init();
+  eeprom_init();
+  encoders_init();
+
+  //if (debug == 2) {
+    Serial.begin(9600);
+  //}
+
+  io_pins_init();
 
   // Initialise beat holders
   for (int a = 0; a < channels; a++) {
