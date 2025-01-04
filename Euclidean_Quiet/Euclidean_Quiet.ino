@@ -271,9 +271,7 @@ void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
   lc.shutdown(0, true);
-  // Set the brightness to a medium value
   lc.setIntensity(0, brightness);
-  // Clear the display
   lc.clearDisplay(0);
 }
 
