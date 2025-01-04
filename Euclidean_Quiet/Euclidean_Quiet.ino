@@ -312,7 +312,7 @@ void encoders_init(void) {
   digitalWrite(enc3b, HIGH);
 }
 
-/// @brief Set up IO pins
+/// Set up IO pins
 void io_pins_init(void) {
   for (a = 11; a < 14; a++) {
     pinMode(a, OUTPUT);
