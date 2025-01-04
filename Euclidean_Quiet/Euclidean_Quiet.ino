@@ -170,12 +170,17 @@
 
 */
 
-// Debug Flag
-int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
+/* CONFIGURATION */
 
-/* PIN DEFINITIONS */
+#define LED_BRIGHTNESS 5	//	From 0 (low) to 15
+#define display_update 1000 // how long active channel display is shown
+int length = 50; //pulse length
+#define read_delay 50 // for debouncing
 
-// Encoder pins
+
+/* HARDWARE CONSTANTS */
+
+// Encoder pin definitions
 #define PIN_ENC_1A 10
 #define PIN_ENC_1B 9
 #define PIN_ENC_2A 8
@@ -183,8 +188,30 @@ int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 #define PIN_ENC_3A 6
 #define PIN_ENC_3B 5
 
-// Output pins
+// Input pin definitions
+int pulseinput = A0;
+int channelSwitchInput = A2;
+
+// Output pin definitions
 #define PIN_OUT_OFFBEAT 17
+
+#define LED_ADDR 0 // Address of LED Matrix
+
+
+/* SOFTWARE CONSTANTS */
+
+int channels = 3;
+int maxn = 16; // maximums and minimums for n and k
+int minn = 1;
+int mink = 0;
+int maxo = 15; // maximums and minimums for o
+int mino = 0;
+
+
+/* GLOBALS */
+
+// Debug Flag
+int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
 // Encoder objects for the Encoder.h library
 Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
@@ -192,17 +219,10 @@ Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
 Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
 
 LedControl lc = LedControl(2, 3, 4, 1); // Matrix LED pins
-#define LED_ADDR 0 // Address of LED Matrix
-#define LED_BRIGHTNESS 5	//	From 0 (low) to 15
-
-#define display_update 1000 // how long active channel display is shown
-
-int length = 50; //pulse length
 
 unsigned long time;
 unsigned long last_sync;
 
-int channels = 3;
 unsigned int beat_holder[3];
 
 /*
@@ -234,12 +254,10 @@ unsigned int  looptracker;
 int old_total;//for knobs
 int old_pulses;//for knobs
 
-int pulseinput = A0;
 int newpulse;//for trigger in
 int oldpulse = 0;//for trigger in
 int reset_timer = 0;
 
-int channelSwitchInput = A2;
 unsigned long channelPressedCounter = 0;
 
 boolean pulses_active = false; // is active while a beat pulse is playing
@@ -251,18 +269,12 @@ int kknob;
 int active_channel = 3; // which channel is active? zero indexed
 int nknob;
 int oknob;
-int maxn = 16; // maximums and minimums for n and k
-int minn = 1;
-int mink = 0;
-int maxo = 15; // maximums and minimums for o
-int mino = 0;
 int nn;
 int kk;
 int oo;
 
 unsigned long last_read;
 unsigned long last_changed;
-#define read_delay 50 // for debouncing
 int channel_switch;
 int reset_button;
 int channel_switch_read;
