@@ -937,9 +937,6 @@ void Sync() {
   };
 
   looptracker++;
-
-  
-  
 }
 
 /* Read an encoder
