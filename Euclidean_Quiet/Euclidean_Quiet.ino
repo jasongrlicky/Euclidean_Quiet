@@ -248,7 +248,8 @@ unsigned int channelbeats[3][5] = {
 unsigned long time;
 unsigned long last_sync;
 
-unsigned int beat_holder[NUM_CHANNELS];
+// Stores the generated Euclidean rhythms in binary as a 16-bit unsigned integer
+uint16_t beat_holder[NUM_CHANNELS];
 
 int a;
 int changes = 0;
