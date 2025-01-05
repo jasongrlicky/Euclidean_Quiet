@@ -248,8 +248,8 @@ unsigned int channelbeats[3][5] = {
 unsigned long time;
 unsigned long last_sync;
 
-// Stores the generated Euclidean rhythms in binary as a 16-bit unsigned integer
-uint16_t beat_holder[NUM_CHANNELS];
+// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
+uint16_t generated_rhythms[NUM_CHANNELS];
 
 int a;
 int changes = 0;
@@ -361,7 +361,7 @@ void setup() {
 
   // Initialise beat holders
   for (int a = 0; a < NUM_CHANNELS; a++) {
-    beat_holder[a] = euclid(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
+    generated_rhythms[a] = euclid(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
   }
 
   startUpOK();
@@ -375,7 +375,7 @@ void loop()
     What's in the loop:
     Update time variable
     Check to see if it is time go go to sleep
-    Changes routine - update beat_holder when channelbeats changes - triggered by changes == true
+    Changes routine - update generated_rhythms when channelbeats changes - triggered by changes == true
     Trigger routines - on trigget update displays and pulse
     Read encoders
     Read switches
@@ -474,16 +474,16 @@ void loop()
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
 
   if (changes > 0) {
-    beat_holder[active_channel] = euclid(nn, kk, oo);
+    generated_rhythms[active_channel] = euclid(nn, kk, oo);
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
     if (changes == 1) {  // 1 = K changes - display beats in the active channel
       for (a = 0; a < 8; a++) {
-        if (bitRead(beat_holder[active_channel], nn - 1 - a) == 1 && a < nn) {
+        if (bitRead(generated_rhythms[active_channel], nn - 1 - a) == 1 && a < nn) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
-        if (bitRead(beat_holder[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
+        if (bitRead(generated_rhythms[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
@@ -502,10 +502,10 @@ void loop()
 
     if (changes == 3) {  // 3 = Offset changes - display beats in the active channel
       for (a = 0; a < 8; a++) {
-        if (bitRead(beat_holder[active_channel], nn - 1 - a) == 1 && a < nn) {
+        if (bitRead(generated_rhythms[active_channel], nn - 1 - a) == 1 && a < nn) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
-        if (bitRead(beat_holder[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
+        if (bitRead(generated_rhythms[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
@@ -866,14 +866,14 @@ void Sync() {
 
       if (channelbeats[a][2] < 8) {
         for (int c = 0; c < 8; c++) {
-          if (bitRead(beat_holder[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
+          if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
             lc.setLed(LED_ADDR, a * 2, 7 - c, true);
           }
         }
       }
       else {
         for (int c = 8; c < 16; c++) {
-          if (bitRead(beat_holder[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
+          if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
             lc.setLed(LED_ADDR, a * 2, 15 - c, true);
           }
         }
@@ -889,7 +889,7 @@ void Sync() {
       }
     }
     // turn on pulses on channels where a beat is present
-    if (bitRead(beat_holder[a], read_head) == 1) {
+    if (bitRead(generated_rhythms[a], read_head) == 1) {
 
       storePulses[a] = 1;
 
@@ -915,7 +915,7 @@ void Sync() {
     }
 
     // send off pulses to spare output for the first channel
-    if (bitRead(beat_holder[a], read_head) == 0 && a == 0) { // only relates to first channel
+    if (bitRead(generated_rhythms[a], read_head) == 0 && a == 0) { // only relates to first channel
       digitalWrite(PIN_OUT_OFFBEAT, HIGH); // pulse out
       storePulses[3] = 1;
       
