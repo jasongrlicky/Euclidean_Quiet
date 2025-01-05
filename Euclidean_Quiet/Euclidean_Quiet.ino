@@ -248,7 +248,7 @@ unsigned int channelbeats[3][5] = {
 unsigned long time;
 unsigned long last_sync;
 
-unsigned int beat_holder[3];
+unsigned int beat_holder[NUM_CHANNELS];
 
 int a;
 int changes = 0;
