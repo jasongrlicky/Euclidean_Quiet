@@ -233,7 +233,7 @@ LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELE
   Channel 3: n = 5 k = 6 position = 9
 */
 
-unsigned int channelbeats[3][5] = {
+unsigned int channelbeats[NUM_CHANNELS][5] = {
   {
     EEPROM.read(1), EEPROM.read(2), 0, EEPROM.read(7), EEPROM.read(10)
   }
