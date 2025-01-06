@@ -173,6 +173,7 @@
 /* CONFIGURATION */
 
 #define LOGGING_ENABLED 0 // 0 = logging over serial disabled, 1 = enabled
+#define LOGGING_INTERVAL 1000 // Milliseconds between periodic log messages
 #define LED_BRIGHTNESS 5	//	From 0 (low) to 15
 #define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // how long active channel display is shown, in ms
 #define READ_DELAY 50 // for debouncing
@@ -247,6 +248,9 @@ unsigned int channelbeats[NUM_CHANNELS][5] = {
 
 unsigned long time;
 unsigned long last_sync;
+#if LOGGING_ENABLED
+unsigned long last_logged;
+#endif
 
 // Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
@@ -391,8 +395,12 @@ void loop()
   // Internal Clock
   if (internal_clock_enabled && time - last_sync > 125) {
     Sync();
+  }
 
-    #if LOGGING_ENABLED
+  // Log parameters at a certain interval
+  #if LOGGING_ENABLED
+  if (time - last_logged > LOGGING_INTERVAL) {
+    last_logged = time;
     Serial.print("length =");
     Serial.print(nn);
     Serial.print(" density =");
@@ -401,8 +409,8 @@ void loop()
     Serial.print(oo);
     Serial.print(" channel switch analog value=");
     Serial.println(channel_switch_read);
-    #endif
-  };
+  }
+  #endif
 
   // SLEEP ROUTINE, if no external clock input after 5 minutes.
   if (zleep == false && time - last_sync > 300000)
