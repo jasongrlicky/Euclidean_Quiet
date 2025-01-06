@@ -346,11 +346,8 @@ void io_pins_init(void) {
   for (a = 11; a < 14; a++) {
     pinMode(a, OUTPUT);
   }
-
-  // DEFINE SPARE PIN AS OUTPUT PIN
   pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 
-  // DEFINE ANALOG 0 PIN AS INPUT PIN
   pinMode(PIN_IN_TRIG, INPUT);
 }
 
