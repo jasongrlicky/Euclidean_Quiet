@@ -257,7 +257,7 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 
 int a;
 int changes = 0;
-bool zleep = true;  // LED Sleep mode enable/disable
+bool led_sleep_mode_enabled = true;
 int masterclock = 0; // Internal clock enable/disable
 int read_head;
 unsigned int  looptracker;
@@ -409,10 +409,10 @@ void loop() {
   #endif
 
   // SLEEP ROUTINE, if no external clock input after 5 minutes.
-  if (zleep == false && time - last_sync > 300000) {
+  if (led_sleep_mode_enabled == false && time - last_sync > 300000) {
     sleepanim();
     lc.shutdown(LED_ADDR, true);
-    zleep = true;
+    led_sleep_mode_enabled = true;
   }
 
   // READ TRIG AND RESET INPUTS
@@ -428,7 +428,7 @@ void loop() {
     }
     reset_timer++;
 
-    if(zleep == true){
+    if(led_sleep_mode_enabled == true){
       internal_clock_enabled = true;
       Sync();
     }
@@ -830,9 +830,9 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
 // routine triggered by each beat
 void Sync() {
   // wake up routine & animation
-  if (zleep == true) {
+  if (led_sleep_mode_enabled == true) {
     lc.shutdown(LED_ADDR, false);
-    zleep = false;
+    led_sleep_mode_enabled = false;
     wakeanim();
   }
 
