@@ -181,14 +181,6 @@
 
 /* HARDWARE CONSTANTS */
 
-// Encoder pin definitions
-#define PIN_ENC_1A 10
-#define PIN_ENC_1B 9
-#define PIN_ENC_2A 8
-#define PIN_ENC_2B 7
-#define PIN_ENC_3A 6
-#define PIN_ENC_3B 5
-
 // Input pin definitions
 #define PIN_IN_TRIG A0
 #define PIN_IN_CHANNEL_SWITCH A2
@@ -199,7 +191,16 @@
 #define PIN_OUT_LED_CLOCK 3
 #define PIN_OUT_LED_SELECT 4
 
-#define LED_ADDR 0 // Address of LED Matrix
+// Encoder pin definitions
+#define PIN_ENC_1A 10
+#define PIN_ENC_1B 9
+#define PIN_ENC_2A 8
+#define PIN_ENC_2B 7
+#define PIN_ENC_3A 6
+#define PIN_ENC_3B 5
+
+// LED Matrix address
+#define LED_ADDR 0
 
 /* SOFTWARE CONSTANTS */
 
@@ -343,12 +344,12 @@ void serial_init(void) {
 
 /// Set up IO pins
 void io_pins_init(void) {
+  pinMode(PIN_IN_TRIG, INPUT);
+
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);
   pinMode(13, OUTPUT);
   pinMode(PIN_OUT_OFFBEAT, OUTPUT);
-
-  pinMode(PIN_IN_TRIG, INPUT);
 }
 
 void setup() {
