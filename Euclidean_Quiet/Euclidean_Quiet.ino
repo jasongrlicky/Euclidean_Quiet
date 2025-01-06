@@ -213,8 +213,7 @@
 
 /* GLOBALS */
 
-// Debug Flag
-byte internal_clock_enabled = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
+bool internal_clock_enabled = false;
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
@@ -390,7 +389,7 @@ void loop()
   oo = channelbeats[active_channel][3];
 
   // DEBUG PULSE TRIGGER & print out
-  if (internal_clock_enabled > 0 && time - last_sync > 125) {
+  if (internal_clock_enabled && time - last_sync > 125) {
     Sync();
 
     #if LOGGING_ENABLED
@@ -427,7 +426,7 @@ void loop()
     reset_timer++;
 
     if(zleep == true){
-      internal_clock_enabled = 1;
+      internal_clock_enabled = true;
       Sync();
     }
 
@@ -447,7 +446,7 @@ void loop()
   // TRIG INPUT 
   
   if (newpulse > oldpulse) { 
-    internal_clock_enabled = 0; // turn off internal clock if external clock received
+    internal_clock_enabled = false; // turn off internal clock if external clock received
     Sync();
   }
   oldpulse = newpulse;
