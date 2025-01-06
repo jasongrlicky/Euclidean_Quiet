@@ -383,7 +383,7 @@ void loop() {
 
   time = millis();
 
-  // COPY OVER N, K & O VARIABLES FOR EASE OF CODE READING
+  // Local copies of active channel parameters
   int active_length = channelbeats[active_channel][0];
   int active_density = channelbeats[active_channel][1];
   int active_offset = channelbeats[active_channel][3];
