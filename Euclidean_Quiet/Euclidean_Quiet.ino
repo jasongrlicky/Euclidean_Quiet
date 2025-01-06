@@ -285,7 +285,7 @@ bool pulses_active = false; // Is active while a beat pulse is playing
 bool lights_active = false;
 
 Milliseconds length = 50; // Pulse length, set based on the time since last trigger
-int storePulses[4] = {0};
+byte storePulses[4] = {0};
 
 int kknob;
 int active_channel = 3; // Which channel is active? zero indexed
