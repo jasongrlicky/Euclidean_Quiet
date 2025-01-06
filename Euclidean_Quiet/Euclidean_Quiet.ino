@@ -409,7 +409,7 @@ void loop() {
   #endif
 
   // SLEEP ROUTINE, if no external clock input after 5 minutes.
-  if (led_sleep_mode_enabled == false && time - last_sync > 300000) {
+  if ((!led_sleep_mode_enabled) && (time - last_sync > 300000)) {
     sleepanim();
     lc.shutdown(LED_ADDR, true);
     led_sleep_mode_enabled = true;
@@ -428,7 +428,7 @@ void loop() {
     }
     reset_timer++;
 
-    if(led_sleep_mode_enabled == true){
+    if(led_sleep_mode_enabled){
       internal_clock_enabled = true;
       Sync();
     }
@@ -830,7 +830,7 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
 // routine triggered by each beat
 void Sync() {
   // wake up routine & animation
-  if (led_sleep_mode_enabled == true) {
+  if (led_sleep_mode_enabled) {
     lc.shutdown(LED_ADDR, false);
     led_sleep_mode_enabled = false;
     wakeanim();
