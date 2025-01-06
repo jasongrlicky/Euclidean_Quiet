@@ -281,9 +281,6 @@ int kknob;
 int active_channel = 3; // which channel is active? zero indexed
 int nknob;
 int oknob;
-int nn;
-int kk;
-int oo;
 
 unsigned long last_read;
 unsigned long last_changed;
@@ -387,9 +384,9 @@ void loop() {
   time = millis();
 
   // COPY OVER N, K & O) VARIABLES FOR EASE OF CODE READING
-  nn = channelbeats[active_channel][0];
-  kk = channelbeats[active_channel][1];
-  oo = channelbeats[active_channel][3];
+  int nn = channelbeats[active_channel][0];
+  int kk = channelbeats[active_channel][1];
+  int oo = channelbeats[active_channel][3];
 
   // Internal Clock
   if (internal_clock_enabled && time - last_sync > 125) {
