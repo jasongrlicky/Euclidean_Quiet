@@ -383,10 +383,10 @@ void loop() {
 
   time = millis();
 
-  // COPY OVER N, K & O) VARIABLES FOR EASE OF CODE READING
-  int nn = channelbeats[active_channel][0];
-  int kk = channelbeats[active_channel][1];
-  int oo = channelbeats[active_channel][3];
+  // COPY OVER N, K & O VARIABLES FOR EASE OF CODE READING
+  int active_length = channelbeats[active_channel][0];
+  int active_density = channelbeats[active_channel][1];
+  int active_offset = channelbeats[active_channel][3];
 
   // Internal Clock
   if (internal_clock_enabled && time - last_sync > 125) {
@@ -398,11 +398,11 @@ void loop() {
   if (time - last_logged > LOGGING_INTERVAL) {
     last_logged = time;
     Serial.print("length =");
-    Serial.print(nn);
+    Serial.print(active_length);
     Serial.print(" density =");
-    Serial.print(kk);
+    Serial.print(active_density);
     Serial.print(" offset =");
-    Serial.print(oo);
+    Serial.print(active_offset);
     Serial.print(" channel switch analog value=");
     Serial.println(channel_switch_read);
   }
@@ -478,16 +478,16 @@ void loop() {
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
 
   if (changes > 0) {
-    generated_rhythms[active_channel] = euclid(nn, kk, oo);
+    generated_rhythms[active_channel] = euclid(active_length, active_density, active_offset);
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
     if (changes == 1) {  // 1 = K changes - display beats in the active channel
       for (a = 0; a < 8; a++) {
-        if (bitRead(generated_rhythms[active_channel], nn - 1 - a) == 1 && a < nn) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
-        if (bitRead(generated_rhythms[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
@@ -495,10 +495,10 @@ void loop() {
 
     if (changes == 2) { // 2 = N changes, display total length of beat
       for (a = 0; a < 8; a++) {
-        if (a < nn) {
+        if (a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
-        if (a + 8 < nn) {
+        if (a + 8 < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
@@ -506,10 +506,10 @@ void loop() {
 
     if (changes == 3) {  // 3 = Offset changes - display beats in the active channel
       for (a = 0; a < 8; a++) {
-        if (bitRead(generated_rhythms[active_channel], nn - 1 - a) == 1 && a < nn) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
-        if (bitRead(generated_rhythms[active_channel], nn - 1 - a - 8) == 1 && a + 8 < nn) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
@@ -564,13 +564,13 @@ void loop() {
   if (nknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check n encoder reading to prevent crashes
 
-    if (nn >= BEAT_LENGTH_MAX) {
-      nn = BEAT_LENGTH_MAX;
+    if (active_length >= BEAT_LENGTH_MAX) {
+      active_length = BEAT_LENGTH_MAX;
     } // Check for eeprom values over maximum.
-    if (nn + nknob > BEAT_LENGTH_MAX) {
+    if (active_length + nknob > BEAT_LENGTH_MAX) {
       nknob = 0;
     } // check below BEAT_LENGTH_MAX
-    if (nn + nknob < BEAT_LENGTH_MIN) {
+    if (active_length + nknob < BEAT_LENGTH_MIN) {
       nknob = 0;
     } // check above BEAT_LENGTH_MIN
 
@@ -579,19 +579,19 @@ void loop() {
     Serial.println(nknob);
     #endif
 
-    if (kk >= nn + nknob && kk > 1) {// check if new n is lower than k + reduce K if it is
+    if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
       channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
     }
 
-    if (oo >= nn + nknob && oo >= 0 && oo < 16) {// check if new n is lower than o + reduce o if it is
+    if (active_offset >= active_length + nknob && active_offset >= 0 && active_offset < 16) {// check if new n is lower than o + reduce o if it is
       channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
       EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
     }
 
-    channelbeats[active_channel][0] = nn + nknob; // update with encoder reading
-    kk = channelbeats[active_channel][1];
-    nn = channelbeats[active_channel][0];  // update for ease of coding
-    oo = channelbeats[active_channel][3];
+    channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
+    active_density = channelbeats[active_channel][1];
+    active_length = channelbeats[active_channel][0];  // update for ease of coding
+    active_offset = channelbeats[active_channel][3];
     
     EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
       
@@ -612,10 +612,10 @@ void loop() {
   if (oknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check o encoder reading to prevent crashes
 
-    if (oo + oknob > nn - 1) {
+    if (active_offset + oknob > active_length - 1) {
       oknob = 0;
     } // check below BEAT_OFFSET_MAX
-    if (oo + oknob < BEAT_OFFSET_MIN) {
+    if (active_offset + oknob < BEAT_OFFSET_MIN) {
       oknob = 0;
     } // check above BEAT_LENGTH_MIN
 
@@ -624,8 +624,8 @@ void loop() {
     Serial.println(oknob);
     #endif
 
-    channelbeats[active_channel][3] = oo + oknob;
-    oo = channelbeats[active_channel][3];  // update oo for ease of coding
+    channelbeats[active_channel][3] = active_offset + oknob;
+    active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
 
     EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
 
