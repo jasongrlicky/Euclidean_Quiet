@@ -396,7 +396,7 @@ void loop() {
   int active_offset = channelbeats[active_channel][3];
 
   // Internal Clock
-  if (internal_clock_enabled && time - last_sync > 125) {
+  if (internal_clock_enabled && (time - last_sync > 125)) {
     Sync();
   }
 
@@ -459,7 +459,7 @@ void loop() {
   oldpulse = newpulse;
   
   // TURN OFF ANY LIGHTS THAT ARE ON
-  if (time - last_sync > length && lights_active == true) {
+  if (lights_active && (time - last_sync > length)) {
     for (a = 0; a < NUM_CHANNELS; a++) {
       lc.setLed(LED_ADDR, 7, 5 - (a * 2), false);
       lc.setLed(LED_ADDR, 7, 4, false); // spare pin flash
@@ -469,7 +469,7 @@ void loop() {
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (time - last_sync > (length) && pulses_active == true) {
+  if (pulses_active && (time - last_sync > length)) {
     for (a = 0; a < NUM_CHANNELS; a++) {
       digitalWrite(PIN_OUT_CHANNEL_BASE + a, LOW);
       storePulses[a] = 0;
