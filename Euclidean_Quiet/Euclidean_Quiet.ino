@@ -373,8 +373,7 @@ void setup() {
   Sync();
 }
 
-void loop()
-{
+void loop() {
   /*
     What's in the loop:
     Update time variable
@@ -413,8 +412,7 @@ void loop()
   #endif
 
   // SLEEP ROUTINE, if no external clock input after 5 minutes.
-  if (zleep == false && time - last_sync > 300000)
-  {
+  if (zleep == false && time - last_sync > 300000) {
     sleepanim();
     lc.shutdown(LED_ADDR, true);
     zleep = true;
@@ -459,7 +457,6 @@ void loop()
   }
   oldpulse = newpulse;
   
-
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (time - last_sync > length && lights_active == true) {
     for (a = 0; a < NUM_CHANNELS; a++) {
@@ -531,10 +528,10 @@ void loop()
   if (kknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
-    }; // check within limits
+    } // check within limits
     if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
-    };
+    }
 
     #if LOGGING_ENABLED
     Serial.print("kknob: ");
@@ -544,7 +541,7 @@ void loop()
     // CHECK AGAIN FOR LOGIC
     if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
       channelbeats[active_channel][1] = channelbeats[active_channel][0] - 1;
-    };
+    }
 
     channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
     EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
@@ -563,23 +560,22 @@ void loop()
   // READ N KNOB
 
   nknob = encoder_read(EncN);
-  if (channelbeats[active_channel][0] > 16)
-  {
+  if (channelbeats[active_channel][0] > 16) {
     channelbeats[active_channel][0] = 16;
-  };
+  }
 
   if (nknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check n encoder reading to prevent crashes
 
     if (nn >= BEAT_LENGTH_MAX) {
       nn = BEAT_LENGTH_MAX;
-    }; // Check for eeprom values over maximum.
+    } // Check for eeprom values over maximum.
     if (nn + nknob > BEAT_LENGTH_MAX) {
       nknob = 0;
-    }; // check below BEAT_LENGTH_MAX
+    } // check below BEAT_LENGTH_MAX
     if (nn + nknob < BEAT_LENGTH_MIN) {
       nknob = 0;
-    }; // check above BEAT_LENGTH_MIN
+    } // check above BEAT_LENGTH_MIN
 
     #if LOGGING_ENABLED
     Serial.print("nknob: ");
@@ -588,12 +584,12 @@ void loop()
 
     if (kk >= nn + nknob && kk > 1) {// check if new n is lower than k + reduce K if it is
       channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
-    };
+    }
 
     if (oo >= nn + nknob && oo >= 0 && oo < 16) {// check if new n is lower than o + reduce o if it is
       channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
       EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
-    };
+    }
 
     channelbeats[active_channel][0] = nn + nknob; // update with encoder reading
     kk = channelbeats[active_channel][1];
@@ -621,10 +617,10 @@ void loop()
 
     if (oo + oknob > nn - 1) {
       oknob = 0;
-    }; // check below BEAT_OFFSET_MAX
+    } // check below BEAT_OFFSET_MAX
     if (oo + oknob < BEAT_OFFSET_MIN) {
       oknob = 0;
-    }; // check above BEAT_LENGTH_MIN
+    } // check above BEAT_LENGTH_MIN
 
     #if LOGGING_ENABLED
     Serial.print("oknob: ");
@@ -650,27 +646,25 @@ void loop()
   // SELECT ACTIVE CHANNEL
 
   //	Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
-
   channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing Pressed. Was 3 in original.
     channelPressedCounter = 0;
-  };
+  }
   if (channel_switch_read > 100 && channel_switch_read < 200) {
     channel_switch = 2;					//	Density Pressed. Was 2 in original.
     channelPressedCounter++;
-  };
+  }
   if (channel_switch_read > 200 && channel_switch_read < 400) {
     channel_switch = 1;					//	Length Pressed. Was 1 in original.
     channelPressedCounter++;
-  };
+  }
   if (channel_switch_read > 400) {
     channel_switch = 0;					//	Offset Pressed. Was 0 in original.
     channelPressedCounter++;
-  };
+  }
   if (channel_switch != 3 && channelPressedCounter <= 1) {
     active_channel = channel_switch;
-
     
     #if LOGGING_ENABLED
     Serial.print("Active channel: ");
@@ -721,8 +715,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
   for (a = 0; a < n; a++) { // Populate workbeat with unsorted pulses and pauses
     if (a < pulses) {
       workbeat[a] = 1;
-    }
-    else {
+    } else {
       workbeat[a] = 0;
     }
   }
@@ -742,15 +735,12 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
 
     if (offset > 0) {
       outbeat2 = rightRotate(offset, outbeat, steps); // Add offset to the step pattern
-    }
-    else {
+    } else {
       outbeat2 = outbeat;
     }
 
     return outbeat2;
-  }
-
-  else {
+  } else {
     if (pulses == 0) {
       pulses = 1;  //	Prevent crashes when k=0 and n goes from 0 to 1
     }
@@ -761,7 +751,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
     }
 
     while (groupb > 1) { //main recursive loop
-  
       if (groupa > groupb) { // more Group A than Group B
         int a_remainder = groupa - groupb; // what will be left of groupa once groupB is interleaved
         trim_count = 0;
@@ -773,9 +762,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
 
         groupa = groupb;
         groupb = a_remainder;
-      }
-
-      else if (groupb > groupa) { // More Group B than Group A
+      } else if (groupb > groupa) { // More Group B than Group A
         int b_remainder = groupb - groupa; // what will be left of group once group A is interleaved
         trim_count = 0;
         for (a = workbeat_count - 1; a >= groupa + b_remainder; a--) { //count from right back through the Bs
@@ -785,9 +772,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         }
         workbeat_count = workbeat_count - trim_count;
         groupb = b_remainder;
-      }
-
-      else if (groupa == groupb) { // groupa = groupb
+      } else if (groupa == groupb) { // groupa = groupb
         trim_count = 0;
         for (a = 0; a < groupa; a++) {
           workbeat[a] = ConcatBin(workbeat[a], workbeat[workbeat_count - 1 - a]);
@@ -795,9 +780,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         }
         workbeat_count = workbeat_count - trim_count;
         groupb = 0;
-      }
-
-      else {
+      } else {
         #if LOGGING_ENABLED
         Serial.println("ERROR");
         #endif
@@ -812,8 +795,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
 
     if (offset > 0) {
       outbeat2 = rightRotate(offset, outbeat, steps); // Add offset to the step pattern
-    }
-    else {
+    } else {
       outbeat2 = outbeat;
     }
 
@@ -821,8 +803,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
   }
 }
 
-/*Function to right rotate n by d bits*/
-
+// Function to right rotate n by d bits
 uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length) {
   uint16_t mask = ((1 << pattern_length) - 1);
   value &= mask;
@@ -853,26 +834,26 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
 
 // routine triggered by each beat
 void Sync() {
-  if (zleep == true)// wake up routine & animation
-  {
+  // wake up routine & animation
+  if (zleep == true) {
     lc.shutdown(LED_ADDR, false);
     zleep = false;
     wakeanim();
   }
 
-  if (masterclock % 2 == 0) { // tick bottom left corner on and off with clock
+  // tick bottom left corner on and off with clock
+  if (masterclock % 2 == 0) {
     lc.setLed(LED_ADDR, 7, 7, true);
-  }
-  else {
+  } else {
     lc.setLed(LED_ADDR, 7, 7, false);
   }
 
   // Cycle through channels
   for (a = 0; a < NUM_CHANNELS; a++) {
     read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
-    
-    if (a != active_channel || time - last_changed > ACTIVE_CHANNEL_DISPLAY_TIME) // don't clear or draw cursor if channel is being changed
-    {
+
+    // don't clear or draw cursor if channel is being changed
+    if (a != active_channel || time - last_changed > ACTIVE_CHANNEL_DISPLAY_TIME) {
       lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
 
       if (channelbeats[a][2] < 8) {
@@ -881,8 +862,7 @@ void Sync() {
             lc.setLed(LED_ADDR, a * 2, 7 - c, true);
           }
         }
-      }
-      else {
+      } else {
         for (int c = 8; c < 16; c++) {
           if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
             lc.setLed(LED_ADDR, a * 2, 15 - c, true);
@@ -894,14 +874,13 @@ void Sync() {
       // draw cursor
       if (channelbeats[a][2] < 8) {
         lc.setLed(LED_ADDR, a * 2 + 1, 7 - channelbeats[a][2], true); // write cursor less than 8
-      }
-      else if (channelbeats[a][2] >= 8 && channelbeats[a][2] < 16) {
+      } else if (channelbeats[a][2] >= 8 && channelbeats[a][2] < 16) {
         lc.setLed(LED_ADDR, a * 2 + 1, 15 - channelbeats[a][2], true); // write cursor more than 8
       }
     }
+    
     // turn on pulses on channels where a beat is present
     if (bitRead(generated_rhythms[a], read_head) == 1) {
-
       storePulses[a] = 1;
 
       if (a == 0) {
@@ -913,6 +892,7 @@ void Sync() {
       if (a == 2) {
         lc.setLed(LED_ADDR, 7, 0, true);
       }
+
       pulses_active = true;
       lights_active = true;
     }
@@ -945,7 +925,7 @@ void Sync() {
   masterclock++;
   if (masterclock >= 16) {
     masterclock = 0;
-  };
+  }
 
   looptracker++;
 }
