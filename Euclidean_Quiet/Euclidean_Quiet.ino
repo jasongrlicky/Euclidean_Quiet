@@ -213,7 +213,7 @@
 /* GLOBALS */
 
 // Debug Flag
-int debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
+byte debug = 0; // 0= normal  1= Internal Clock  2= Internal Clock and SerialDump
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
