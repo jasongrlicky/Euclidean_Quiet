@@ -174,10 +174,10 @@
 
 #define LOGGING_ENABLED 0 // 0 = logging over serial disabled, 1 = enabled
 #define LOGGING_INTERVAL 1000 // Milliseconds between periodic log messages
-#define LED_BRIGHTNESS 5	//	From 0 (low) to 15
-#define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // how long active channel display is shown, in ms
+#define LED_BRIGHTNESS 5 // From 0 (low) to 15
+#define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // How long active channel display is shown, in ms
 #define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
-#define READ_DELAY 50 // for debouncing
+#define READ_DELAY 50 // For debouncing
 
 /* HARDWARE CONSTANTS */
 
@@ -263,23 +263,23 @@ int masterclock = 0; // Internal clock enable/disable
 int read_head;
 unsigned int  looptracker;
 
-int old_total;//for knobs
-int old_pulses;//for knobs
+int old_total; // For knobs
+int old_pulses; // For knobs
 
-int newpulse;//for trigger in
-int oldpulse = 0;//for trigger in
+int newpulse; // For trigger in
+int oldpulse = 0; // For trigger in
 int reset_timer = 0;
 
 unsigned long channelPressedCounter = 0;
 
-bool pulses_active = false; // is active while a beat pulse is playing
+bool pulses_active = false; // Is active while a beat pulse is playing
 bool lights_active = false;
 
-int length = 50; //Pulse length, set based on the time since last trigger
+int length = 50; // Pulse length, set based on the time since last trigger
 int storePulses[4] = {0};
 
 int kknob;
-int active_channel = 3; // which channel is active? zero indexed
+int active_channel = 3; // Which channel is active? zero indexed
 int nknob;
 int oknob;
 
