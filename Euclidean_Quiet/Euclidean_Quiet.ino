@@ -172,6 +172,7 @@
 
 /* CONFIGURATION */
 
+#define LOGGING_ENABLED 0 // 0 = logging over serial disabled, 1 = enabled
 #define LED_BRIGHTNESS 5	//	From 0 (low) to 15
 #define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // how long active channel display is shown, in ms
 #define READ_DELAY 50 // for debouncing
@@ -334,9 +335,9 @@ void encoders_init(void) {
 }
 
 void serial_init(void) {
-  if (debug == 2) {
-    Serial.begin(9600);
-  }
+  #if LOGGING_ENABLED
+  Serial.begin(9600);
+  #endif
 }
 
 /// Set up IO pins
@@ -391,16 +392,17 @@ void loop()
   // DEBUG PULSE TRIGGER & print out
   if (debug > 0 && time - last_sync > 125) {
     Sync();
-    if (debug == 2) {
-      Serial.print("length =");
-      Serial.print(nn);
-      Serial.print(" density =");
-      Serial.print(kk);
-      Serial.print(" offset =");
-      Serial.print(oo);
-      Serial.print(" channel switch analog value=");
-      Serial.println(channel_switch_read);
-    }
+
+    #if LOGGING_ENABLED
+    Serial.print("length =");
+    Serial.print(nn);
+    Serial.print(" density =");
+    Serial.print(kk);
+    Serial.print(" offset =");
+    Serial.print(oo);
+    Serial.print(" channel switch analog value=");
+    Serial.println(channel_switch_read);
+    #endif
   };
 
   // SLEEP ROUTINE, if no external clock input after 5 minutes.
@@ -428,16 +430,17 @@ void loop()
       debug = 1;
       Sync();
     }
-    if (debug == 2) {
-      Serial.println("RESET ACTIVE");
-    }
+
+    #if LOGGING_ENABLED
+    Serial.println("RESET ACTIVE");
+    #endif
   }
 
   if (reset_button < 100 && reset_timer > 0) {
     reset_timer = 0;
-    if (debug == 2) {
-      Serial.println("RESET TIMER ZEROED");      
-    }
+    #if LOGGING_ENABLED
+    Serial.println("RESET TIMER ZEROED");      
+    #endif
 
   }
 
@@ -526,10 +529,10 @@ void loop()
       kknob = 0;
     };
 
-    if (debug == 2) {
-      Serial.print("kknob: ");
-      Serial.println(kknob);
-    }
+    #if LOGGING_ENABLED
+    Serial.print("kknob: ");
+    Serial.println(kknob);
+    #endif
 
     // CHECK AGAIN FOR LOGIC
     if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
@@ -539,12 +542,12 @@ void loop()
     channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
     EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
 
-    if (debug == 2) {
-      Serial.print("eeprom write K= ");
-      Serial.print((active_channel * 2) + 2);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][1]);
-    }
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write K= ");
+    Serial.print((active_channel * 2) + 2);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][1]);
+    #endif
 
     last_read = millis();
     changes = 1; // K change = 1
@@ -571,10 +574,10 @@ void loop()
       nknob = 0;
     }; // check above BEAT_LENGTH_MIN
 
-    if (debug == 2) {
-      Serial.print("nknob: ");
-      Serial.println(nknob);
-    }
+    #if LOGGING_ENABLED
+    Serial.print("nknob: ");
+    Serial.println(nknob);
+    #endif
 
     if (kk >= nn + nknob && kk > 1) {// check if new n is lower than k + reduce K if it is
       channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
@@ -592,12 +595,12 @@ void loop()
     
     EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
       
-    if (debug == 2) {
-      Serial.print("eeprom write N= ");
-      Serial.print((active_channel * 2) + 1);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][0]);
-    }
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write N= ");
+    Serial.print((active_channel * 2) + 1);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][0]);
+    #endif
 
     last_read = millis();
     changes = 2; // n change = 2
@@ -616,22 +619,22 @@ void loop()
       oknob = 0;
     }; // check above BEAT_LENGTH_MIN
 
-    if (debug == 2) {
-      Serial.print("oknob: ");
-      Serial.println(oknob);
-    }
+    #if LOGGING_ENABLED
+    Serial.print("oknob: ");
+    Serial.println(oknob);
+    #endif
 
     channelbeats[active_channel][3] = oo + oknob;
     oo = channelbeats[active_channel][3];  // update oo for ease of coding
 
     EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
 
-    if (debug == 2) {
-      Serial.print("eeprom write O= ");
-      Serial.print((active_channel) + 7);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][3]);
-    }
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write O= ");
+    Serial.print((active_channel) + 7);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][3]);
+    #endif
 
     last_read = millis();
     changes = 3; // o change = 3
@@ -661,10 +664,11 @@ void loop()
   if (channel_switch != 3 && channelPressedCounter <= 1) {
     active_channel = channel_switch;
 
-    if (debug == 2) {
-      Serial.print("Active channel: ");
-      Serial.println(active_channel);
-    }
+    
+    #if LOGGING_ENABLED
+    Serial.print("Active channel: ");
+    Serial.println(active_channel);
+    #endif
     
     if (active_channel == 0) {
       lc.setRow(LED_ADDR, 6, B00000011);
@@ -681,16 +685,16 @@ void loop()
 // Euclid calculation function
 unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
 
-  if (debug == 2) {
-    Serial.print("ch: ");
-    Serial.print(active_channel);
-    Serial.print(" n: ");
-    Serial.print(n);
-    Serial.print(" k: ");
-    Serial.print(k);
-    Serial.print(" o: ");
-    Serial.println(o);
-  }
+  #if LOGGING_ENABLED
+  Serial.print("ch: ");
+  Serial.print(active_channel);
+  Serial.print(" n: ");
+  Serial.print(n);
+  Serial.print(" k: ");
+  Serial.print(k);
+  Serial.print(" o: ");
+  Serial.println(o);
+  #endif
 
   int pauses = n - k;
   int pulses = k;
@@ -787,9 +791,9 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
       }
 
       else {
-        if (debug == 2) {
-          Serial.println("ERROR");
-        }
+        #if LOGGING_ENABLED
+        Serial.println("ERROR");
+        #endif
       }
       iteration++;
     }
