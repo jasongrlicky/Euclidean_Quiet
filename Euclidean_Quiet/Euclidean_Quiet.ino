@@ -388,7 +388,7 @@ void loop()
   kk = channelbeats[active_channel][1];
   oo = channelbeats[active_channel][3];
 
-  // DEBUG PULSE TRIGGER & print out
+  // Internal Clock
   if (internal_clock_enabled && time - last_sync > 125) {
     Sync();
 
