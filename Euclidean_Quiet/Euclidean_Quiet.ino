@@ -218,6 +218,10 @@
 // O: Offset
 #define BEAT_OFFSET_MIN 0
 
+/* TYPES */
+
+typedef unsigned long Milliseconds;
+
 /* GLOBALS */
 
 bool internal_clock_enabled = false;
@@ -252,10 +256,10 @@ unsigned int channelbeats[NUM_CHANNELS][5] = {
   }
 }; // 0=n, 1=k, 2 = position , 3 = offset
 
-unsigned long time;
-unsigned long last_sync;
+Milliseconds time;
+Milliseconds last_sync;
 #if LOGGING_ENABLED
-unsigned long last_logged;
+Milliseconds last_logged;
 #endif
 
 // Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
@@ -288,8 +292,8 @@ int active_channel = 3; // Which channel is active? zero indexed
 int nknob;
 int oknob;
 
-unsigned long last_read;
-unsigned long last_changed;
+Milliseconds last_read;
+Milliseconds last_changed;
 int channel_switch;
 int reset_button;
 int channel_switch_read;
