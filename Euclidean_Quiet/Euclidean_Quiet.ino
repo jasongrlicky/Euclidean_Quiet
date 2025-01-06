@@ -419,12 +419,10 @@ void loop() {
   }
 
   // READ TRIG AND RESET INPUTS
-  
   newpulse = digitalRead(PIN_IN_TRIG); // Pulse input
   reset_button = analogRead(A1); //reset_button = analogReadFast(A1);
 
   // RESET INPUT & BUTTON
-  
   if (reset_timer == 0 && reset_button > 100 && channelbeats[0][2] > 0) {
     for (a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
@@ -450,7 +448,6 @@ void loop() {
   }
 
   // TRIG INPUT 
-  
   if (newpulse > oldpulse) { 
     internal_clock_enabled = false; // turn off internal clock if external clock received
     Sync();
@@ -479,7 +476,6 @@ void loop() {
   }
 
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
-
   if (changes > 0) {
     generated_rhythms[active_channel] = euclid(active_length, active_density, active_offset);
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
@@ -523,7 +519,6 @@ void loop() {
   }
 
   // READ K KNOB
-
   kknob = encoder_read(EncK);
   if (kknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
@@ -558,7 +553,6 @@ void loop() {
   }
 
   // READ N KNOB
-
   nknob = encoder_read(EncN);
   if (channelbeats[active_channel][0] > 16) {
     channelbeats[active_channel][0] = 16;
@@ -610,7 +604,6 @@ void loop() {
   }
 
   // READ O KNOB
-
   oknob = encoder_read(EncO);
   if (oknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check o encoder reading to prevent crashes
@@ -644,7 +637,6 @@ void loop() {
   }
 
   // SELECT ACTIVE CHANNEL
-
   //	Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
   channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
   if (channel_switch_read < 100) {
@@ -685,7 +677,6 @@ void loop() {
 
 // Euclid calculation function
 unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
-
   #if LOGGING_ENABLED
   Serial.print("ch: ");
   Serial.print(active_channel);
