@@ -186,6 +186,10 @@
 #define PIN_IN_CHANNEL_SWITCH A2
 
 // Output pin definitions
+#define PIN_OUT_CHANNEL_BASE 11
+#define PIN_OUT_CHANNEL_1 11
+#define PIN_OUT_CHANNEL_2 12
+#define PIN_OUT_CHANNEL_3 13
 #define PIN_OUT_OFFBEAT 17
 #define PIN_OUT_LED_DATA 2
 #define PIN_OUT_LED_CLOCK 3
@@ -346,9 +350,9 @@ void serial_init(void) {
 void io_pins_init(void) {
   pinMode(PIN_IN_TRIG, INPUT);
 
-  pinMode(11, OUTPUT);
-  pinMode(12, OUTPUT);
-  pinMode(13, OUTPUT);
+  pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
+  pinMode(PIN_OUT_CHANNEL_2, OUTPUT);
+  pinMode(PIN_OUT_CHANNEL_3, OUTPUT);
   pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 }
 
@@ -466,7 +470,7 @@ void loop() {
   // FINISH ANY PULSES THAT ARE ACTIVE
   if (time - last_sync > (length) && pulses_active == true) {
     for (a = 0; a < NUM_CHANNELS; a++) {
-      digitalWrite(11 + a, LOW);
+      digitalWrite(PIN_OUT_CHANNEL_BASE + a, LOW);
       storePulses[a] = 0;
     }
     digitalWrite(PIN_OUT_OFFBEAT, LOW);
@@ -893,7 +897,7 @@ void Sync() {
 
     if(a >= 2){
       for (int i = 0; i < NUM_CHANNELS; i++) {
-        digitalWrite(11 + i, storePulses[i]); // pulse out
+        digitalWrite(PIN_OUT_CHANNEL_BASE + i, storePulses[i]); // pulse out
       }
       length = constrain(((time - last_sync) / 5), 2, 5);
       last_sync = time;
@@ -966,20 +970,20 @@ void sleepanim() {
 }
 
 void startUpOK() {
-  digitalWrite(13, HIGH);
+  digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
   delay(50);
-  digitalWrite(13, LOW);
+  digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
-  digitalWrite(13, HIGH);
+  digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
   delay(50);
-  digitalWrite(13, LOW);
+  digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
-  digitalWrite(13, HIGH);
+  digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
   delay(50);
-  digitalWrite(13, LOW);
+  digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
-  digitalWrite(13, HIGH);
+  digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
   delay(50);
-  digitalWrite(13, LOW);
+  digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
 }
