@@ -176,6 +176,7 @@
 #define LOGGING_INTERVAL 1000 // Milliseconds between periodic log messages
 #define LED_BRIGHTNESS 5	//	From 0 (low) to 15
 #define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // how long active channel display is shown, in ms
+#define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
 #define READ_DELAY 50 // for debouncing
 
 /* HARDWARE CONSTANTS */
@@ -408,8 +409,8 @@ void loop() {
   }
   #endif
 
-  // SLEEP ROUTINE, if no external clock input after 5 minutes.
-  if ((!led_sleep_mode_enabled) && (time - last_sync > 300000)) {
+  // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
+  if ((!led_sleep_mode_enabled) && (time - last_sync > LED_SLEEP_TIME)) {
     sleepanim();
     lc.shutdown(LED_ADDR, true);
     led_sleep_mode_enabled = true;
