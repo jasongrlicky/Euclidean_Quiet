@@ -271,8 +271,8 @@ int reset_timer = 0;
 
 unsigned long channelPressedCounter = 0;
 
-boolean pulses_active = false; // is active while a beat pulse is playing
-boolean lights_active = false;
+bool pulses_active = false; // is active while a beat pulse is playing
+bool lights_active = false;
 
 int length = 50; //Pulse length, set based on the time since last trigger
 int storePulses[4] = {0};
@@ -807,7 +807,7 @@ uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length) {
 
 // Function to find the binary length of a number by counting bitwise
 int findlength(unsigned int bnry) {
-  boolean lengthfound = false;
+  bool lengthfound = false;
   int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
   for (int q = 32; q >= 0; q--) {
     int r = bitRead(bnry, q);
