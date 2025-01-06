@@ -747,8 +747,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
     int groupa = pulses;
     int groupb = pauses;
     int iteration = 0;
-    if (groupb <= 1) {
-    }
 
     while (groupb > 1) { //main recursive loop
       if (groupa > groupb) { // more Group A than Group B
