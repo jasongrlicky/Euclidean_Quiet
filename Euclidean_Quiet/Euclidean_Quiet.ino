@@ -441,10 +441,10 @@ void loop() {
 
   if (reset_button < 100 && reset_timer > 0) {
     reset_timer = 0;
+
     #if LOGGING_ENABLED
     Serial.println("RESET TIMER ZEROED");      
     #endif
-
   }
 
   // TRIG INPUT 
