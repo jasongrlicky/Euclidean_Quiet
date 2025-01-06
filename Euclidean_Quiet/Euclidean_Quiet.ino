@@ -257,7 +257,7 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 
 int a;
 int changes = 0;
-boolean zleep = true;  // LED Sleep mode enable/disable
+bool zleep = true;  // LED Sleep mode enable/disable
 int masterclock = 0; // Internal clock enable/disable
 int read_head;
 unsigned int  looptracker;
