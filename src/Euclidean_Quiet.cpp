@@ -398,7 +398,7 @@ void loop() {
 
   // READ TRIG AND RESET INPUTS
   newpulse = digitalRead(PIN_IN_TRIG); // Pulse input
-  int reset_button = analogRead(A1); //reset_button = analogReadFast(A1);
+  int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
   if (reset_timer == 0 && reset_button > 100 && channelbeats[0][2] > 0) {
