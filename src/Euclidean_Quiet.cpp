@@ -661,7 +661,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
   unsigned int workbeat[n];
   unsigned int outbeat;
   uint16_t outbeat2;
-  unsigned int working;
   int workbeat_count = n;
   int a;
   int b;
