@@ -246,8 +246,6 @@ int reset_timer = 0;
 unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
-int channel_switch;
-int channel_switch_read;
 
 /* INTERNAL */
 
@@ -375,8 +373,6 @@ void loop() {
     Serial.print(active_density);
     Serial.print(" offset =");
     Serial.print(active_offset);
-    Serial.print(" channel switch analog value=");
-    Serial.println(channel_switch_read);
   }
   #endif
 
@@ -598,7 +594,8 @@ void loop() {
 
   // SELECT ACTIVE CHANNEL
   //	Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
-  channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
+  int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
+  int channel_switch;
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing Pressed. Was 3 in original.
     channelPressedCounter = 0;
