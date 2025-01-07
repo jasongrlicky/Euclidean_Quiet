@@ -273,8 +273,10 @@ int findlength(unsigned int bnry);
 unsigned int ConcatBin(unsigned int bina, unsigned int binb);
 void Sync();
 int encoder_read(Encoder& enc);
-void wakeanim();
-void sleepanim();
+void led_sleep();
+void led_wake();
+void led_anim_wake();
+void led_anim_sleep();
 void startUpOK();
 
 /// Initialize the MAX72XX LED Matrix
@@ -396,9 +398,7 @@ void loop() {
 
   // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
   if ((!led_sleep_mode_enabled) && (time - last_sync > LED_SLEEP_TIME)) {
-    sleepanim();
-    lc.shutdown(LED_ADDR, true);
-    led_sleep_mode_enabled = true;
+    led_sleep();
   }
 
   // READ TRIG AND RESET INPUTS
@@ -801,9 +801,7 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
 void Sync() {
   // wake up routine & animation
   if (led_sleep_mode_enabled) {
-    lc.shutdown(LED_ADDR, false);
-    led_sleep_mode_enabled = false;
-    wakeanim();
+    led_wake();
   }
 
   // tick bottom left corner on and off with clock
@@ -909,9 +907,21 @@ int encoder_read(Encoder& enc) {
   return result;
 }
 
-// Matrix LED wake-up and sleep animation
+void led_sleep() {
+  led_sleep_mode_enabled = true;
 
-void wakeanim() { 
+  led_anim_sleep();
+  lc.shutdown(LED_ADDR, true);
+}
+
+void led_wake() {
+  led_sleep_mode_enabled = false;
+
+  lc.shutdown(LED_ADDR, false);
+  led_anim_wake();
+}
+
+void led_anim_wake() { 
   for (uint8_t a = 4; a >= 0; a--) {
     lc.setRow(LED_ADDR, a, 255);
     lc.setRow(LED_ADDR, 7 - a, 255);
@@ -920,7 +930,7 @@ void wakeanim() {
     lc.setRow(LED_ADDR, 7 - a, 0);
   }
 }
-void sleepanim() {
+void led_anim_sleep() {
   for (uint8_t a = 0; a < 4; a++) {
     lc.setRow(LED_ADDR, a, 255);
     lc.setRow(LED_ADDR, 7 - a, 255);
