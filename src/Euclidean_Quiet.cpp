@@ -732,7 +732,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         }
         workbeat_count = workbeat_count - trim_count;
         groupb = b_remainder;
-      } else if (groupa == groupb) { // groupa = groupb
+      } else {
         trim_count = 0;
         for (a = 0; a < groupa; a++) {
           workbeat[a] = ConcatBin(workbeat[a], workbeat[workbeat_count - 1 - a]);
@@ -740,10 +740,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         }
         workbeat_count = workbeat_count - trim_count;
         groupb = 0;
-      } else {
-        #if LOGGING_ENABLED
-        Serial.println("ERROR");
-        #endif
       }
       iteration++;
     }
