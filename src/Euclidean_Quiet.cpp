@@ -922,7 +922,8 @@ void led_wake() {
 }
 
 void led_anim_wake() { 
-  for (uint8_t a = 4; a >= 0; a--) {
+  for (uint8_t step = 0; step < 4; step++) {
+    uint8_t a = 3 - step;
     lc.setRow(LED_ADDR, a, 255);
     lc.setRow(LED_ADDR, 7 - a, 255);
     delay(100);
@@ -930,6 +931,7 @@ void led_anim_wake() {
     lc.setRow(LED_ADDR, 7 - a, 0);
   }
 }
+
 void led_anim_sleep() {
   for (uint8_t a = 0; a < 4; a++) {
     lc.setRow(LED_ADDR, a, 255);
