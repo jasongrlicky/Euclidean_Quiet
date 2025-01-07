@@ -3,6 +3,7 @@
 #include <LedControl.h>
 
 extern "C" {
+#include "config.h"
 #include "defines.h"
 #include "output.h"
 #include "types.h"
