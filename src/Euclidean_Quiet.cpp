@@ -232,7 +232,6 @@ Milliseconds last_logged;
 // Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
 
-int a;
 int changes = 0;
 bool led_sleep_mode_enabled = true;
 int masterclock = 0; // Internal clock enable/disable
@@ -407,7 +406,7 @@ void loop() {
 
   // RESET INPUT & BUTTON
   if (reset_timer == 0 && reset_button > 100 && channelbeats[0][2] > 0) {
-    for (a = 0; a < NUM_CHANNELS; a++) {
+    for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
     reset_timer++;
@@ -439,7 +438,7 @@ void loop() {
   
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (lights_active && (time - last_sync > length)) {
-    for (a = 0; a < NUM_CHANNELS; a++) {
+    for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       lc.setLed(LED_ADDR, 7, 5 - (a * 2), false);
       lc.setLed(LED_ADDR, 7, 4, false); // spare pin flash
     }
@@ -459,7 +458,7 @@ void loop() {
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
     if (changes == 1) {  // 1 = K changes - display beats in the active channel
-      for (a = 0; a < 8; a++) {
+      for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
@@ -470,7 +469,7 @@ void loop() {
     }
 
     if (changes == 2) { // 2 = N changes, display total length of beat
-      for (a = 0; a < 8; a++) {
+      for (uint8_t a = 0; a < 8; a++) {
         if (a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
@@ -481,7 +480,7 @@ void loop() {
     }
 
     if (changes == 3) {  // 3 = Offset changes - display beats in the active channel
-      for (a = 0; a < 8; a++) {
+      for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
         }
@@ -814,7 +813,7 @@ void Sync() {
   }
 
   // Cycle through channels
-  for (a = 0; a < NUM_CHANNELS; a++) {
+  for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
     read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
 
     // don't clear or draw cursor if channel is being changed
@@ -912,7 +911,7 @@ int encoder_read(Encoder& enc) {
 // Matrix LED wake-up and sleep animation
 
 void wakeanim() { 
-  for (a = 4; a >= 0; a--) {
+  for (uint8_t a = 4; a >= 0; a--) {
     lc.setRow(LED_ADDR, a, 255);
     lc.setRow(LED_ADDR, 7 - a, 255);
     delay(100);
@@ -921,7 +920,7 @@ void wakeanim() {
   }
 }
 void sleepanim() {
-  for (a = 0; a < 4; a++) {
+  for (uint8_t a = 0; a < 4; a++) {
     lc.setRow(LED_ADDR, a, 255);
     lc.setRow(LED_ADDR, 7 - a, 255);
     delay(200);
