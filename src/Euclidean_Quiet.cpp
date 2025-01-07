@@ -237,7 +237,6 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 int changes = 0;
 bool led_sleep_mode_enabled = true;
 int masterclock = 0; // Internal clock enable/disable
-int read_head;
 unsigned int  looptracker;
 
 int old_total; // For knobs
@@ -813,7 +812,7 @@ void Sync() {
 
   // Cycle through channels
   for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-    read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
+    int read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
 
     // don't clear or draw cursor if channel is being changed
     if (a != active_channel || time - last_changed > ACTIVE_CHANNEL_DISPLAY_TIME) {
