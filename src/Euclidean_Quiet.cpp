@@ -241,7 +241,7 @@ int masterclock = 0; // Internal clock enable/disable
 int old_total; // For knobs
 int old_pulses; // For knobs
 
-int oldpulse = 0; // For trigger in
+int trig_in_value_previous = 0; // For recognizing trigger in rising edges
 int reset_timer = 0;
 
 unsigned long channelPressedCounter = 0;
@@ -396,7 +396,7 @@ void loop() {
   }
 
   // READ TRIG AND RESET INPUTS
-  int newpulse = digitalRead(PIN_IN_TRIG); // Pulse input
+  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
@@ -424,11 +424,11 @@ void loop() {
   }
 
   // TRIG INPUT 
-  if (newpulse > oldpulse) { 
+  if (trig_in_value > trig_in_value_previous) { 
     internal_clock_enabled = false; // turn off internal clock if external clock received
     Sync();
   }
-  oldpulse = newpulse;
+  trig_in_value_previous = trig_in_value;
   
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (lights_active && (time - last_sync > output_pulse_length)) {
