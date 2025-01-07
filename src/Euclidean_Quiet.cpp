@@ -249,7 +249,7 @@ unsigned long channelPressedCounter = 0;
 
 bool lights_active = false;
 
-Milliseconds length = 50; // Pulse length, set based on the time since last trigger
+Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
 
 int active_channel = 3; // Which channel is active? zero indexed
 
@@ -433,7 +433,7 @@ void loop() {
   oldpulse = newpulse;
   
   // TURN OFF ANY LIGHTS THAT ARE ON
-  if (lights_active && (time - last_sync > length)) {
+  if (lights_active && (time - last_sync > output_pulse_length)) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       lc.setLed(LED_ADDR, 7, 5 - (a * 2), false);
       lc.setLed(LED_ADDR, 7, 4, false); // spare pin flash
@@ -443,7 +443,7 @@ void loop() {
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (output_any_active() && (time - last_sync > length)) {
+  if (output_any_active() && (time - last_sync > output_pulse_length)) {
     output_clear_all();
   }
 
@@ -853,7 +853,7 @@ void Sync() {
     }
 
     if(a >= 2){
-      length = constrain(((time - last_sync) / 5), 2, 5);
+      output_pulse_length = constrain(((time - last_sync) / 5), 2, 5);
       last_sync = time;
     }
 
