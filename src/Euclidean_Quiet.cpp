@@ -237,7 +237,6 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 int changes = 0;
 bool led_sleep_mode_enabled = true;
 int masterclock = 0; // Internal clock enable/disable
-unsigned int  looptracker;
 
 int old_total; // For knobs
 int old_pulses; // For knobs
@@ -879,8 +878,6 @@ void Sync() {
   if (masterclock >= 16) {
     masterclock = 0;
   }
-
-  looptracker++;
 }
 
 /* Read an encoder
