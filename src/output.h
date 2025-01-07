@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 
-#include "defines.h"
 #include "types.h"
 
 #define output_set_high(channel) (output_set(channel, true))

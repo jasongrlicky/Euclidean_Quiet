@@ -4,7 +4,7 @@
 
 extern "C" {
 #include "config.h"
-#include "defines.h"
+#include "hardware.h"
 #include "output.h"
 #include "types.h"
 }

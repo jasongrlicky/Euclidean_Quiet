@@ -1,5 +1,7 @@
 #include "output.h"
 
+#include "hardware.h"
+
 // Bit flags: Uses 4 least significant bits to store ongoing output pulses.
 // The bits are indexed according to their corresponding Channel enum member.
 //

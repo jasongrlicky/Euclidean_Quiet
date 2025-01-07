@@ -1,5 +1,5 @@
-#ifndef DEFINES_H_INCLUDE
-#define DEFINES_H_INCLUDE
+#ifndef HARDWARE_H_INCLUDE
+#define HARDWARE_H_INCLUDE
 
 /* HARDWARE CONSTANTS */
 
@@ -27,4 +27,4 @@
 // LED Matrix address
 #define LED_ADDR 0
 
-#endif /* DEFINES_H_INCLUDE */ 
+#endif /* HARDWARE_H_INCLUDE */ 
