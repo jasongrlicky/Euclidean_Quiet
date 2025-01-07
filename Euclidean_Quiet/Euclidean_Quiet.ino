@@ -2,6 +2,12 @@
 #include <Encoder.h>
 #include <LedControl.h>
 
+extern "C" {
+#include "defines.h"
+#include "output.h"
+#include "types.h"
+}
+
 /* 
   Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
 
@@ -170,65 +176,6 @@
 
 */
 
-/* CONFIGURATION */
-
-#define LOGGING_ENABLED 0 // 0 = logging over serial disabled, 1 = enabled
-#define LOGGING_INTERVAL 1000 // Milliseconds between periodic log messages
-#define LED_BRIGHTNESS 5 // From 0 (low) to 15
-#define ACTIVE_CHANNEL_DISPLAY_TIME 1000 // How long active channel display is shown, in ms
-#define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
-#define READ_DELAY 50 // For debouncing
-
-/* HARDWARE CONSTANTS */
-
-// Input pin definitions
-#define PIN_IN_TRIG A0
-#define PIN_IN_CHANNEL_SWITCH A2
-
-// Output pin definitions
-#define PIN_OUT_CHANNEL_1 11
-#define PIN_OUT_CHANNEL_2 12
-#define PIN_OUT_CHANNEL_3 13
-#define PIN_OUT_OFFBEAT 17
-#define PIN_OUT_LED_DATA 2
-#define PIN_OUT_LED_CLOCK 3
-#define PIN_OUT_LED_SELECT 4
-
-// Encoder pin definitions
-#define PIN_ENC_1A 10
-#define PIN_ENC_1B 9
-#define PIN_ENC_2A 8
-#define PIN_ENC_2B 7
-#define PIN_ENC_3A 6
-#define PIN_ENC_3B 5
-
-// LED Matrix address
-#define LED_ADDR 0
-
-/* SOFTWARE CONSTANTS */
-
-#define NUM_CHANNELS 3
-// Bounds for three channel parameters
-// N: Beat Length
-#define BEAT_LENGTH_MAX 16
-#define BEAT_LENGTH_MIN 1
-// K: Density
-#define BEAT_DENSITY_MIN 0
-// O: Offset
-#define BEAT_OFFSET_MIN 0
-
-/* TYPES */
-
-// Indices for individual output channels
-enum Channel {
-  CHANNEL_1 = 0,
-  CHANNEL_2 = 1,
-  CHANNEL_3 = 2,
-  CHANNEL_OFFBEAT = 3
-};
-
-typedef unsigned long Milliseconds;
-
 /* GLOBALS */
 
 bool internal_clock_enabled = false;
@@ -291,45 +238,6 @@ unsigned long channelPressedCounter = 0;
 bool lights_active = false;
 
 Milliseconds length = 50; // Pulse length, set based on the time since last trigger
-
-// Bit flags: Uses 4 least significant bits to store ongoing output pulses.
-// The bits are indexed according to their corresponding Channel enum member.
-//
-// Don't interact with this directly, use output_*() functions instead.
-uint8_t active_output_pulse_flags;
-
-#define output_any_active() (active_output_pulse_flags)
-#define output_set_high(channel) (output_set(channel, true))
-#define output_set_low(channel) (output_set(channel, false))
-
-static inline uint8_t output_pin_from_channel(Channel channel) {
-  switch (channel) {
-    case CHANNEL_1:
-      return PIN_OUT_CHANNEL_1;
-    case CHANNEL_2:
-      return PIN_OUT_CHANNEL_2;
-    case CHANNEL_3:
-      return PIN_OUT_CHANNEL_3;
-    default:
-      return PIN_OUT_OFFBEAT;
-  }
-}
-
-void output_set(Channel channel, bool value) {
-  // Send actual output
-  uint8_t pin = output_pin_from_channel(channel);
-  digitalWrite(pin, (value) ? HIGH : LOW); // pulse out
-
-  // Note if this output is active or not
-  bitWrite(active_output_pulse_flags, channel, value);
-}
-
-void output_clear_all(void) {
-  output_set_low(CHANNEL_1);
-  output_set_low(CHANNEL_2);
-  output_set_low(CHANNEL_3);
-  output_set_low(CHANNEL_OFFBEAT);
-}
 
 int kknob;
 int active_channel = 3; // Which channel is active? zero indexed
