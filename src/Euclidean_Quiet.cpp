@@ -412,7 +412,7 @@ void loop() {
     }
     reset_timer++;
 
-    if(led_sleep_mode_enabled){
+    if(led_sleep_mode_enabled) {
       internal_clock_enabled = true;
       Sync();
     }
