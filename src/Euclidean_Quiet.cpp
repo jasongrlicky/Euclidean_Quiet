@@ -809,13 +809,13 @@ void Sync() {
       lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
 
       if (channelbeats[a][2] < 8) {
-        for (int c = 0; c < 8; c++) {
+        for (uint8_t c = 0; c < 8; c++) {
           if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
             lc.setLed(LED_ADDR, a * 2, 7 - c, true);
           }
         }
       } else {
-        for (int c = 8; c < 16; c++) {
+        for (uint8_t c = 8; c < 16; c++) {
           if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
             lc.setLed(LED_ADDR, a * 2, 15 - c, true);
           }
