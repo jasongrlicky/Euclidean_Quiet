@@ -15,6 +15,7 @@ extern "C" {
   Changes from official v1.2 firmware:
   - Migrated project to PlatformIO
   - The internal clock no longer starts when the module starts up.
+  - The internal clock no longer starts when the reset button is pressed.
   - Made channel selection easier to see (two dots instead of 4 overlapping)
 */
 
@@ -413,7 +414,6 @@ void loop() {
     reset_timer++;
 
     if(led_sleep_mode_enabled) {
-      internal_clock_enabled = true;
       Sync();
     }
 
