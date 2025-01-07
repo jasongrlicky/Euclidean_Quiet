@@ -670,10 +670,9 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
   unsigned int outbeat;
   uint16_t outbeat2;
   int workbeat_count = n;
-  int a;
   int b;
 
-  for (a = 0; a < n; a++) { // Populate workbeat with unsorted pulses and pauses
+  for (int a = 0; a < n; a++) { // Populate workbeat with unsorted pulses and pauses
     if (a < pulses) {
       workbeat[a] = 1;
     } else {
@@ -682,7 +681,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
   }
 
   if (per_pulse > 0 && remainder < 2) { // Handle easy cases where there is no or only one remainer
-    for (a = 0; a < pulses; a++) {
+    for (int a = 0; a < pulses; a++) {
       for (b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
         workbeat[a] = ConcatBin(workbeat[a], workbeat[b]);
       }
@@ -690,7 +689,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
     }
 
     outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
-    for (a = 0; a < workbeat_count; a++) {
+    for (int a = 0; a < workbeat_count; a++) {
       outbeat = ConcatBin(outbeat, workbeat[a]);
     }
 
@@ -714,7 +713,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
 
       if (groupa > groupb) { // more Group A than Group B
         int a_remainder = groupa - groupb; // what will be left of groupa once groupB is interleaved
-        for (a = 0; a < groupa - a_remainder; a++) { //count through the matching sets of A, ignoring remaindered
+        for (int a = 0; a < groupa - a_remainder; a++) { //count through the matching sets of A, ignoring remaindered
           workbeat[a] = ConcatBin(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
@@ -724,7 +723,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         groupb = a_remainder;
       } else if (groupb > groupa) { // More Group B than Group A
         int b_remainder = groupb - groupa; // what will be left of group once group A is interleaved
-        for (a = workbeat_count - 1; a >= groupa + b_remainder; a--) { //count from right back through the Bs
+        for (int a = workbeat_count - 1; a >= groupa + b_remainder; a--) { //count from right back through the Bs
           workbeat[workbeat_count - a - 1] = ConcatBin(workbeat[workbeat_count - a - 1], workbeat[a]);
 
           trim_count++;
@@ -732,7 +731,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         workbeat_count = workbeat_count - trim_count;
         groupb = b_remainder;
       } else {
-        for (a = 0; a < groupa; a++) {
+        for (int a = 0; a < groupa; a++) {
           workbeat[a] = ConcatBin(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
@@ -744,7 +743,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
     }
 
     outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
-    for (a = 0; a < workbeat_count; a++) {
+    for (int a = 0; a < workbeat_count; a++) {
       outbeat = ConcatBin(outbeat, workbeat[a]);
     }
 
