@@ -602,19 +602,17 @@ void loop() {
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing Pressed. Was 3 in original.
     channelPressedCounter = 0;
-  }
-  if (channel_switch_read > 100 && channel_switch_read < 200) {
+  } else if (channel_switch_read >= 100 && channel_switch_read < 200) {
     channel_switch = 2;					//	Density Pressed. Was 2 in original.
     channelPressedCounter++;
-  }
-  if (channel_switch_read > 200 && channel_switch_read < 400) {
+  } else if (channel_switch_read >= 200 && channel_switch_read < 400) {
     channel_switch = 1;					//	Length Pressed. Was 1 in original.
     channelPressedCounter++;
-  }
-  if (channel_switch_read > 400) {
+  } else {
     channel_switch = 0;					//	Offset Pressed. Was 0 in original.
     channelPressedCounter++;
   }
+
   if (channel_switch != 3 && channelPressedCounter <= 1) {
     active_channel = channel_switch;
     
