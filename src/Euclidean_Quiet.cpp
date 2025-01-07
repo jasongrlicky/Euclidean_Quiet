@@ -597,16 +597,16 @@ void loop() {
   int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
   int channel_switch;
   if (channel_switch_read < 100) {
-    channel_switch = 3;					//	Nothing Pressed. Was 3 in original.
+    channel_switch = 3;					//	Nothing pressed
     channelPressedCounter = 0;
   } else if (channel_switch_read >= 100 && channel_switch_read < 200) {
-    channel_switch = 2;					//	Density Pressed. Was 2 in original.
+    channel_switch = 2;					//	Density pressed
     channelPressedCounter++;
   } else if (channel_switch_read >= 200 && channel_switch_read < 400) {
-    channel_switch = 1;					//	Length Pressed. Was 1 in original.
+    channel_switch = 1;					//	Length pressed
     channelPressedCounter++;
   } else {
-    channel_switch = 0;					//	Offset Pressed. Was 0 in original.
+    channel_switch = 0;					//	Offset pressed
     channelPressedCounter++;
   }
 
