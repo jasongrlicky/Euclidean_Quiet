@@ -828,8 +828,10 @@ void Sync() {
       // draw cursor
       if (channelbeats[a][2] < 8) {
         lc.setLed(LED_ADDR, a * 2 + 1, 7 - channelbeats[a][2], true); // write cursor less than 8
-      } else if (channelbeats[a][2] >= 8 && channelbeats[a][2] < 16) {
-        lc.setLed(LED_ADDR, a * 2 + 1, 15 - channelbeats[a][2], true); // write cursor more than 8
+      } else {
+        if (channelbeats[a][2] < 16) {
+          lc.setLed(LED_ADDR, a * 2 + 1, 15 - channelbeats[a][2], true); // write cursor more than 8
+        }
       }
     }
     
