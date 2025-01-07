@@ -234,24 +234,19 @@ Milliseconds last_logged;
 // Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
 
+int old_total; // For knobs
+int old_pulses; // For knobs
+
+int active_channel = 3; // Which channel is active? zero indexed
+Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
+bool lights_active = false;
 int changes = 0;
 bool led_sleep_mode_enabled = true;
 int masterclock = 0; // Internal clock enable/disable
 
-int old_total; // For knobs
-int old_pulses; // For knobs
-
 int trig_in_value_previous = 0; // For recognizing trigger in rising edges
 int reset_timer = 0;
-
 unsigned long channelPressedCounter = 0;
-
-bool lights_active = false;
-
-Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
-
-int active_channel = 3; // Which channel is active? zero indexed
-
 Milliseconds last_read;
 Milliseconds last_changed;
 int channel_switch;
