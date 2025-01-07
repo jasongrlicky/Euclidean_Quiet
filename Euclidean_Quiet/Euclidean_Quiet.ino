@@ -186,7 +186,6 @@
 #define PIN_IN_CHANNEL_SWITCH A2
 
 // Output pin definitions
-#define PIN_OUT_CHANNEL_BASE 11
 #define PIN_OUT_CHANNEL_1 11
 #define PIN_OUT_CHANNEL_2 12
 #define PIN_OUT_CHANNEL_3 13
@@ -221,10 +220,12 @@
 /* TYPES */
 
 // Indices for individual output channels
-# define CHANNEL_IDX_1 0
-# define CHANNEL_IDX_2 1
-# define CHANNEL_IDX_3 2
-# define CHANNEL_IDX_OFFBEAT 3
+enum Channel {
+  CHANNEL_1 = 0,
+  CHANNEL_2 = 1,
+  CHANNEL_3 = 2,
+  CHANNEL_OFFBEAT = 3
+};
 
 typedef unsigned long Milliseconds;
 
@@ -290,9 +291,45 @@ unsigned long channelPressedCounter = 0;
 bool lights_active = false;
 
 Milliseconds length = 50; // Pulse length, set based on the time since last trigger
-// Uses first 4 bits to store ongoing output pulses
-// The bits are indexed according to their corresponding CHANNEL_IDX_n macro
+
+// Bit flags: Uses 4 least significant bits to store ongoing output pulses.
+// The bits are indexed according to their corresponding Channel enum member.
+//
+// Don't interact with this directly, use output_*() functions instead.
 uint8_t active_output_pulse_flags;
+
+#define output_any_active() (active_output_pulse_flags)
+#define output_set_high(channel) (output_set(channel, true))
+#define output_set_low(channel) (output_set(channel, false))
+
+static inline uint8_t output_pin_from_channel(Channel channel) {
+  switch (channel) {
+    case CHANNEL_1:
+      return PIN_OUT_CHANNEL_1;
+    case CHANNEL_2:
+      return PIN_OUT_CHANNEL_2;
+    case CHANNEL_3:
+      return PIN_OUT_CHANNEL_3;
+    default:
+      return PIN_OUT_OFFBEAT;
+  }
+}
+
+void output_set(Channel channel, bool value) {
+  // Send actual output
+  uint8_t pin = output_pin_from_channel(channel);
+  digitalWrite(pin, (value) ? HIGH : LOW); // pulse out
+
+  // Note if this output is active or not
+  bitWrite(active_output_pulse_flags, channel, value);
+}
+
+void output_clear_all(void) {
+  output_set_low(CHANNEL_1);
+  output_set_low(CHANNEL_2);
+  output_set_low(CHANNEL_3);
+  output_set_low(CHANNEL_OFFBEAT);
+}
 
 int kknob;
 int active_channel = 3; // Which channel is active? zero indexed
@@ -476,13 +513,8 @@ void loop() {
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (active_output_pulse_flags && (time - last_sync > length)) {
-    for (a = 0; a < NUM_CHANNELS; a++) {
-      digitalWrite(PIN_OUT_CHANNEL_BASE + a, LOW);
-    }
-    digitalWrite(PIN_OUT_OFFBEAT, LOW);
-
-    active_output_pulse_flags = 0;
+  if (output_any_active() && (time - last_sync > length)) {
+    output_clear_all();
   }
 
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
@@ -880,7 +912,7 @@ void Sync() {
     
     // turn on pulses on channels where a beat is present
     if (bitRead(generated_rhythms[a], read_head) == 1) {
-      bitSet(active_output_pulse_flags, a);
+      output_set_high(a);
 
       if (a == 0) {
         lc.setLed(LED_ADDR, 7, 5, true);
@@ -896,17 +928,13 @@ void Sync() {
     }
 
     if(a >= 2){
-      for (int i = 0; i < NUM_CHANNELS; i++) {
-        digitalWrite(PIN_OUT_CHANNEL_BASE + i, bitRead(active_output_pulse_flags, i)); // pulse out
-      }
       length = constrain(((time - last_sync) / 5), 2, 5);
       last_sync = time;
     }
 
     // send off pulses to spare output for the first channel
     if (bitRead(generated_rhythms[a], read_head) == 0 && a == 0) { // only relates to first channel
-      digitalWrite(PIN_OUT_OFFBEAT, HIGH); // pulse out
-      bitSet(active_output_pulse_flags, CHANNEL_IDX_OFFBEAT);
+      output_set_high(CHANNEL_OFFBEAT);
       
       lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
       lights_active = true;
