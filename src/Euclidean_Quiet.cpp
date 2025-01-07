@@ -241,7 +241,6 @@ int masterclock = 0; // Internal clock enable/disable
 int old_total; // For knobs
 int old_pulses; // For knobs
 
-int newpulse; // For trigger in
 int oldpulse = 0; // For trigger in
 int reset_timer = 0;
 
@@ -397,7 +396,7 @@ void loop() {
   }
 
   // READ TRIG AND RESET INPUTS
-  newpulse = digitalRead(PIN_IN_TRIG); // Pulse input
+  int newpulse = digitalRead(PIN_IN_TRIG); // Pulse input
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
