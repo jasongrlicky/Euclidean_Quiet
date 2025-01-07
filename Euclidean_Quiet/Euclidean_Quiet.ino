@@ -287,13 +287,12 @@ int reset_timer = 0;
 
 unsigned long channelPressedCounter = 0;
 
-bool pulses_active = false; // Is active while a beat pulse is playing
 bool lights_active = false;
 
 Milliseconds length = 50; // Pulse length, set based on the time since last trigger
 // Uses first 4 bits to store ongoing output pulses
 // The bits are indexed according to their corresponding CHANNEL_IDX_n macro
-uint8_t active_output_pulses;
+uint8_t active_output_pulse_flags;
 
 int kknob;
 int active_channel = 3; // Which channel is active? zero indexed
@@ -477,13 +476,13 @@ void loop() {
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (pulses_active && (time - last_sync > length)) {
+  if (active_output_pulse_flags && (time - last_sync > length)) {
     for (a = 0; a < NUM_CHANNELS; a++) {
       digitalWrite(PIN_OUT_CHANNEL_BASE + a, LOW);
     }
     digitalWrite(PIN_OUT_OFFBEAT, LOW);
-    active_output_pulses = 0;
-    pulses_active = false;
+
+    active_output_pulse_flags = 0;
   }
 
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
@@ -881,7 +880,7 @@ void Sync() {
     
     // turn on pulses on channels where a beat is present
     if (bitRead(generated_rhythms[a], read_head) == 1) {
-      bitSet(active_output_pulses, a);
+      bitSet(active_output_pulse_flags, a);
 
       if (a == 0) {
         lc.setLed(LED_ADDR, 7, 5, true);
@@ -893,13 +892,12 @@ void Sync() {
         lc.setLed(LED_ADDR, 7, 0, true);
       }
 
-      pulses_active = true;
       lights_active = true;
     }
 
     if(a >= 2){
       for (int i = 0; i < NUM_CHANNELS; i++) {
-        digitalWrite(PIN_OUT_CHANNEL_BASE + i, bitRead(active_output_pulses, i)); // pulse out
+        digitalWrite(PIN_OUT_CHANNEL_BASE + i, bitRead(active_output_pulse_flags, i)); // pulse out
       }
       length = constrain(((time - last_sync) / 5), 2, 5);
       last_sync = time;
@@ -908,10 +906,9 @@ void Sync() {
     // send off pulses to spare output for the first channel
     if (bitRead(generated_rhythms[a], read_head) == 0 && a == 0) { // only relates to first channel
       digitalWrite(PIN_OUT_OFFBEAT, HIGH); // pulse out
-      bitSet(active_output_pulses, CHANNEL_IDX_OFFBEAT);
+      bitSet(active_output_pulse_flags, CHANNEL_IDX_OFFBEAT);
       
       lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
-      pulses_active = true;
       lights_active = true;
     }
 
