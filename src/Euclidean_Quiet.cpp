@@ -13,6 +13,7 @@ extern "C" {
   Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
 
   Changes from official v1.2 firmware:
+  - Migrated project to PlatformIO
   - The internal clock no longer starts when the module starts up.
   - Made channel selection easier to see (two dots instead of 4 overlapping)
 */
