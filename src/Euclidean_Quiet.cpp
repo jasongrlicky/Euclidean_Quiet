@@ -252,10 +252,7 @@ bool lights_active = false;
 
 Milliseconds length = 50; // Pulse length, set based on the time since last trigger
 
-int kknob;
 int active_channel = 3; // Which channel is active? zero indexed
-int nknob;
-int oknob;
 
 Milliseconds last_read;
 Milliseconds last_changed;
@@ -495,7 +492,7 @@ void loop() {
   }
 
   // READ K KNOB
-  kknob = encoder_read(EncK);
+  int kknob = encoder_read(EncK);
   if (kknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
@@ -529,7 +526,7 @@ void loop() {
   }
 
   // READ N KNOB
-  nknob = encoder_read(EncN);
+  int nknob = encoder_read(EncN);
   if (channelbeats[active_channel][0] > 16) {
     channelbeats[active_channel][0] = 16;
   }
@@ -580,7 +577,7 @@ void loop() {
   }
 
   // READ O KNOB
-  oknob = encoder_read(EncO);
+  int oknob = encoder_read(EncO);
   if (oknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check o encoder reading to prevent crashes
 
