@@ -1,5 +1,5 @@
-#ifndef OUTPUT_H_INCLUDE
-#define OUTPUT_H_INCLUDE
+#ifndef OUTPUT_H_
+#define OUTPUT_H_
 
 #include <Arduino.h>
 
@@ -13,4 +13,4 @@ void output_clear_all(void);
 
 bool output_any_active(void);
 
-#endif /* OUTPUT_H_INCLUDE */ 
+#endif /* OUTPUT_H_ */ 

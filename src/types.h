@@ -1,5 +1,5 @@
-#ifndef TYPES_H_INCLUDE
-#define TYPES_H_INCLUDE
+#ifndef TYPES_H_
+#define TYPES_H_
 
 // Indices for individual output channels
 typedef enum Channel {
@@ -11,4 +11,4 @@ typedef enum Channel {
 
 typedef unsigned long Milliseconds;
 
-#endif /* TYPES_H_INCLUDE */ 
+#endif /* TYPES_H_ */ 
