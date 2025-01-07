@@ -27,16 +27,4 @@
 // LED Matrix address
 #define LED_ADDR 0
 
-/* SOFTWARE CONSTANTS */
-
-#define NUM_CHANNELS 3
-// Bounds for three channel parameters
-// N: Beat Length
-#define BEAT_LENGTH_MAX 16
-#define BEAT_LENGTH_MIN 1
-// K: Density
-#define BEAT_DENSITY_MIN 0
-// O: Offset
-#define BEAT_OFFSET_MIN 0
-
 #endif /* DEFINES_H_INCLUDE */ 
