@@ -252,6 +252,18 @@ int channel_switch_read;
 
 int btn2holdtimer = 0;
 
+/* INTERNAL */
+
+unsigned int euclid(int n, int k, int o);
+uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length);
+int findlength(unsigned int bnry);
+unsigned int ConcatBin(unsigned int bina, unsigned int binb);
+void Sync();
+int encoder_read(Encoder& enc);
+void wakeanim();
+void sleepanim();
+void startUpOK();
+
 /// Initialize the MAX72XX LED Matrix
 void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
@@ -311,6 +323,8 @@ void io_pins_init(void) {
   pinMode(PIN_OUT_CHANNEL_3, OUTPUT);
   pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 }
+
+/* MAIN */
 
 void setup() {
   led_init();
@@ -820,7 +834,7 @@ void Sync() {
     
     // turn on pulses on channels where a beat is present
     if (bitRead(generated_rhythms[a], read_head) == 1) {
-      output_set_high(a);
+      output_set_high((Channel)a);
 
       if (a == 0) {
         lc.setLed(LED_ADDR, 7, 5, true);
