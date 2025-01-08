@@ -419,11 +419,7 @@ void loop() {
   
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (lights_active && (time - last_sync > output_pulse_length)) {
-    for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-      lc.setLed(LED_ADDR, 7, 5 - (a * 2), false);
-      lc.setLed(LED_ADDR, 7, 4, false); // spare pin flash
-    }
-    lc.setRow(LED_ADDR, 7, 0);
+    lc.setRow(LED_ADDR, 7, 0); // Clear row
     lights_active = false;
   }
 
