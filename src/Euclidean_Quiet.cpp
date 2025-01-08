@@ -242,7 +242,7 @@ int changes = 0;
 bool led_sleep_mode_enabled = true;
 
 int trig_in_value_previous = 0; // For recognizing trigger in rising edges
-int reset_timer = 0;
+bool reset_active = false;
 unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
@@ -387,11 +387,11 @@ void loop() {
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
-  if (reset_timer == 0 && reset_button > 100 && channelbeats[0][2] > 0) {
+  if ((!reset_active) && (reset_button > 100) && (channelbeats[0][2] > 0)) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
-    reset_timer++;
+    reset_active = true;
 
     if(led_sleep_mode_enabled) {
       Sync();
@@ -402,11 +402,11 @@ void loop() {
     #endif
   }
 
-  if (reset_button < 100 && reset_timer > 0) {
-    reset_timer = 0;
+  if (reset_active && (reset_button < 100)) {
+    reset_active = false;
 
     #if LOGGING_ENABLED
-    Serial.println("RESET TIMER ZEROED");      
+    Serial.println("RESET INACTIVE");      
     #endif
   }
 
