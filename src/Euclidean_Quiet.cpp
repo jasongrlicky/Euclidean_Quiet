@@ -16,10 +16,11 @@ extern "C" {
   - Behavior changes:
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
-    - The internal clock no longer restarts when the reset button is pressed.
   - UI Polish:
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping)
+  - Bugs Fixed:
+    - The internal clock no longer restarts when the reset button is pressed.
   - Internal:
     - Migrated firmware project to PlatformIO
 */
