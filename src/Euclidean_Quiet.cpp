@@ -255,6 +255,7 @@ int findlength(unsigned int bnry);
 unsigned int ConcatBin(unsigned int bina, unsigned int binb);
 void Sync();
 int encoder_read(Encoder& enc);
+void active_channel_set(uint8_t channel);
 void led_sleep();
 void led_wake();
 void led_anim_wake();
@@ -594,7 +595,7 @@ void loop() {
   // SELECT ACTIVE CHANNEL
   // Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
   int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH);
-  int channel_switch;
+  uint8_t channel_switch;
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing pressed
     channelPressedCounter = 0;
@@ -610,22 +611,7 @@ void loop() {
   }
 
   if (channel_switch != 3 && channelPressedCounter <= 1) {
-    active_channel = channel_switch;
-    
-    #if LOGGING_ENABLED
-    Serial.print("Active channel: ");
-    Serial.println(active_channel);
-    #endif
-    
-    if (active_channel == 0) {
-      lc.setRow(LED_ADDR, 6, B00000011);
-    } else if (active_channel == 1) {
-      lc.setRow(LED_ADDR, 6, B00011000);
-    } else if (active_channel == 2) {
-      lc.setRow(LED_ADDR, 6, B11000000);
-    } else {
-      lc.setRow(LED_ADDR, 6, false); //clear row
-    }
+    active_channel_set(channel_switch);
   }
 }
 
@@ -869,6 +855,27 @@ int encoder_read(Encoder& enc) {
     enc.write(0);
   }
   return result;
+}
+
+void active_channel_set(uint8_t channel) {
+    // Update state
+    active_channel = channel;
+    
+    #if LOGGING_ENABLED
+    Serial.print("Active channel: ");
+    Serial.println(active_channel);
+    #endif
+    
+    // Update LED Matrix
+    if (channel == 0) {
+      lc.setRow(LED_ADDR, 6, B00000011);
+    } else if (channel == 1) {
+      lc.setRow(LED_ADDR, 6, B00011000);
+    } else if (channel == 2) {
+      lc.setRow(LED_ADDR, 6, B11000000);
+    } else {
+      lc.setRow(LED_ADDR, 6, false); //clear row
+    }
 }
 
 void led_sleep() {
