@@ -437,7 +437,8 @@ void loop() {
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
-    if (changes == 1) {  // 1 = K changes - display beats in the active channel
+    if (changes == 1) {  
+      // 1 = K changes - display beats in the active channel
       for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -446,9 +447,8 @@ void loop() {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
-    }
-
-    if (changes == 2) { // 2 = N changes, display total length of beat
+    } else if (changes == 2) { 
+      // 2 = N changes, display total length of beat
       for (uint8_t a = 0; a < 8; a++) {
         if (a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -457,9 +457,8 @@ void loop() {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
-    }
-
-    if (changes == 3) {  // 3 = Offset changes - display beats in the active channel
+    } else if (changes == 3) {  
+      // 3 = Offset changes - display beats in the active channel
       for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
