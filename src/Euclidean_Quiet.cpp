@@ -13,11 +13,15 @@ extern "C" {
   Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
 
   Changes from official v1.2 firmware:
-  - Migrated project to PlatformIO
-  - The internal clock no longer starts when the module starts up.
-  - The internal clock no longer starts when the reset button is pressed.
-  - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
-  - Made channel selection easier to see (two dots instead of 4 overlapping)
+  - Behavior changes:
+    - Channel 1 is now selected when the module starts up
+    - The internal clock no longer starts when the module starts up.
+    - The internal clock no longer restarts when the reset button is pressed.
+  - UI Polish:
+    - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
+    - Made channel selection easier to see (two dots instead of 4 overlapping)
+  - Internal:
+    - Migrated firmware project to PlatformIO
 */
 
 /* Sebsongs Modular Euclidean v. 1.2. Dec 2 2022.
@@ -339,6 +343,9 @@ void setup() {
   startUpOK();
 
   Sync();
+
+  // Select first channel on startup
+  active_channel_set(0);
 }
 
 void loop() {
