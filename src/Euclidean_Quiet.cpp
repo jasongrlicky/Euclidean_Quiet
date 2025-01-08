@@ -592,8 +592,8 @@ void loop() {
   }
 
   // SELECT ACTIVE CHANNEL
-  //	Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
-  int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH); //channel_switch_read = analogReadFast(PIN_IN_CHANNEL_SWITCH);
+  // Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
+  int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH);
   int channel_switch;
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing pressed
