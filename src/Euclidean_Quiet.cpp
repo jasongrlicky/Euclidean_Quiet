@@ -776,7 +776,7 @@ void Sync() {
     int read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
 
     // don't clear or draw cursor if channel is being changed
-    if (a != active_channel || time - last_changed > ACTIVE_CHANNEL_DISPLAY_TIME) {
+    if (a != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
       lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
 
       if (channelbeats[a][2] < 8) {
