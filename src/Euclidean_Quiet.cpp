@@ -19,7 +19,7 @@ extern "C" {
   - UI Polish:
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
-    - Shortened the time that LEDs stay illuminated when setting pattern length for a channel.
+    - Shortened the time that LEDs stay lit when setting pattern length for a channel.
   - Bugs Fixed:
     - The internal clock no longer restarts when the reset button is pressed.
   - Internal:
