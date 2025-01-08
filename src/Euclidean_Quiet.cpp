@@ -867,15 +867,15 @@ void active_channel_set(uint8_t channel) {
     #endif
     
     // Update LED Matrix
+    uint8_t row_bits = B00000000;
     if (channel == 0) {
-      lc.setRow(LED_ADDR, 6, B00000011);
+      row_bits = B00000011;
     } else if (channel == 1) {
-      lc.setRow(LED_ADDR, 6, B00011000);
+      row_bits = B00011000;
     } else if (channel == 2) {
-      lc.setRow(LED_ADDR, 6, B11000000);
-    } else {
-      lc.setRow(LED_ADDR, 6, false); //clear row
-    }
+      row_bits = B11000000;
+    } 
+    lc.setRow(LED_ADDR, 6, row_bits);
 }
 
 void led_sleep() {
