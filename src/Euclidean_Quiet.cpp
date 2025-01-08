@@ -16,6 +16,7 @@ extern "C" {
   - Migrated project to PlatformIO
   - The internal clock no longer starts when the module starts up.
   - The internal clock no longer starts when the reset button is pressed.
+  - The "Trig" LED indicator now fires every clock pulse instead of alternating ones.
   - Made channel selection easier to see (two dots instead of 4 overlapping)
 */
 
@@ -239,7 +240,6 @@ Milliseconds output_pulse_length = 50; // Pulse length, set based on the time si
 bool lights_active = false;
 int changes = 0;
 bool led_sleep_mode_enabled = true;
-int masterclock = 0; // Internal clock enable/disable
 
 int trig_in_value_previous = 0; // For recognizing trigger in rising edges
 int reset_timer = 0;
@@ -769,19 +769,17 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
   return sum;
 }
 
-// routine triggered by each beat
+// Triggered when clock pulses are received via the "Trig" input or generated 
+// internally
 void Sync() {
   // wake up routine & animation
   if (led_sleep_mode_enabled) {
     led_wake();
   }
 
-  // tick bottom left corner on and off with clock
-  if (masterclock % 2 == 0) {
-    lc.setLed(LED_ADDR, 7, 7, true);
-  } else {
-    lc.setLed(LED_ADDR, 7, 7, false);
-  }
+  // Flash LED in bottom-left corner. It will get turned off with the rest of
+  // the LEDs on the bottom row in the loop() function.
+  lc.setLed(LED_ADDR, 7, 7, true);
 
   // Cycle through channels
   for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
@@ -851,11 +849,6 @@ void Sync() {
     if (channelbeats[a][2] >= channelbeats[a][0]) {
       channelbeats[a][2] = 0;
     }
-  }
-
-  masterclock++;
-  if (masterclock >= 16) {
-    masterclock = 0;
   }
 }
 
