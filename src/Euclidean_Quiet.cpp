@@ -18,11 +18,12 @@ extern "C" {
     - The internal clock no longer starts when the module starts up.
   - UI Polish:
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
-    - Made channel selection easier to see (two dots instead of 4 overlapping)
+    - Made channel selection easier to see (two dots instead of 4 overlapping).
+    - Shortened the time that LEDs stay illuminated when setting pattern length for a channel.
   - Bugs Fixed:
     - The internal clock no longer restarts when the reset button is pressed.
   - Internal:
-    - Migrated firmware project to PlatformIO
+    - Migrated firmware project to PlatformIO.
 */
 
 /* Sebsongs Modular Euclidean v. 1.2. Dec 2 2022.
