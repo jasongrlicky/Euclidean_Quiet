@@ -233,7 +233,7 @@ uint8_t channelbeats[NUM_CHANNELS][5] = {
 }; // 0=n, 1=k, 2 = position , 3 = offset
 
 Milliseconds time;
-Milliseconds last_sync;
+Milliseconds last_clock;
 #if LOGGING_ENABLED
 Milliseconds last_logged;
 #endif
@@ -259,7 +259,7 @@ unsigned int euclid(int n, int k, int o);
 uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length);
 int findlength(unsigned int bnry);
 unsigned int ConcatBin(unsigned int bina, unsigned int binb);
-void Sync();
+void handle_clock();
 int encoder_read(Encoder& enc);
 void active_channel_set(uint8_t channel);
 void led_sleep();
@@ -344,7 +344,7 @@ void setup() {
 
   startUpOK();
 
-  Sync();
+  handle_clock();
 
   // Select first channel on startup
   active_channel_set(0);
@@ -369,8 +369,8 @@ void loop() {
   int active_offset = channelbeats[active_channel][3];
 
   // Internal Clock
-  if (internal_clock_enabled && (time - last_sync > 125)) {
-    Sync();
+  if (internal_clock_enabled && (time - last_clock > 125)) {
+    handle_clock();
   }
 
   // Log parameters at a certain interval
@@ -387,7 +387,7 @@ void loop() {
   #endif
 
   // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
-  if ((!led_sleep_mode_enabled) && (time - last_sync > LED_SLEEP_TIME)) {
+  if ((!led_sleep_mode_enabled) && (time - last_clock > LED_SLEEP_TIME)) {
     led_sleep();
   }
 
@@ -403,7 +403,7 @@ void loop() {
     reset_active = true;
 
     if(led_sleep_mode_enabled) {
-      Sync();
+      handle_clock();
     }
 
     #if LOGGING_ENABLED
@@ -422,18 +422,18 @@ void loop() {
   // TRIG INPUT 
   if (trig_in_value > trig_in_value_previous) { 
     internal_clock_enabled = false; // turn off internal clock if external clock received
-    Sync();
+    handle_clock();
   }
   trig_in_value_previous = trig_in_value;
   
   // TURN OFF ANY LIGHTS THAT ARE ON
-  if (lights_active && (time - last_sync > output_pulse_length)) {
+  if (lights_active && (time - last_clock > output_pulse_length)) {
     lc.setRow(LED_ADDR, 7, 0); // Clear row
     lights_active = false;
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (output_any_active() && (time - last_sync > output_pulse_length)) {
+  if (output_any_active() && (time - last_clock > output_pulse_length)) {
     output_clear_all();
   }
 
@@ -761,7 +761,7 @@ unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
 
 // Triggered when clock pulses are received via the "Trig" input or generated 
 // internally
-void Sync() {
+void handle_clock() {
   // wake up routine & animation
   if (led_sleep_mode_enabled) {
     led_wake();
@@ -822,8 +822,8 @@ void Sync() {
     }
 
     if(a >= 2){
-      output_pulse_length = constrain(((time - last_sync) / 5), 2, 5);
-      last_sync = time;
+      output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
+      last_clock = time;
     }
 
     // send off pulses to spare output for the first channel
