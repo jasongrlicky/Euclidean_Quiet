@@ -821,11 +821,6 @@ void handle_clock() {
       lights_active = true;
     }
 
-    if(a >= 2){
-      output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
-      last_clock = time;
-    }
-
     // send off pulses to spare output for the first channel
     if (bitRead(generated_rhythms[a], read_head) == 0 && a == 0) { // only relates to first channel
       output_set_high(CHANNEL_OFFBEAT);
@@ -840,6 +835,10 @@ void handle_clock() {
       channelbeats[a][2] = 0;
     }
   }
+
+  output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
+
+  last_clock = time;
 }
 
 /* Read an encoder
