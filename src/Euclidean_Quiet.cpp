@@ -369,7 +369,7 @@ void loop() {
   int active_offset = channelbeats[active_channel][3];
 
   // Internal Clock
-  if (internal_clock_enabled && (time - last_clock > 125)) {
+  if (internal_clock_enabled && (time - last_clock > INTERNAL_CLOCK_PERIOD)) {
     handle_clock();
   }
 

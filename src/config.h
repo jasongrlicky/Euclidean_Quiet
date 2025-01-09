@@ -7,5 +7,6 @@
 #define ADJUSTMENT_DISPLAY_TIME 450 // How long adjustments (such as to channel pattern length) are displayed for
 #define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
 #define READ_DELAY 50 // For debouncing
+#define INTERNAL_CLOCK_PERIOD 125 // Milliseconds between internal clock ticks
 
 #endif /* CONFIG_H_ */ 
