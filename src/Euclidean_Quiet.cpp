@@ -643,7 +643,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
   unsigned int outbeat;
   uint16_t outbeat2;
   int workbeat_count = n;
-  int b;
 
   for (int a = 0; a < n; a++) { // Populate workbeat with unsorted pulses and pauses
     if (a < pulses) {
@@ -655,7 +654,7 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
 
   if (per_pulse > 0 && remainder < 2) { // Handle easy cases where there is no or only one remainer
     for (int a = 0; a < pulses; a++) {
-      for (b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
+      for (int b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
         workbeat[a] = ConcatBin(workbeat[a], workbeat[b]);
       }
       workbeat_count = workbeat_count - per_pulse;
