@@ -541,7 +541,7 @@ void loop() {
       channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
     }
 
-    if (active_offset >= active_length + nknob && active_offset >= 0 && active_offset < 16) {// check if new n is lower than o + reduce o if it is
+    if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
       channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
       EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
     }
