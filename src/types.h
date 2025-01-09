@@ -2,12 +2,12 @@
 #define TYPES_H_
 
 // Indices for individual output channels
-typedef enum Channel {
-  CHANNEL_1 = 0,
-  CHANNEL_2 = 1,
-  CHANNEL_3 = 2,
-  CHANNEL_OFFBEAT = 3
-} Channel;
+typedef enum OutputChannel {
+  OUTPUT_CHANNEL_1 = 0,
+  OUTPUT_CHANNEL_2 = 1,
+  OUTPUT_CHANNEL_3 = 2,
+  OUTPUT_CHANNEL_OFFBEAT = 3
+} OutputChannel;
 
 typedef unsigned long Milliseconds;
 

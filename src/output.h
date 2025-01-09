@@ -7,7 +7,7 @@
 
 #define output_set_high(channel) (output_set(channel, true))
 #define output_set_low(channel) (output_set(channel, false))
-void output_set(Channel channel, bool value);
+void output_set(OutputChannel channel, bool value);
 
 void output_clear_all(void);
 

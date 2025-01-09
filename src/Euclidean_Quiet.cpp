@@ -805,7 +805,7 @@ void handle_clock() {
     
     // turn on pulses on channels where a beat is present
     if (bitRead(generated_rhythms[a], read_head) == 1) {
-      output_set_high((Channel)a);
+      output_set_high((OutputChannel)a);
 
       if (a == 0) {
         lc.setLed(LED_ADDR, 7, 5, true);
@@ -822,7 +822,7 @@ void handle_clock() {
 
     // send off pulses to spare output for the first channel
     if (bitRead(generated_rhythms[a], read_head) == 0 && a == 0) { // only relates to first channel
-      output_set_high(CHANNEL_OFFBEAT);
+      output_set_high(OUTPUT_CHANNEL_OFFBEAT);
       
       lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
       lights_active = true;
