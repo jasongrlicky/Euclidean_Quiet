@@ -604,10 +604,10 @@ void loop() {
   if (channel_switch_read < 100) {
     channel_switch = 3;					//	Nothing pressed
     channelPressedCounter = 0;
-  } else if (channel_switch_read >= 100 && channel_switch_read < 200) {
+  } else if (channel_switch_read < 200) {
     channel_switch = 2;					//	Density pressed
     channelPressedCounter++;
-  } else if (channel_switch_read >= 200 && channel_switch_read < 400) {
+  } else if (channel_switch_read < 400) {
     channel_switch = 1;					//	Length pressed
     channelPressedCounter++;
   } else {
