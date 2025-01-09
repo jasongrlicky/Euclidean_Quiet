@@ -27,4 +27,6 @@
 // LED Matrix address
 #define LED_ADDR 0
 
+#define RESET_PIN_THRESHOLD 100
+
 #endif /* HARDWARE_H_ */ 

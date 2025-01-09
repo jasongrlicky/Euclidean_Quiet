@@ -396,7 +396,7 @@ void loop() {
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
-  if ((!reset_active) && (reset_button > 100) && (channelbeats[0][2] > 0)) {
+  if ((!reset_active) && (reset_button > RESET_PIN_THRESHOLD) && (channelbeats[0][2] > 0)) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
@@ -411,7 +411,7 @@ void loop() {
     #endif
   }
 
-  if (reset_active && (reset_button < 100)) {
+  if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
     reset_active = false;
 
     #if LOGGING_ENABLED
