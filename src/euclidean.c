@@ -1,6 +1,6 @@
 #include "euclidean.h"
 
-#include <Arduino.h>
+#include <stdbool.h>
 
 // Euclid calculation function
 // cppcheck-suppress unusedFunction
@@ -110,7 +110,7 @@ int findlength(unsigned int bnry) {
   bool lengthfound = false;
   int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
   for (int q = 32; q >= 0; q--) {
-    int r = bitRead(bnry, q);
+    int r = (bnry >> q) & 0x01;
     if (r == 1 && lengthfound == false) {
       length = q + 1;
       lengthfound = true;
