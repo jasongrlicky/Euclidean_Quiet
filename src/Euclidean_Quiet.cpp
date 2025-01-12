@@ -4,7 +4,7 @@
 
 extern "C" {
 #include "config.h"
-#include "euclidean.h"
+#include <euclidean.h>
 #include "hardware.h"
 #include "output.h"
 #include "types.h"
