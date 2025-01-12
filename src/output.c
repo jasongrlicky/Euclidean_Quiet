@@ -21,6 +21,7 @@ static inline uint8_t output_pin_from_channel(OutputChannel channel) {
   }
 }
 
+// cppcheck-suppress unusedFunction
 void output_set(OutputChannel channel, bool value) {
   // Send actual output
   uint8_t pin = output_pin_from_channel(channel);
@@ -30,6 +31,7 @@ void output_set(OutputChannel channel, bool value) {
   bitWrite(active_output_pulse_flags, channel, value);
 }
 
+// cppcheck-suppress unusedFunction
 void output_clear_all(void) {
   output_set_low(OUTPUT_CHANNEL_1);
   output_set_low(OUTPUT_CHANNEL_2);
@@ -37,6 +39,7 @@ void output_clear_all(void) {
   output_set_low(OUTPUT_CHANNEL_OFFBEAT);
 }
 
+// cppcheck-suppress unusedFunction
 bool output_any_active(void) {
     return active_output_pulse_flags > 0;
 }
