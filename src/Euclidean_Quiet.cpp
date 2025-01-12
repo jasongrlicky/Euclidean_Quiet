@@ -622,17 +622,6 @@ void loop() {
 
 // Euclid calculation function
 unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
-  #if LOGGING_ENABLED
-  Serial.print("ch: ");
-  Serial.print(active_channel);
-  Serial.print(" n: ");
-  Serial.print(n);
-  Serial.print(" k: ");
-  Serial.print(k);
-  Serial.print(" o: ");
-  Serial.println(o);
-  #endif
-
   int pauses = n - k;
   int pulses = k;
   int offset = o;
