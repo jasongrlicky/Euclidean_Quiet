@@ -667,7 +667,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
     }
     int groupa = pulses;
     int groupb = pauses;
-    int iteration = 0;
 
     while (groupb > 1) { //main recursive loop
       int trim_count = 0;
@@ -699,8 +698,6 @@ unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offs
         workbeat_count = workbeat_count - trim_count;
         groupb = 0;
       }
-
-      iteration++;
     }
 
     outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
