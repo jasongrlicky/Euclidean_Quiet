@@ -4,7 +4,7 @@
 
 // Euclid calculation function
 // cppcheck-suppress unusedFunction
-unsigned int euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
+uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
   int pauses = n - k;
   int pulses = k;
   int offset = o;
