@@ -2,6 +2,8 @@
 
 #include <stdbool.h>
 
+#define EUCLIDEAN_MAX_PATTERN_LEN 16
+
 /* INTERNAL */
 
 /// Find the length of a binary number by counting bitwise
@@ -29,6 +31,22 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
 // Euclidean pattern generation function with regressions
 static uint16_t euclidean_pattern_old(uint8_t length, uint8_t density);
 
+/// Populate interval vectors such that they represent a step pattern with 
+/// `density` 1s followed by 0s, until `length`.
+/// @param interval_vectors Array of interval vectors to operate on. Array length must be `length` or more.
+/// @param length Pattern length. Must be greater than zero.
+/// @param density Number of 1s in the represented bit pattern. Must be greater than zero, and less than or equal to `length`.
+static void interval_vectors_init(uint8_t *interval_vectors, uint8_t length, uint8_t density) {
+  // Create ivs before the final one, each having an interval of 1
+  uint8_t idx_of_final_iv = density - 1;
+  for (uint8_t a = 0; a < idx_of_final_iv; a++) { 
+      interval_vectors[a] = 1;
+  }
+
+  // Create the last iv with an interval that matches the remaining number of steps
+  interval_vectors[idx_of_final_iv] = length - idx_of_final_iv;
+}
+
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
@@ -39,11 +57,23 @@ uint16_t euclidean_string(uint8_t length, uint8_t density, uint8_t offset) {
 }
 
 uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
+  if (density == 0) { return 0; }
+  if (length == 0) { return 0; }
+
   // Constraint: density does not exceed length
   density = (length < density) ? length : density;
 
   // Link to original paper:
   // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
+
+  // Sequences are stored as interval-vectors, a concept introduced in the 
+  // original paper. For example, `100100101000` would be stored as an array of 
+  // integers [3, 3, 2, 4].
+  uint8_t interval_vectors[EUCLIDEAN_MAX_PATTERN_LEN];
+  uint8_t interval_vectors_len = length;
+  
+  // Populate interval vectors with 1s followed by 0s
+  interval_vectors_init(&interval_vectors, length, density);
 
   return 0;
 }
