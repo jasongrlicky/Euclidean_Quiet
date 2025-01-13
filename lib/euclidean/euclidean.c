@@ -64,9 +64,6 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   uint8_t per_pulse = pauses / density;
   uint8_t remainder = pauses % density;
 
-  uint16_t outbeat;
-  uint16_t outbeat2;
-
   // Populate workbeat with unsorted pulses and pauses
   uint16_t workbeat[length];
   int workbeat_count = length;
@@ -125,14 +122,14 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     }
   }
 
-  // Concatenate workbeat into outbeat - according to workbeat_count
-  outbeat = 0; 
+  // Concatenate workbeat into result - according to workbeat_count
+  uint16_t result = 0; 
   for (int a = 0; a < workbeat_count; a++) {
-    outbeat = binary_concat(outbeat, workbeat[a]);
+    result = binary_concat(result, workbeat[a]);
   }
 
   // Add offset to the step pattern
-  outbeat2 = pattern_offset(outbeat, length, offset);
+  result = pattern_offset(result, length, offset);
 
-  return outbeat2;
+  return result;
 }
