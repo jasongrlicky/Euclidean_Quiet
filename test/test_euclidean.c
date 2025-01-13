@@ -69,7 +69,7 @@ void test_offset(void) {
 }
 
 void test_offset_beyond_max(void) {
-    TEST_ASSERT_EQUAL_UINT16(0b000011, pattern_offset(0b000011, 6, 32));
+    TEST_ASSERT_EQUAL_UINT16(0b000011, pattern_offset(0b000011, 6, 19));
 }
 
 void test_smoke(void) {
