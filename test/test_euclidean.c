@@ -8,39 +8,34 @@ void setUp(void) { }
 // required on Windows
 void tearDown(void) { }
 
-void test_length_zero(void) {
+void test_euclid_length_zero(void) {
     for (uint8_t density = 0; density < 16; density++) {
-        for (uint8_t offset = 0; offset < 16; offset++) {
-            TEST_ASSERT_EQUAL_UINT16(0, euclidean_rhythm_gen(0, density, offset));
-        }
+        TEST_ASSERT_EQUAL_UINT16(0, euclid(0, density));
     }
 }
 
-void test_length_one(void) {
-    TEST_ASSERT_EQUAL_UINT16(0, euclidean_rhythm_gen(1, 0, 0));
-    TEST_ASSERT_EQUAL_UINT16(1, euclidean_rhythm_gen(1, 1, 0));
+void test_euclid_length_one(void) {
+    TEST_ASSERT_EQUAL_UINT16(0, euclid(1, 0));
+    TEST_ASSERT_EQUAL_UINT16(1, euclid(1, 1));
 }
 
-void test_density_zero(void) {
+void test_euclid_density_zero(void) {
     for (uint8_t length = 0; length < 16; length++) {
-        for (uint8_t offset = 0; offset < 16; offset++) {
-            TEST_ASSERT_EQUAL_UINT16(0, euclidean_rhythm_gen(length, 0, offset));
-        }
+        TEST_ASSERT_EQUAL_UINT16(0, euclid(length, 0));
     }
 }
 
-void test_density_max(void) {
+void test_euclid_density_max(void) {
     for (uint8_t length = 1; length < 16; length++) {
-        for (uint8_t offset = 0; offset < length; offset++) {
-            TEST_ASSERT_EQUAL_UINT16((1 << length) - 1, euclidean_rhythm_gen(length, 16, offset));
-        }
+        uint16_t expected = (1 << length) - 1;
+        TEST_ASSERT_EQUAL_UINT16(expected, euclid(length, 16));
     }
 }
 
 void test_offset(void) {
     for (uint8_t offset = 0; offset < 16; offset++) {
         uint16_t expected = 0x01 << (15 - offset);
-        TEST_ASSERT_EQUAL_UINT16(expected, euclidean_rhythm_gen(16, 1, offset));
+        TEST_ASSERT_EQUAL_UINT16(expected, pattern_offset(0b1000000000000000, 16, offset));
     }
 }
 
@@ -68,10 +63,10 @@ void test_smoke(void) {
 int main( int argc, char **argv) {
     UNITY_BEGIN();
 
-    RUN_TEST(test_length_zero);
-    RUN_TEST(test_length_one);
-    RUN_TEST(test_density_zero);
-    RUN_TEST(test_density_max);
+    RUN_TEST(test_euclid_length_zero);
+    RUN_TEST(test_euclid_length_one);
+    RUN_TEST(test_euclid_density_zero);
+    RUN_TEST(test_euclid_density_max);
     RUN_TEST(test_offset);
     RUN_TEST(test_smoke);
 
