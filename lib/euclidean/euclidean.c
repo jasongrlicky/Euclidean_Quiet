@@ -78,16 +78,16 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   }
 
   uint8_t pauses = length - density;
-  uint8_t per_pulse = pauses / density;
+  uint8_t pauses_per_pulse = pauses / density;
   uint8_t remainder = pauses % density;
-  if (per_pulse > 0 && remainder < 2) { 
+  if (pauses_per_pulse > 0 && remainder < 2) { 
     // Easy case, when there is a 0 or 1 remainder
 
     for (uint8_t a = 0; a < density; a++) {
-      for (uint8_t b = bit_sequences_len - 1; b > bit_sequences_len - per_pulse - 1; b--) {
+      for (uint8_t b = bit_sequences_len - 1; b > bit_sequences_len - pauses_per_pulse - 1; b--) {
         bit_sequences[a] = binary_concat(bit_sequences[a], bit_sequences[b]);
       }
-      bit_sequences_len = bit_sequences_len - per_pulse;
+      bit_sequences_len = bit_sequences_len - pauses_per_pulse;
     }
   } else {
     if (density == 0) {
