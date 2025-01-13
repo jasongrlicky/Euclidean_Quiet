@@ -85,18 +85,18 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     if (density == 0) {
       density = 1;  //	Prevent crashes when density=0 and length goes from 0 to 1
     }
-    int groupa = density;
-    int groupb = pauses;
+    uint8_t groupa = density;
+    uint8_t groupb = pauses;
 
     // Main loop
     while (groupb > 1) { 
-      int trim_count = 0;
+      uint8_t trim_count = 0;
 
       if (groupa > groupb) { 
-        int a_remainder = groupa - groupb; // What will be left of groupa once group B is interleaved
+        uint8_t a_remainder = groupa - groupb; // What will be left of groupa once group B is interleaved
 
         // Count through the matching sets of A, ignoring remaindered
-        for (int a = 0; a < groupa - a_remainder; a++) {
+        for (uint8_t a = 0; a < groupa - a_remainder; a++) {
           workbeat[a] = binary_concat(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
@@ -105,10 +105,10 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
         groupa = groupb;
         groupb = a_remainder;
       } else if (groupb > groupa) {
-        int b_remainder = groupb - groupa; // What will be left of group once group A is interleaved
+        uint8_t b_remainder = groupb - groupa; // What will be left of group once group A is interleaved
 
         // Count from right back through the Bs
-        for (int a = workbeat_count - 1; a >= groupa + b_remainder; a--) {
+        for (uint8_t a = workbeat_count - 1; a >= groupa + b_remainder; a--) {
           workbeat[workbeat_count - a - 1] = binary_concat(workbeat[workbeat_count - a - 1], workbeat[a]);
 
           trim_count++;
@@ -117,11 +117,12 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
 
         groupb = b_remainder;
       } else {
-        for (int a = 0; a < groupa; a++) {
+        for (uint8_t a = 0; a < groupa; a++) {
           workbeat[a] = binary_concat(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
         workbeat_count = workbeat_count - trim_count;
+
         groupb = 0;
       }
     }
@@ -129,7 +130,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
 
   // Concatenate workbeat into result - according to workbeat_count
   uint16_t result = 0; 
-  for (int a = 0; a < workbeat_count; a++) {
+  for (uint8_t a = 0; a < workbeat_count; a++) {
     result = binary_concat(result, workbeat[a]);
   }
 
