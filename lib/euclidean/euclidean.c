@@ -3,6 +3,8 @@
 #include <stdbool.h>
 
 // Euclid calculation function
+/// Returns a 16-step Euclidean rhythm in the form of a bit flag (beat flag?)
+//
 // cppcheck-suppress unusedFunction
 uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
   int pauses = n - k;
