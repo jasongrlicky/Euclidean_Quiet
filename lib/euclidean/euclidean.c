@@ -54,7 +54,11 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
 
 // cppcheck-suppress unusedFunction
 uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
-  uint8_t pauses = (length >= density) ? length - density : 0;
+  // Constraint: density and offset do not exceed length
+  density = (length < density) ? length : density;
+  offset = (length < offset) ? length : offset;
+
+  uint8_t pauses = (length > density) ? length - density : 0;
   uint8_t per_pulse = pauses / density;
   uint8_t remainder = pauses % density;
 

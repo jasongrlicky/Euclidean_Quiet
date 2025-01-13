@@ -7,7 +7,7 @@
 /// Generates a Euclidean rhythm pattern up to 16 steps in length.
 /// @param length Number of total steps in the pattern.
 /// @param density Number of active steps in the pattern.
-/// @param offset: Rotation of the pattern to the right. May not exceed length.
+/// @param offset: Rotation of the pattern to the right.
 /// @returns Pattern in the form of a bit flag (beat flag?)
 uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset);
 
