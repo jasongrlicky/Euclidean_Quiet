@@ -128,7 +128,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     result = binary_concat(result, workbeat[a]);
   }
 
-  // Add offset to the step pattern
+  // Offset the step pattern
   result = pattern_offset(result, length, offset);
 
   return result;
