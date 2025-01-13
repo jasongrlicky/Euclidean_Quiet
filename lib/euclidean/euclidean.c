@@ -29,7 +29,7 @@ static uint16_t pattern_offset(uint16_t pattern, uint8_t pattern_len, uint8_t of
 }
 
 /// Find the length of a binary number by counting bitwise
-static int binary_count_digits(unsigned int bnry) {
+static uint8_t binary_count_digits(unsigned int bnry) {
   bool lengthfound = false;
   int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
   for (int q = 32; q >= 0; q--) {
@@ -44,7 +44,7 @@ static int binary_count_digits(unsigned int bnry) {
 
 /// Concatenate two binary numbers bitwise
 static unsigned int binary_concat(unsigned int bina, unsigned int binb) {
-  int binb_len = binary_count_digits(binb);
+  uint8_t binb_len = binary_count_digits(binb);
   unsigned int sum = (bina << binb_len);
   sum = sum | binb;
   return sum;
