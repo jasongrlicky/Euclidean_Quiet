@@ -58,7 +58,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   density = (length < density) ? length : density;
   offset = (length < offset) ? length : offset;
 
-  uint8_t pauses = (length > density) ? length - density : 0;
+  uint8_t pauses = length - density;
   uint8_t per_pulse = pauses / density;
   uint8_t remainder = pauses % density;
 
