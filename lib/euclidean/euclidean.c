@@ -6,7 +6,7 @@
 
 /// Right-rotate the pattern of the given length pattern_length by the given
 /// ofset, wrapping around.
-static uint16_t pattern_offset(uint16_t pattern, uint8_t pattern_len, int offset) {
+static uint16_t pattern_offset(uint16_t pattern, uint8_t pattern_len, uint8_t offset) {
   uint16_t mask = ((1 << pattern_len) - 1);
   pattern &= mask;
   return ((pattern >> offset) | (pattern << (pattern_len - offset))) & mask;
