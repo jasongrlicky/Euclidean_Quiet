@@ -6,7 +6,7 @@
 
 /// Right-rotate the pattern in value of length pattern_length by shift number 
 /// of steps, wrapping around.
-static uint16_t pattern_shift_right(int shift, uint16_t value, uint8_t pattern_length) {
+static uint16_t pattern_shift_right(uint16_t value, uint8_t pattern_length, int shift) {
   uint16_t mask = ((1 << pattern_length) - 1);
   value &= mask;
   return ((value >> shift) | (value << (pattern_length - shift))) & mask;
@@ -71,7 +71,7 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
     }
 
     if (offset > 0) {
-      outbeat2 = pattern_shift_right(offset, outbeat, steps); // Add offset to the step pattern
+      outbeat2 = pattern_shift_right(outbeat, steps, offset); // Add offset to the step pattern
     } else {
       outbeat2 = outbeat;
     }
@@ -122,7 +122,7 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
     }
 
     if (offset > 0) {
-      outbeat2 = pattern_shift_right(offset, outbeat, steps); // Add offset to the step pattern
+      outbeat2 = pattern_shift_right(outbeat, steps, offset); // Add offset to the step pattern
     } else {
       outbeat2 = outbeat;
     }
