@@ -70,7 +70,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   }
 
   if (per_pulse > 0 && remainder < 2) { 
-    // Handle easy cases where there is no or only one remainer
+    // Handle easy case, when there is a 0 or 1 remainder
 
     for (int a = 0; a < density; a++) {
       for (int b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
