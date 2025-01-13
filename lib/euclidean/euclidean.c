@@ -80,7 +80,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   uint8_t pauses = length - density;
   uint8_t pauses_per_pulse = pauses / density;
   uint8_t remainder = pauses % density;
-  if (pauses_per_pulse > 0 && remainder < 2) { 
+  if ((pauses_per_pulse > 0) && (remainder < 2)) { 
     // Easy case, when there is a 0 or 1 remainder
 
     for (uint8_t a = 0; a < density; a++) {
