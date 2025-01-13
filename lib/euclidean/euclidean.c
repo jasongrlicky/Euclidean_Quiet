@@ -37,7 +37,7 @@ uint16_t euclidean_string(uint8_t length, uint8_t density, uint8_t offset) {
 
 // cppcheck-suppress unusedFunction
 uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
-  // Constraint: density and offset do not exceed length
+  // Constraint: density does not exceed length
   density = (length < density) ? length : density;
 
   // Link to original paper:
