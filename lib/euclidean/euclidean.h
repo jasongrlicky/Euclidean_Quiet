@@ -9,6 +9,6 @@
 /// @param density Number of active steps in the pattern.
 /// @param offset: Rotation of the pattern to the right. May not exceed length.
 /// @returns Pattern in the form of a bit flag (beat flag?)
-uint16_t euclid(int length, int density, int offset);
+uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset);
 
 #endif /* EUCLIDEAN_H_ */ 
