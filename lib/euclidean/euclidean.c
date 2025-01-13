@@ -63,10 +63,6 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   // Link to original paper:
   // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
 
-  uint8_t pauses = length - density;
-  uint8_t per_pulse = pauses / density;
-  uint8_t remainder = pauses % density;
-
   // Stores the sequences that are rearranged and concatenated to form the final
   // Euclidean rhythm pattern.
   //
@@ -81,6 +77,9 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     bit_sequences[a] = bit;
   }
 
+  uint8_t pauses = length - density;
+  uint8_t per_pulse = pauses / density;
+  uint8_t remainder = pauses % density;
   if (per_pulse > 0 && remainder < 2) { 
     // Easy case, when there is a 0 or 1 remainder
 
