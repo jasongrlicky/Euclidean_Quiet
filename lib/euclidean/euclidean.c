@@ -6,10 +6,10 @@
 
 /// Right-rotate the pattern in value of length pattern_length by shift number 
 /// of steps, wrapping around.
-static uint16_t pattern_shift_right(uint16_t value, uint8_t pattern_length, int shift) {
-  uint16_t mask = ((1 << pattern_length) - 1);
-  value &= mask;
-  return ((value >> shift) | (value << (pattern_length - shift))) & mask;
+static uint16_t pattern_shift_right(uint16_t pattern, uint8_t pattern_len, int offset) {
+  uint16_t mask = ((1 << pattern_len) - 1);
+  pattern &= mask;
+  return ((pattern >> offset) | (pattern << (pattern_len - offset))) & mask;
 }
 
 /// Find the length of a binary number by counting bitwise
