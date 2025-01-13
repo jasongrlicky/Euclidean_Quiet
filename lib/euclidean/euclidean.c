@@ -56,6 +56,9 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
 
 // cppcheck-suppress unusedFunction
 uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
+  // Link to original paper:
+  // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
+
   // Constraint: density and offset do not exceed length
   density = (length < density) ? length : density;
   offset = (length < offset) ? length : offset;
