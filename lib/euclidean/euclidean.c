@@ -55,17 +55,15 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
 // cppcheck-suppress unusedFunction
 uint16_t euclid(int length, int density, int offset) {
   int pauses = length - density;
-  int pulses = density;
-  int steps = length;
   int per_pulse = pauses / density;
-  int remainder = pauses % pulses;
+  int remainder = pauses % density;
   unsigned int workbeat[length];
   unsigned int outbeat;
   uint16_t outbeat2;
   int workbeat_count = length;
 
   for (int a = 0; a < length; a++) { // Populate workbeat with unsorted pulses and pauses
-    if (a < pulses) {
+    if (a < density) {
       workbeat[a] = 1;
     } else {
       workbeat[a] = 0;
@@ -73,7 +71,7 @@ uint16_t euclid(int length, int density, int offset) {
   }
 
   if (per_pulse > 0 && remainder < 2) { // Handle easy cases where there is no or only one remainer
-    for (int a = 0; a < pulses; a++) {
+    for (int a = 0; a < density; a++) {
       for (int b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
         workbeat[a] = binary_concat(workbeat[a], workbeat[b]);
       }
@@ -86,17 +84,17 @@ uint16_t euclid(int length, int density, int offset) {
     }
 
     if (offset > 0) {
-      outbeat2 = pattern_offset(outbeat, steps, offset); // Add offset to the step pattern
+      outbeat2 = pattern_offset(outbeat, length, offset); // Add offset to the step pattern
     } else {
       outbeat2 = outbeat;
     }
 
     return outbeat2;
   } else {
-    if (pulses == 0) {
-      pulses = 1;  //	Prevent crashes when density=0 and length goes from 0 to 1
+    if (density == 0) {
+      density = 1;  //	Prevent crashes when density=0 and length goes from 0 to 1
     }
-    int groupa = pulses;
+    int groupa = density;
     int groupb = pauses;
 
     while (groupb > 1) { //main recursive loop
@@ -137,7 +135,7 @@ uint16_t euclid(int length, int density, int offset) {
     }
 
     if (offset > 0) {
-      outbeat2 = pattern_offset(outbeat, steps, offset); // Add offset to the step pattern
+      outbeat2 = pattern_offset(outbeat, length, offset); // Add offset to the step pattern
     } else {
       outbeat2 = outbeat;
     }
