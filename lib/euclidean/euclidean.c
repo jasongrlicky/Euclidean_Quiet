@@ -4,14 +4,15 @@
 
 /* INTERNAL */
 
-// Function to right rotate n by d bits
+/// Right-rotate the pattern in value of length pattern_length by shift number 
+/// of steps, wrapping around.
 static uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length) {
   uint16_t mask = ((1 << pattern_length) - 1);
   value &= mask;
   return ((value >> shift) | (value << (pattern_length - shift))) & mask;
 }
 
-// Function to find the binary length of a number by counting bitwise
+/// Find the length of a binary number by counting bitwise
 static int findlength(unsigned int bnry) {
   bool lengthfound = false;
   int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
@@ -25,7 +26,7 @@ static int findlength(unsigned int bnry) {
   return length;
 }
 
-// Function to concatenate two binary numbers bitwise
+/// Concatenate two binary numbers bitwise
 static unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
   int binb_len = findlength(binb);
   unsigned int sum = (bina << binb_len);
