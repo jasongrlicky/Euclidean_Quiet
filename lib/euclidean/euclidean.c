@@ -63,18 +63,18 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   // Link to original paper:
   // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
 
-  // Stores the sequences that are rearranged and concatenated to form the final
-  // Euclidean rhythm pattern.
+  // Stores the sequences of bits that are rearranged and concatenated to form 
+  // the final Euclidean rhythm pattern.
   //
   // The length of each bit sequence is not stored, because the leftmost digit
   // is always 1, and the length is recalculated every time it is needed.
-  uint16_t bit_sequences[length];
-  uint8_t bit_sequences_len = length;
+  uint16_t sequences[length];
+  uint8_t sequences_len = length;
   
-  // Populate bit_sequences with sequences of length 1 unsorted pulses and pauses
+  // Populate sequences with sequences of length 1 unsorted pulses and pauses
   for (uint8_t a = 0; a < length; a++) { 
     bool bit = (a < density);
-    bit_sequences[a] = bit;
+    sequences[a] = bit;
   }
 
   uint8_t pauses = length - density;
@@ -84,10 +84,10 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     // Easy case, when there is a 0 or 1 remainder
 
     for (uint8_t a = 0; a < density; a++) {
-      for (uint8_t b = bit_sequences_len - 1; b > bit_sequences_len - pauses_per_pulse - 1; b--) {
-        bit_sequences[a] = binary_concat(bit_sequences[a], bit_sequences[b]);
+      for (uint8_t b = sequences_len - 1; b > sequences_len - pauses_per_pulse - 1; b--) {
+        sequences[a] = binary_concat(sequences[a], sequences[b]);
       }
-      bit_sequences_len = bit_sequences_len - pauses_per_pulse;
+      sequences_len = sequences_len - pauses_per_pulse;
     }
   } else {
     if (density == 0) {
@@ -105,10 +105,10 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
 
         // Count through the matching sets of A, ignoring remaindered
         for (uint8_t a = 0; a < groupa - a_remainder; a++) {
-          bit_sequences[a] = binary_concat(bit_sequences[a], bit_sequences[bit_sequences_len - 1 - a]);
+          sequences[a] = binary_concat(sequences[a], sequences[sequences_len - 1 - a]);
           trim_count++;
         }
-        bit_sequences_len = bit_sequences_len - trim_count;
+        sequences_len = sequences_len - trim_count;
 
         groupa = groupb;
         groupb = a_remainder;
@@ -116,30 +116,30 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
         uint8_t b_remainder = groupb - groupa; // What will be left of group once group A is interleaved
 
         // Count from right back through the Bs
-        for (uint8_t a = bit_sequences_len - 1; a >= groupa + b_remainder; a--) {
-          bit_sequences[bit_sequences_len - a - 1] = binary_concat(bit_sequences[bit_sequences_len - a - 1], bit_sequences[a]);
+        for (uint8_t a = sequences_len - 1; a >= groupa + b_remainder; a--) {
+          sequences[sequences_len - a - 1] = binary_concat(sequences[sequences_len - a - 1], sequences[a]);
 
           trim_count++;
         }
-        bit_sequences_len = bit_sequences_len - trim_count;
+        sequences_len = sequences_len - trim_count;
 
         groupb = b_remainder;
       } else {
         for (uint8_t a = 0; a < groupa; a++) {
-          bit_sequences[a] = binary_concat(bit_sequences[a], bit_sequences[bit_sequences_len - 1 - a]);
+          sequences[a] = binary_concat(sequences[a], sequences[sequences_len - 1 - a]);
           trim_count++;
         }
-        bit_sequences_len = bit_sequences_len - trim_count;
+        sequences_len = sequences_len - trim_count;
 
         groupb = 0;
       }
     }
   }
 
-  // Concatenate bit_sequences into result - according to bit_sequences_len
+  // Concatenate sequences into result - according to sequences_len
   uint16_t result = 0; 
-  for (uint8_t a = 0; a < bit_sequences_len; a++) {
-    result = binary_concat(result, bit_sequences[a]);
+  for (uint8_t a = 0; a < sequences_len; a++) {
+    result = binary_concat(result, sequences[a]);
   }
 
   // Offset the step pattern
