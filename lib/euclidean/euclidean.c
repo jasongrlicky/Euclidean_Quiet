@@ -26,17 +26,29 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
   return sum;
 }
 
+// Euclidean pattern generation function with regressions
+static uint16_t euclidean_pattern_old(uint8_t length, uint8_t density);
+
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
 uint16_t euclidean_string(uint8_t length, uint8_t density, uint8_t offset) {
-  uint16_t pattern = euclidean_pattern(length, density);
+  uint16_t pattern = euclidean_pattern_old(length, density);
   pattern = pattern_rotate(pattern, length, offset);
   return pattern;
 }
 
-// cppcheck-suppress unusedFunction
 uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
+  // Constraint: density does not exceed length
+  density = (length < density) ? length : density;
+
+  // Link to original paper:
+  // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
+
+  return 0;
+}
+
+static uint16_t euclidean_pattern_old(uint8_t length, uint8_t density) {
   // Constraint: density does not exceed length
   density = (length < density) ? length : density;
 
