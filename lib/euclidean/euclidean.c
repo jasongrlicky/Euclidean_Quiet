@@ -43,9 +43,9 @@ static uint8_t binary_count_digits(unsigned int bnry) {
 }
 
 /// Concatenate two binary numbers bitwise
-static unsigned int binary_concat(unsigned int bina, unsigned int binb) {
+static uint16_t binary_concat(uint16_t bina, uint16_t binb) {
   uint8_t binb_len = binary_count_digits(binb);
-  unsigned int sum = (bina << binb_len);
+  uint16_t sum = (bina << binb_len);
   sum = sum | binb;
   return sum;
 }
