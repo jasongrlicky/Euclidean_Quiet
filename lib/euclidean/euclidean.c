@@ -88,7 +88,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     int groupa = density;
     int groupb = pauses;
 
-    // Main recursive loop
+    // Main loop
     while (groupb > 1) { 
       int trim_count = 0;
 
