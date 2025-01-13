@@ -76,7 +76,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   }
 
   if (per_pulse > 0 && remainder < 2) { 
-    // Handle easy case, when there is a 0 or 1 remainder
+    // Easy case, when there is a 0 or 1 remainder
 
     for (uint8_t a = 0; a < density; a++) {
       for (uint8_t b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
@@ -84,16 +84,6 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
       }
       workbeat_count = workbeat_count - per_pulse;
     }
-
-    outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
-    for (uint8_t a = 0; a < workbeat_count; a++) {
-      outbeat = binary_concat(outbeat, workbeat[a]);
-    }
-
-    // Add offset to the step pattern
-    outbeat2 = pattern_offset(outbeat, length, offset); 
-
-    return outbeat2;
   } else {
     if (density == 0) {
       density = 1;  //	Prevent crashes when density=0 and length goes from 0 to 1
@@ -133,16 +123,16 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
         groupb = 0;
       }
     }
-
-    // Concatenate workbeat into outbeat - according to workbeat_count
-    outbeat = 0; 
-    for (int a = 0; a < workbeat_count; a++) {
-      outbeat = binary_concat(outbeat, workbeat[a]);
-    }
-
-    // Add offset to the step pattern
-    outbeat2 = pattern_offset(outbeat, length, offset);
-
-    return outbeat2;
   }
+
+  // Concatenate workbeat into outbeat - according to workbeat_count
+  outbeat = 0; 
+  for (int a = 0; a < workbeat_count; a++) {
+    outbeat = binary_concat(outbeat, workbeat[a]);
+  }
+
+  // Add offset to the step pattern
+  outbeat2 = pattern_offset(outbeat, length, offset);
+
+  return outbeat2;
 }
