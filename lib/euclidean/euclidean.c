@@ -62,7 +62,8 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   uint16_t outbeat2;
   int workbeat_count = length;
 
-  for (int a = 0; a < length; a++) { // Populate workbeat with unsorted pulses and pauses
+  // Populate workbeat with unsorted pulses and pauses
+  for (int a = 0; a < length; a++) { 
     if (a < density) {
       workbeat[a] = 1;
     } else {
@@ -70,7 +71,9 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     }
   }
 
-  if (per_pulse > 0 && remainder < 2) { // Handle easy cases where there is no or only one remainer
+  if (per_pulse > 0 && remainder < 2) { 
+    // Handle easy cases where there is no or only one remainer
+
     for (int a = 0; a < density; a++) {
       for (int b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
         workbeat[a] = binary_concat(workbeat[a], workbeat[b]);
@@ -97,10 +100,11 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
     int groupa = density;
     int groupb = pauses;
 
-    while (groupb > 1) { //main recursive loop
+    // Main recursive loop
+    while (groupb > 1) { 
       int trim_count = 0;
 
-      if (groupa > groupb) { // more Group A than Group B
+      if (groupa > groupb) { 
         int a_remainder = groupa - groupb; // what will be left of groupa once groupB is interleaved
         for (int a = 0; a < groupa - a_remainder; a++) { //count through the matching sets of A, ignoring remaindered
           workbeat[a] = binary_concat(workbeat[a], workbeat[workbeat_count - 1 - a]);
@@ -110,7 +114,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
 
         groupa = groupb;
         groupb = a_remainder;
-      } else if (groupb > groupa) { // More Group B than Group A
+      } else if (groupb > groupa) {
         int b_remainder = groupb - groupa; // what will be left of group once group A is interleaved
         for (int a = workbeat_count - 1; a >= groupa + b_remainder; a--) { //count from right back through the Bs
           workbeat[workbeat_count - a - 1] = binary_concat(workbeat[workbeat_count - a - 1], workbeat[a]);
@@ -129,13 +133,15 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
       }
     }
 
-    outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
+    // Concatenate workbeat into outbeat - according to workbeat_count
+    outbeat = 0; 
     for (int a = 0; a < workbeat_count; a++) {
       outbeat = binary_concat(outbeat, workbeat[a]);
     }
 
     if (offset > 0) {
-      outbeat2 = pattern_offset(outbeat, length, offset); // Add offset to the step pattern
+      // Add offset to the step pattern
+      outbeat2 = pattern_offset(outbeat, length, offset);
     } else {
       outbeat2 = outbeat;
     }
