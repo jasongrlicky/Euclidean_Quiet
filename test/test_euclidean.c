@@ -24,11 +24,20 @@ void test_zero_density(void) {
     }
 }
 
+void test_max_density(void) {
+    for (uint8_t length = 1; length < 16; length++) {
+        for (uint8_t offset = 0; offset < length; offset++) {
+            TEST_ASSERT_EQUAL_UINT16((1 << length) - 1, euclid(length, 16, offset));
+        }
+    }
+}
+
 int main( int argc, char **argv) {
     UNITY_BEGIN();
 
     RUN_TEST(test_zero_length);
     RUN_TEST(test_zero_density);
+    RUN_TEST(test_max_density);
 
     UNITY_END();
 }
