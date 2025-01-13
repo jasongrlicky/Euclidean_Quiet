@@ -68,6 +68,10 @@ void test_offset(void) {
     }
 }
 
+void test_offset_beyond_max(void) {
+    TEST_ASSERT_EQUAL_UINT16(0b000011, pattern_offset(0b000011, 6, 32));
+}
+
 void test_smoke(void) {
     // Just a bunch of patterns
     TEST_ASSERT_EQUAL_UINT16(0b1010, euclidean_rhythm_gen(4, 2, 0));
@@ -98,6 +102,7 @@ int main( int argc, char **argv) {
     RUN_TEST(test_euclid_density_max);
     RUN_TEST(test_euclid_smoke);
     RUN_TEST(test_offset);
+    RUN_TEST(test_offset_beyond_max);
     RUN_TEST(test_smoke);
 
     UNITY_END();
