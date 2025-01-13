@@ -2,6 +2,39 @@
 
 #include <stdbool.h>
 
+/* INTERNAL */
+
+// Function to right rotate n by d bits
+static uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length) {
+  uint16_t mask = ((1 << pattern_length) - 1);
+  value &= mask;
+  return ((value >> shift) | (value << (pattern_length - shift))) & mask;
+}
+
+// Function to find the binary length of a number by counting bitwise
+static int findlength(unsigned int bnry) {
+  bool lengthfound = false;
+  int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
+  for (int q = 32; q >= 0; q--) {
+    int r = (bnry >> q) & 0x01;
+    if (r == 1 && lengthfound == false) {
+      length = q + 1;
+      lengthfound = true;
+    }
+  }
+  return length;
+}
+
+// Function to concatenate two binary numbers bitwise
+static unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
+  int binb_len = findlength(binb);
+  unsigned int sum = (bina << binb_len);
+  sum = sum | binb;
+  return sum;
+}
+
+/* EXTERNAL */
+
 // cppcheck-suppress unusedFunction
 uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
   int pauses = n - k;
@@ -95,33 +128,4 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
 
     return outbeat2;
   }
-}
-
-// Function to right rotate n by d bits
-uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length) {
-  uint16_t mask = ((1 << pattern_length) - 1);
-  value &= mask;
-  return ((value >> shift) | (value << (pattern_length - shift))) & mask;
-}
-
-// Function to find the binary length of a number by counting bitwise
-int findlength(unsigned int bnry) {
-  bool lengthfound = false;
-  int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
-  for (int q = 32; q >= 0; q--) {
-    int r = (bnry >> q) & 0x01;
-    if (r == 1 && lengthfound == false) {
-      length = q + 1;
-      lengthfound = true;
-    }
-  }
-  return length;
-}
-
-// Function to concatenate two binary numbers bitwise
-unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
-  int binb_len = findlength(binb);
-  unsigned int sum = (bina << binb_len);
-  sum = sum | binb;
-  return sum;
 }
