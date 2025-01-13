@@ -57,10 +57,12 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   int pauses = length - density;
   int per_pulse = pauses / density;
   int remainder = pauses % density;
+
   uint16_t workbeat[length];
+  int workbeat_count = length;
+
   uint16_t outbeat;
   uint16_t outbeat2;
-  int workbeat_count = length;
 
   // Populate workbeat with unsorted pulses and pauses
   for (int a = 0; a < length; a++) { 
