@@ -7,6 +7,8 @@
 /// Right-rotate the pattern of the given length pattern_length by the given
 /// offset, wrapping around.
 static uint16_t pattern_offset(uint16_t pattern, uint8_t pattern_len, uint8_t offset) {
+  if (offset == 0) { return pattern; }
+
   // Create a mask of all 1s that is pattern_len long
   uint16_t mask = ((1 << pattern_len) - 1);
 
@@ -88,11 +90,8 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
       outbeat = binary_concat(outbeat, workbeat[a]);
     }
 
-    if (offset > 0) {
-      outbeat2 = pattern_offset(outbeat, length, offset); // Add offset to the step pattern
-    } else {
-      outbeat2 = outbeat;
-    }
+    // Add offset to the step pattern
+    outbeat2 = pattern_offset(outbeat, length, offset); 
 
     return outbeat2;
   } else {
@@ -141,12 +140,8 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
       outbeat = binary_concat(outbeat, workbeat[a]);
     }
 
-    if (offset > 0) {
-      // Add offset to the step pattern
-      outbeat2 = pattern_offset(outbeat, length, offset);
-    } else {
-      outbeat2 = outbeat;
-    }
+    // Add offset to the step pattern
+    outbeat2 = pattern_offset(outbeat, length, offset);
 
     return outbeat2;
   }
