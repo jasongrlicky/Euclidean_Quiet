@@ -28,14 +28,15 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
 
 /* EXTERNAL */
 
-uint16_t euclidean_rhythm_gen(uint8_t length, uint8_t density, uint8_t offset) {
-  uint16_t pattern = euclid(length, density);
-  pattern = pattern_offset(pattern, length, offset);
+// cppcheck-suppress unusedFunction
+uint16_t euclidean_string(uint8_t length, uint8_t density, uint8_t offset) {
+  uint16_t pattern = euclidean_pattern(length, density);
+  pattern = pattern_rotate(pattern, length, offset);
   return pattern;
 }
 
 // cppcheck-suppress unusedFunction
-uint16_t euclid(uint8_t length, uint8_t density) {
+uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   // Constraint: density and offset do not exceed length
   density = (length < density) ? length : density;
 
@@ -126,7 +127,9 @@ uint16_t euclid(uint8_t length, uint8_t density) {
 
 /// Right-rotate the pattern of the given length pattern_length by the given
 /// offset, wrapping around.
-uint16_t pattern_offset(uint16_t pattern, uint8_t pattern_len, uint8_t offset) {
+///
+// cppcheck-suppress unusedFunction
+uint16_t pattern_rotate(uint16_t pattern, uint8_t pattern_len, uint8_t offset) {
   // Constraint: offset does not exceed pattern length
   offset = (pattern_len < offset) ? pattern_len : offset;
 
