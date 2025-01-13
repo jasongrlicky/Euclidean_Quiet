@@ -53,19 +53,18 @@ static uint16_t binary_concat(uint16_t a, uint16_t b) {
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
-uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
-  int pauses = n - k;
-  int pulses = k;
-  int offset = o;
-  int steps = n;
-  int per_pulse = pauses / k;
+uint16_t euclid(int length, int density, int offset) {
+  int pauses = length - density;
+  int pulses = density;
+  int steps = length;
+  int per_pulse = pauses / density;
   int remainder = pauses % pulses;
-  unsigned int workbeat[n];
+  unsigned int workbeat[length];
   unsigned int outbeat;
   uint16_t outbeat2;
-  int workbeat_count = n;
+  int workbeat_count = length;
 
-  for (int a = 0; a < n; a++) { // Populate workbeat with unsorted pulses and pauses
+  for (int a = 0; a < length; a++) { // Populate workbeat with unsorted pulses and pauses
     if (a < pulses) {
       workbeat[a] = 1;
     } else {
@@ -95,7 +94,7 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
     return outbeat2;
   } else {
     if (pulses == 0) {
-      pulses = 1;  //	Prevent crashes when k=0 and n goes from 0 to 1
+      pulses = 1;  //	Prevent crashes when density=0 and length goes from 0 to 1
     }
     int groupa = pulses;
     int groupb = pauses;
