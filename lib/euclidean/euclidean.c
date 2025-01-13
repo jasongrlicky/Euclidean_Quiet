@@ -65,12 +65,9 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   uint16_t outbeat2;
 
   // Populate workbeat with unsorted pulses and pauses
-  for (int a = 0; a < length; a++) { 
-    if (a < density) {
-      workbeat[a] = 1;
-    } else {
-      workbeat[a] = 0;
-    }
+  for (uint8_t a = 0; a < length; a++) { 
+    bool bit = (a < density);
+    workbeat[a] = bit;
   }
 
   if (per_pulse > 0 && remainder < 2) { 
