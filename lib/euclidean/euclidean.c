@@ -69,7 +69,7 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
   // The length of each bit sequence is not stored, because the leftmost digit
   // is always 1, and the length is recalculated every time it is needed.
   uint16_t bit_sequences[length];
-  int bit_sequences_len = length;
+  uint8_t bit_sequences_len = length;
   
   // Populate bit_sequences with sequences of length 1 unsorted pulses and pauses
   for (uint8_t a = 0; a < length; a++) { 
