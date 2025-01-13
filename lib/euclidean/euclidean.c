@@ -93,8 +93,10 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
       int trim_count = 0;
 
       if (groupa > groupb) { 
-        int a_remainder = groupa - groupb; // what will be left of groupa once groupB is interleaved
-        for (int a = 0; a < groupa - a_remainder; a++) { //count through the matching sets of A, ignoring remaindered
+        int a_remainder = groupa - groupb; // What will be left of groupa once group B is interleaved
+
+        // Count through the matching sets of A, ignoring remaindered
+        for (int a = 0; a < groupa - a_remainder; a++) {
           workbeat[a] = binary_concat(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
@@ -103,13 +105,16 @@ uint16_t euclid(uint8_t length, uint8_t density, uint8_t offset) {
         groupa = groupb;
         groupb = a_remainder;
       } else if (groupb > groupa) {
-        int b_remainder = groupb - groupa; // what will be left of group once group A is interleaved
-        for (int a = workbeat_count - 1; a >= groupa + b_remainder; a--) { //count from right back through the Bs
+        int b_remainder = groupb - groupa; // What will be left of group once group A is interleaved
+
+        // Count from right back through the Bs
+        for (int a = workbeat_count - 1; a >= groupa + b_remainder; a--) {
           workbeat[workbeat_count - a - 1] = binary_concat(workbeat[workbeat_count - a - 1], workbeat[a]);
 
           trim_count++;
         }
         workbeat_count = workbeat_count - trim_count;
+
         groupb = b_remainder;
       } else {
         for (int a = 0; a < groupa; a++) {
