@@ -6,14 +6,14 @@
 
 /// Right-rotate the pattern in value of length pattern_length by shift number 
 /// of steps, wrapping around.
-static uint16_t rightRotate(int shift, uint16_t value, uint8_t pattern_length) {
+static uint16_t pattern_shift_right(int shift, uint16_t value, uint8_t pattern_length) {
   uint16_t mask = ((1 << pattern_length) - 1);
   value &= mask;
   return ((value >> shift) | (value << (pattern_length - shift))) & mask;
 }
 
 /// Find the length of a binary number by counting bitwise
-static int findlength(unsigned int bnry) {
+static int binary_count_digits(unsigned int bnry) {
   bool lengthfound = false;
   int length = 1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
   for (int q = 32; q >= 0; q--) {
@@ -27,8 +27,8 @@ static int findlength(unsigned int bnry) {
 }
 
 /// Concatenate two binary numbers bitwise
-static unsigned int ConcatBin(unsigned int bina, unsigned int binb) {
-  int binb_len = findlength(binb);
+static unsigned int binary_concat(unsigned int bina, unsigned int binb) {
+  int binb_len = binary_count_digits(binb);
   unsigned int sum = (bina << binb_len);
   sum = sum | binb;
   return sum;
@@ -60,18 +60,18 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
   if (per_pulse > 0 && remainder < 2) { // Handle easy cases where there is no or only one remainer
     for (int a = 0; a < pulses; a++) {
       for (int b = workbeat_count - 1; b > workbeat_count - per_pulse - 1; b--) {
-        workbeat[a] = ConcatBin(workbeat[a], workbeat[b]);
+        workbeat[a] = binary_concat(workbeat[a], workbeat[b]);
       }
       workbeat_count = workbeat_count - per_pulse;
     }
 
     outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
     for (int a = 0; a < workbeat_count; a++) {
-      outbeat = ConcatBin(outbeat, workbeat[a]);
+      outbeat = binary_concat(outbeat, workbeat[a]);
     }
 
     if (offset > 0) {
-      outbeat2 = rightRotate(offset, outbeat, steps); // Add offset to the step pattern
+      outbeat2 = pattern_shift_right(offset, outbeat, steps); // Add offset to the step pattern
     } else {
       outbeat2 = outbeat;
     }
@@ -90,7 +90,7 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
       if (groupa > groupb) { // more Group A than Group B
         int a_remainder = groupa - groupb; // what will be left of groupa once groupB is interleaved
         for (int a = 0; a < groupa - a_remainder; a++) { //count through the matching sets of A, ignoring remaindered
-          workbeat[a] = ConcatBin(workbeat[a], workbeat[workbeat_count - 1 - a]);
+          workbeat[a] = binary_concat(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
         workbeat_count = workbeat_count - trim_count;
@@ -100,7 +100,7 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
       } else if (groupb > groupa) { // More Group B than Group A
         int b_remainder = groupb - groupa; // what will be left of group once group A is interleaved
         for (int a = workbeat_count - 1; a >= groupa + b_remainder; a--) { //count from right back through the Bs
-          workbeat[workbeat_count - a - 1] = ConcatBin(workbeat[workbeat_count - a - 1], workbeat[a]);
+          workbeat[workbeat_count - a - 1] = binary_concat(workbeat[workbeat_count - a - 1], workbeat[a]);
 
           trim_count++;
         }
@@ -108,7 +108,7 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
         groupb = b_remainder;
       } else {
         for (int a = 0; a < groupa; a++) {
-          workbeat[a] = ConcatBin(workbeat[a], workbeat[workbeat_count - 1 - a]);
+          workbeat[a] = binary_concat(workbeat[a], workbeat[workbeat_count - 1 - a]);
           trim_count++;
         }
         workbeat_count = workbeat_count - trim_count;
@@ -118,11 +118,11 @@ uint16_t euclid(int n, int k, int o) { // inputs: n=total, k=beats, o = offset
 
     outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count
     for (int a = 0; a < workbeat_count; a++) {
-      outbeat = ConcatBin(outbeat, workbeat[a]);
+      outbeat = binary_concat(outbeat, workbeat[a]);
     }
 
     if (offset > 0) {
-      outbeat2 = rightRotate(offset, outbeat, steps); // Add offset to the step pattern
+      outbeat2 = pattern_shift_right(offset, outbeat, steps); // Add offset to the step pattern
     } else {
       outbeat2 = outbeat;
     }
