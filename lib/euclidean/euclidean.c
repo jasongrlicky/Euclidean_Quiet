@@ -39,32 +39,62 @@ static uint16_t euclidean_pattern_old(uint8_t length, uint8_t density);
 static void interval_vectors_init(uint8_t *interval_vectors, uint8_t length, uint8_t density) {
   // Create ivs before the final one, each having an interval of 1
   uint8_t idx_of_final_iv = density - 1;
-  for (uint8_t a = 0; a < idx_of_final_iv; a++) { 
-      interval_vectors[a] = 1;
+  for (uint8_t i = 0; i < idx_of_final_iv; i++) { 
+      interval_vectors[i] = 1;
   }
 
   // Create the last iv with an interval that matches the remaining number of steps
   interval_vectors[idx_of_final_iv] = length - idx_of_final_iv;
 }
 
+/// Populate interval vectors such that they represent a step pattern with 
+/// `density` 1s followed by 0s, and all zeros distributed.
+/// @param interval_vectors Array of interval vectors to operate on. Array length must be `length` or more.
+/// @param length Pattern length. Must be greater than zero.
+/// @param density Number of 1s in the represented bit pattern. Must be greater than zero, and less than `length`.
+static void interval_vectors_init_distribute_zeros(uint8_t *interval_vectors, uint8_t length, uint8_t density) {
+  uint8_t zeros = length - density;
+  uint8_t zeros_to_distribute_per_one = zeros / density;
+  uint8_t zeros_remainder = zeros - zeros_to_distribute_per_one;
+
+  for (uint8_t i = 0; i < density; i++) { 
+      // The zeros_remainder - 1 here is because we do not distribute the final 
+      // zero of a remainder
+      uint8_t remainder = (i < (zeros_remainder - 1)) ? 1 : 0;
+      interval_vectors[i] = 1 + zeros_to_distribute_per_one + remainder;
+  }
+}
+
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
-uint16_t euclidean_string(uint8_t length, uint8_t density, uint8_t offset) {
-  uint16_t pattern = euclidean_pattern_old(length, density);
+uint16_t euclidean_pattern_rotate(uint8_t length, uint8_t density, uint8_t offset) {
+  uint16_t pattern = euclidean_pattern(length, density);
   pattern = pattern_rotate(pattern, length, offset);
   return pattern;
 }
 
 uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
+  // Link to original paper:
+  // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
+
+  // Early returns: All bits off
   if (density == 0) { return 0; }
   if (length == 0) { return 0; }
 
   // Constraint: density does not exceed length
   density = (length < density) ? length : density;
 
-  // Link to original paper:
-  // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
+  // Early return: All bits on
+  if (density == length) { 
+    // Utilize underflow to generate bitflags of all 1s
+    uint16_t pattern = 0;
+    return pattern - 1;
+  }
+
+  // At this point:
+  //  length > 0
+  //  0 < density < length
 
   // Sequences are stored as interval-vectors, a concept introduced in the 
   // original paper. For example, `100100101000` would be stored as an array of 
@@ -72,8 +102,34 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   uint8_t interval_vectors[EUCLIDEAN_MAX_PATTERN_LEN];
   uint8_t interval_vectors_len = length;
   
-  // Populate interval vectors with 1s followed by 0s
-  interval_vectors_init(&interval_vectors, length, density);
+  // Populate interval vectors with the zeros distributed amongst ones
+  interval_vectors_init_distribute_zeros(interval_vectors, length, density);
+
+  // Now to place zeros where we can into the interval vectors
+  uint8_t zeros = length - density;
+  uint8_t zeros_to_distribute_per_one = zeros / density;
+  uint8_t zeros_remainder = zeros - zeros_to_distribute_per_one;
+
+
+  // // Distribute the number of zeros that divided evenly from the final interval 
+  // // vector to the inital ivs
+  // uint8_t idx_of_final_iv = density - 1;
+  // for (uint8_t i = 0; i < idx_of_final_iv; i++) {
+  //   // Increment initial ivs by the number of zeros we are distributing
+  //   interval_vectors[i] += zeros_to_distribute_per_one;
+  // }
+  // // Decrement the final iv.
+  // // The -1 is because We don't distribute the final iv's zero; it already has it
+  // interval_vectors[idx_of_final_iv] -= ((zeros_to_distribute_per_one * idx_of_final_iv) - 1);
+
+  // // Distribute the remainder
+  // for (uint8_t i = 0; i < zeros_remainder; i++) {
+  //   // Increment initial ivs
+  //   interval_vectors[i] += 1;
+  // }
+  // // Decrement the final iv
+  // interval_vectors[idx_of_final_iv] -= zeros_remainder;
+
 
   return 0;
 }

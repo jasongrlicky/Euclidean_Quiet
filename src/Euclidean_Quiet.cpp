@@ -336,7 +336,7 @@ void setup() {
 
   // Initialise beat holders
   for (int a = 0; a < NUM_CHANNELS; a++) {
-    generated_rhythms[a] = euclidean_string(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
+    generated_rhythms[a] = euclidean_pattern_rotate(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
   }
 
   startUpOK();
@@ -436,7 +436,7 @@ void loop() {
 
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
   if (changes > 0) {
-    generated_rhythms[active_channel] = euclidean_string(active_length, active_density, active_offset);
+    generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
