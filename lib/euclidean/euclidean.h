@@ -3,15 +3,14 @@
 
 #include <stdint.h>
 
-/// Generates a Euclidean string pattern (A Euclidean rhythm pattern with a
-/// rotation applied).
+/// Convenience fn to generate a Euclidean pattern with a rotation applied.
 ///
 /// @param length Number of total steps in the pattern, up to 16.
 /// @param density Number of active steps in the pattern.
 /// @param offset: Rotation of the pattern to the right.
 /// @returns Pattern in the form of a bit flag (beat flag?), stored in the 
 /// lowest-order bits of the return value.
-uint16_t euclidean_string(uint8_t length, uint8_t density, uint8_t offset);
+uint16_t euclidean_pattern_rotate(uint8_t length, uint8_t density, uint8_t offset);
 
 /// Generates a Euclidean rhythm pattern.
 ///
