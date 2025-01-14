@@ -117,7 +117,7 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   uint8_t b_count = length - a_count;
 
   while (b_count >= 2) {
-    // Now to pair some multiple of Bs with every A.
+    // Now to pair some number of Bs with every A.
     uint8_t b_num_to_distribute_per_a = b_count / a_count;
     uint8_t b_num_remainder = b_count - b_num_to_distribute_per_a;
 
