@@ -113,44 +113,45 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   // We initialize the pattern to a sequence of As followed by Bs. For example, 
   // a density of 3 and a length of 8 would yield a_count = 3, b_count = 5, 
   // representing AAABBBBB.
-  uint8_t total_count = length;
   uint8_t a_count = density;
-  uint8_t b_count = total_count - a_count;
+  uint8_t b_count = length - a_count;
 
-  while (b_count > 2) {
+  while (b_count >= 2) {
     // Now to pair some multiple of Bs with every A.
     uint8_t b_num_to_distribute_per_a = b_count / a_count;
     uint8_t b_num_remainder = b_count - b_num_to_distribute_per_a;
+
+    // Append B onto A the number of times we could fully distribute Bs to As
+    for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
+      // Append B onto A, so A is now AB
+      a = binary_concat_len(a, b, b_len);
+      a_len += b_len;
+
+      // Reduce number of Bs, since we've distributed them to each A
+      b_count -= a_count;
+    }
+
+    if (b_count < 2) { break; }
 
     // Note value for A before it gets modified
     uint16_t a_prev = a;
     uint8_t a_len_prev = a_len;
 
-    // Append B onto A the number of times we could fully distribute Bs to As
-    for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
-      a = binary_concat_len(a, b, b_len);
-      a_len += b_len;
-    }
-
-    // If there was a remainder of Bs distributed, Append B onto A also
+    // If there is a remainder of Bs to distribute, Append B onto A also
     if (b_num_remainder) {
-      a = binary_concat_len(a, b, b_len);
-      a_len += b_len;
-    }
-
-    // If there was a remainder of Bs that could not be combined with As, then
-    // we copy A's previous value to B, because Bs are the new As now.
-    if ((b_num_remainder != 0) && (b_num_to_distribute_per_a > 0)) {
+      // Bs are now the As that couldn't have Bs distributed to them
+      b_count = a_count - b_count;
       // Replace B with the previous value for A
       b = a_prev;
       b_len = a_len_prev;
-    }
 
-    // Each step, the meta-sequence shrinks to the previous number of As, since
-    // we have combined all Bs into As some number of times.
-    b_count = a_count - b_num_remainder;
-    total_count = a_count;
-    a_count = total_count - b_count;
+      // Append B onto A, so A is now AB
+      a = binary_concat_len(a, b, b_len);
+      a_len += b_len;
+
+      // Now As are only the As that had Bs distributed to them
+      a_count = b_num_remainder;
+    }
   }
 
   // Expand meta-sequence into bits
