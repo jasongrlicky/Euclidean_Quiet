@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-/// Convenience fn to generates a Euclidean pattern with a rotation applied.
+/// Convenience fn to generate a Euclidean pattern with a rotation applied.
 ///
 /// @param length Number of total steps in the pattern, up to 16.
 /// @param density Number of active steps in the pattern.
