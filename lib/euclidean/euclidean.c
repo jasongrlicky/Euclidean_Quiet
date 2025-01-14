@@ -64,7 +64,6 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
     uint8_t b_num_remainder = b_count - (a_count * b_num_to_distribute_per_a);
 
     // Append B onto A the number of times we could fully distribute Bs to As
-    bool b_distributed_per_a = false;
     for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
       // Append B onto A, so A is now AB
       a = binary_concat(a, b, b_len);
@@ -73,9 +72,8 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
       // Reduce the number of Bs by the number of As, since we've distributed a
       // B to each A
       b_count -= a_count;
-      b_distributed_per_a = true;
     }
-    if (b_distributed_per_a && (b_num_remainder <= 1)) { break; }
+    if (b_num_to_distribute_per_a && (b_num_remainder <= 1)) { break; }
 
     // If there is a remainder of Bs to distribute, Append B onto A also
     if (b_num_remainder) {
