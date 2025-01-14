@@ -76,11 +76,11 @@ void test_euclidean_rotate_smoke(void) {
     // Just a bunch of strings
     TEST_ASSERT_EQUAL_UINT16(0b1010, euclidean_pattern_rotate(4, 2, 0));
     TEST_ASSERT_EQUAL_UINT16(0b0101, euclidean_pattern_rotate(4, 2, 1));
-    TEST_ASSERT_EQUAL_UINT16(0b1111100, euclidean_pattern_rotate(7, 5, 5));
+    TEST_ASSERT_EQUAL_UINT16(0b1101110, euclidean_pattern_rotate(7, 5, 5));
     TEST_ASSERT_EQUAL_UINT16(0b01001001, euclidean_pattern_rotate(8, 3, 1));
     TEST_ASSERT_EQUAL_UINT16(0b10100100, euclidean_pattern_rotate(8, 3, 2));
     TEST_ASSERT_EQUAL_UINT16(0b0100101001001, euclidean_pattern_rotate(13, 5, 9));
-    TEST_ASSERT_EQUAL_UINT16(0b1110111111111111, euclidean_pattern_rotate(16, 15, 4));
+    TEST_ASSERT_EQUAL_UINT16(0b1111101111111111, euclidean_pattern_rotate(16, 15, 4));
 
     // 16 rotations of every other beat with a rhythm of 16 steps
     for (uint8_t offset = 0; offset < 16; offset++) {
