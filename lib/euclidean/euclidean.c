@@ -113,8 +113,9 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   // We initialize the pattern to a sequence of As followed by Bs. For example, 
   // a density of 3 and a length of 8 would yield a_count = 3, b_count = 5, 
   // representing AAABBBBB.
+  uint8_t total_count = length;
   uint8_t a_count = density;
-  uint8_t b_count = length - a_count;
+  uint8_t b_count = total_count - a_count;
 
   while (b_count > 2) {
     // Now to pair some multiple of Bs with every A.
@@ -148,7 +149,8 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
     // Each step, the meta-sequence shrinks to the previous number of As, since
     // we have combined all Bs into As some number of times.
     b_count = a_count - b_num_remainder;
-    a_count = b_num_remainder;
+    total_count = a_count;
+    a_count = total_count - b_count;
   }
 
   // Expand meta-sequence into bits
