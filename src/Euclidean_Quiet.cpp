@@ -507,7 +507,7 @@ void loop() {
     Serial.println(channelbeats[active_channel][1]);
     #endif
 
-    last_read = millis();
+    last_read = time;
     changes = 1; // K change = 1
   }
 
@@ -558,7 +558,7 @@ void loop() {
     Serial.println(channelbeats[active_channel][0]);
     #endif
 
-    last_read = millis();
+    last_read = time;
     changes = 2; // n change = 2
   }
 
@@ -591,7 +591,7 @@ void loop() {
     Serial.println(channelbeats[active_channel][3]);
     #endif
 
-    last_read = millis();
+    last_read = time;
     changes = 3; // o change = 3
   }
 
