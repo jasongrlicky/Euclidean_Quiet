@@ -2,8 +2,6 @@
 
 #include <stdbool.h>
 
-#define EUCLIDEAN_MAX_PATTERN_LEN 16
-
 /* INTERNAL */
 
 /// Find the length of a binary number by counting bitwise
@@ -95,42 +93,67 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   //  length > 0
   //  0 < density < length
 
-  // Sequences are stored as interval-vectors, a concept introduced in the 
-  // original paper. For example, `100100101000` would be stored as an array of 
-  // integers [3, 3, 2, 4].
-  uint8_t interval_vectors[EUCLIDEAN_MAX_PATTERN_LEN];
-  uint8_t interval_vectors_len = length;
-  
-  // Populate interval vectors with the zeros distributed amongst ones
-  interval_vectors_init_distribute_zeros(interval_vectors, length, density);
+  // A and B are sequences of bits that are built up each step of the algorithm.
+  //
+  // At first, they just represent the bits 1 (active step) and 0 (inactive step).
+  uint16_t a = 1;
+  uint16_t b = 0;
+  uint8_t a_len = 1;
+  uint8_t b_len = 1;
 
-  // Now to place zeros where we can into the interval vectors
-  uint8_t zeros = length - density;
-  uint8_t zeros_to_distribute_per_one = zeros / density;
-  uint8_t zeros_remainder = zeros - zeros_to_distribute_per_one;
+  // Holds the current state of the pattern, but not directly. The count of As
+  // and Bs represents some number of sequence A, followed by some number of 
+  // sequence B.
+  //
+  // We initialize the pattern to a sequence of As followed by Bs. For example, 
+  // a density of 3 and a length of 8 would yield a_count = 3, b_count = 5, 
+  // representing AAABBBBB.
+  uint8_t a_count = density;
+  uint8_t b_count = length - a_count;
 
+  while (b_count > 2) {
+    // Now to pair some multiple of Bs with every A.
+    uint8_t b_num_to_distribute_per_a = b_count / density;
+    uint8_t b_num_remainder = b_count - b_num_to_distribute_per_a;
 
-  // // Distribute the number of zeros that divided evenly from the final interval 
-  // // vector to the inital ivs
-  // uint8_t idx_of_final_iv = density - 1;
-  // for (uint8_t i = 0; i < idx_of_final_iv; i++) {
-  //   // Increment initial ivs by the number of zeros we are distributing
-  //   interval_vectors[i] += zeros_to_distribute_per_one;
-  // }
-  // // Decrement the final iv.
-  // // The -1 is because We don't distribute the final iv's zero; it already has it
-  // interval_vectors[idx_of_final_iv] -= ((zeros_to_distribute_per_one * idx_of_final_iv) - 1);
+    // Note value for A before it gets modified
+    uint16_t a_prev = a;
+    uint8_t a_len_prev = a_len;
 
-  // // Distribute the remainder
-  // for (uint8_t i = 0; i < zeros_remainder; i++) {
-  //   // Increment initial ivs
-  //   interval_vectors[i] += 1;
-  // }
-  // // Decrement the final iv
-  // interval_vectors[idx_of_final_iv] -= zeros_remainder;
+    // Append B onto A the number of times we could fully distribute Bs to As
+    for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
+      a = binary_concat(a, b);
+    }
 
+    // If there was a remainder of Bs distributed, Append B onto A also
+    if (b_num_remainder) {
+      a = binary_concat(a, b);
+    }
 
-  return 0;
+    // If there was a remainder of Bs that could not be combined with As, then
+    // we copy A's previous value to B, because Bs are the new As now.
+    if ((b_num_remainder != 0) && (b_num_to_distribute_per_a > 0)) {
+      // Replace B with the previous value for A
+      b = a_prev;
+      b_len = a_len_prev;
+    }
+
+    // Each step, the meta-sequence shrinks to the previous number of As, since
+    // we have combined all Bs into As some number of times.
+    b_count = a_count - b_num_remainder;
+    a_count = b_num_remainder;
+  }
+
+  // Expand meta-sequence into bits
+  uint16_t pattern = 0;
+  for (uint8_t i = 0; i < a_count; i++) {
+    pattern = binary_concat(pattern, a);
+  }
+  for (uint8_t i = 0; i < b_count; i++) {
+    pattern = binary_concat(pattern, b);
+  }
+
+  return pattern;
 }
 
 static uint16_t euclidean_pattern_old(uint8_t length, uint8_t density) {
