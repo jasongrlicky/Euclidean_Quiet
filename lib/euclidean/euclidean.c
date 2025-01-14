@@ -87,9 +87,8 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
 
   // Early return: All bits on
   if (density == length) { 
-    // Utilize underflow to generate bitflags of all 1s
-    uint16_t pattern = 0;
-    return pattern - 1;
+    // Generate bitflags of all 1s for the given length
+    return (1 << length) - 1;
   }
 
   // At this point:
