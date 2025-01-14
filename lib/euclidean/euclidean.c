@@ -5,7 +5,7 @@
 /* INTERNAL */
 
 /// Concatenate two binary numbers bitwise
-inline static uint16_t binary_concat_len(uint16_t a, uint16_t b, uint8_t b_len) {
+inline static uint16_t binary_concat(uint16_t a, uint16_t b, uint8_t b_len) {
   return (a << b_len) | b;
 }
 
@@ -67,7 +67,7 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
     bool b_distributed_per_a = false;
     for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
       // Append B onto A, so A is now AB
-      a = binary_concat_len(a, b, b_len);
+      a = binary_concat(a, b, b_len);
       a_len += b_len;
 
       // Reduce the number of Bs by the number of As, since we've distributed a
@@ -89,7 +89,7 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
       uint8_t a_len_prev = a_len;
 
       // Append B onto A, so A is now AB
-      a = binary_concat_len(a, b, b_len);
+      a = binary_concat(a, b, b_len);
       a_len += b_len;
 
       // Replace B with the previous value for A
@@ -101,10 +101,10 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
   // Expand meta-sequence into bits
   uint16_t pattern = 0;
   for (uint8_t i = 0; i < a_count; i++) {
-    pattern = binary_concat_len(pattern, a, a_len);
+    pattern = binary_concat(pattern, a, a_len);
   }
   for (uint8_t i = 0; i < b_count; i++) {
-    pattern = binary_concat_len(pattern, b, b_len);
+    pattern = binary_concat(pattern, b, b_len);
   }
 
   return pattern;
