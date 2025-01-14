@@ -17,6 +17,7 @@ extern "C" {
   - Behavior changes:
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
+    - Euclidean rhythms generated are now accurate to the original paper.
   - UI Polish:
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
