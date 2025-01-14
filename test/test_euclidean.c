@@ -49,6 +49,7 @@ void test_euclid_smoke(void) {
     TEST_ASSERT_EQUAL_UINT16(0b10010010010, euclidean_pattern(11, 4));
     TEST_ASSERT_EQUAL_UINT16(0b101111, euclidean_pattern(6, 5));
     TEST_ASSERT_EQUAL_UINT16(0b1011011, euclidean_pattern(7, 5));
+    TEST_ASSERT_EQUAL_UINT16(0b10111111, euclidean_pattern(8, 7));
     TEST_ASSERT_EQUAL_UINT16(0b10110110, euclidean_pattern(8, 5));
     TEST_ASSERT_EQUAL_UINT16(0b101010101, euclidean_pattern(9, 5));
     TEST_ASSERT_EQUAL_UINT16(0b10101010100, euclidean_pattern(11, 5));
