@@ -123,11 +123,13 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
     // Append B onto A the number of times we could fully distribute Bs to As
     for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
       a = binary_concat(a, b);
+      a_len += b_len;
     }
 
     // If there was a remainder of Bs distributed, Append B onto A also
     if (b_num_remainder) {
       a = binary_concat(a, b);
+      a_len += b_len;
     }
 
     // If there was a remainder of Bs that could not be combined with As, then
