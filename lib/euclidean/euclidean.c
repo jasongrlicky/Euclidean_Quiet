@@ -127,7 +127,8 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
       a = binary_concat_len(a, b, b_len);
       a_len += b_len;
 
-      // Reduce number of Bs, since we've distributed them to each A
+      // Reduce the number of Bs by the number of As, since we've distributed a
+      // B to each A
       b_count -= a_count;
     }
 
