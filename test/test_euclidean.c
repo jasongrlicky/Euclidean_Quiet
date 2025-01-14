@@ -59,6 +59,7 @@ void test_euclid_smoke(void) {
     TEST_ASSERT_EQUAL_UINT16(0b101101011010, euclidean_pattern(12, 7));
     TEST_ASSERT_EQUAL_UINT16(0b1001010100101010, euclidean_pattern(16, 7));
     TEST_ASSERT_EQUAL_UINT16(0b1011010101101010, euclidean_pattern(16, 9));
+    TEST_ASSERT_EQUAL_UINT16(0b1011111111111111, euclidean_pattern(16, 15));
 }
 
 void test_rotate(void) {
