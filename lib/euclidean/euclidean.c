@@ -142,13 +142,13 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
       // Now As are the ABs that had Bs distributed to them
       a_count = b_num_remainder;
 
-      // Replace B with the previous value for A
-      b = a_prev;
-      b_len = a_len_prev;
-
       // Append B onto A, so A is now AB
       a = binary_concat_len(a, b, b_len);
       a_len += b_len;
+
+      // Replace B with the previous value for A
+      b = a_prev;
+      b_len = a_len_prev;
     }
   } while (b_count > 1);
 
