@@ -267,7 +267,6 @@ typedef struct EuclideanState {
   EuclideanChannel channels[NUM_CHANNELS];
 } EuclideanState;
 
-
 Milliseconds time;
 Milliseconds last_clock;
 #if LOGGING_ENABLED
@@ -338,6 +337,8 @@ void led_wake();
 void led_anim_wake();
 void led_anim_sleep();
 void startUpOK();
+static void channelbeats_from_state(uint8_t *channelbeats, EuclideanState state);
+static void channelbeats_from_state_channel(uint8_t *channelbeats_channel, EuclideanChannel channel);
 
 /// Initialize the MAX72XX LED Matrix
 void led_init(void) {
@@ -946,4 +947,18 @@ void startUpOK() {
   delay(50);
   digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
+}
+
+static void channelbeats_from_state(uint8_t *channelbeats, EuclideanState state) {
+  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    channelbeats_from_state_channel(&channelbeats[channel * 5], state.channels[channel]);
+  }
+}
+
+static void channelbeats_from_state_channel(uint8_t *channelbeats_channel, EuclideanChannel channel) {
+  channelbeats_channel[0] = channel.length;
+  channelbeats_channel[1] = channel.density;
+  channelbeats_channel[2] = channel.position;
+  channelbeats_channel[3] = channel.offset;
+  channelbeats_channel[4] = 0;
 }
