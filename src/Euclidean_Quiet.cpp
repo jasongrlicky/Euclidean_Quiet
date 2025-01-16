@@ -274,6 +274,7 @@ typedef struct InputEvents {
   bool enc_push_start[NUM_CHANNELS];
   bool trig_rise;
   bool reset_rise;
+  bool internal_clock_tick;
 } InputEvents;
 
 /* INTERNAL */
