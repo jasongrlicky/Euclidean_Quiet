@@ -402,7 +402,7 @@ void loop() {
 
   time = millis();
 
-  /* INPUT */
+  /* INPUT EVENTS */
 
   InputEvents events_in = INPUT_EVENTS_EMPTY;
 
@@ -508,6 +508,13 @@ void loop() {
     events_in.enc_push = enc_idx;
   }
 
+  /* INTERNAL EVENTS */
+
+  // Internal Clock
+  if (internal_clock_enabled && (time - last_clock > INTERNAL_CLOCK_PERIOD)) {
+    events_in.internal_clock_tick = true;
+  }
+
   /* UPDATE STATE */
 
   if (channelbeats[active_channel][0] > 16) {
@@ -520,7 +527,7 @@ void loop() {
   int active_offset = channelbeats[active_channel][3];
 
   // Internal Clock
-  if (internal_clock_enabled && (time - last_clock > INTERNAL_CLOCK_PERIOD)) {
+  if (events_in.internal_clock_tick) {
     handle_clock();
   }
 
