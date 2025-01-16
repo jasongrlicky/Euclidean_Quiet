@@ -393,6 +393,44 @@ void loop() {
 
   time = millis();
 
+  /* INPUT */
+
+  InputEvents events_in = INPUT_EVENTS_EMPTY;
+
+  // READ TRIG AND RESET INPUTS
+  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
+  int reset_button = analogRead(A1);
+
+  // RESET INPUT & BUTTON
+  if ((!reset_active) && (reset_button > RESET_PIN_THRESHOLD)) {
+    reset_active = true;
+
+    events_in.reset_rise = true;
+
+    #if LOGGING_ENABLED
+    Serial.println("INPUT: Reset Rise");
+    #endif
+  }
+  if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
+    reset_active = false;
+
+    #if LOGGING_ENABLED
+    Serial.println("INPUT: Reset Fall");      
+    #endif
+  }
+
+  // TRIG INPUT 
+  if (trig_in_value > trig_in_value_previous) { 
+    events_in.trig_rise = true;
+
+    #if LOGGING_ENABLED
+    Serial.println("INPUT: Trigger Rise");
+    #endif
+  }
+  trig_in_value_previous = trig_in_value;
+
+  /* UPDATE STATE */
+
   if (channelbeats[active_channel][0] > 16) {
     channelbeats[active_channel][0] = 16;
   }
@@ -425,40 +463,22 @@ void loop() {
     led_sleep();
   }
 
-  // READ TRIG AND RESET INPUTS
-  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
-  int reset_button = analogRead(A1);
-
-  // RESET INPUT & BUTTON
-  if ((!reset_active) && (reset_button > RESET_PIN_THRESHOLD) && (channelbeats[0][2] > 0)) {
+  // HANDLE RESET
+  if ((events_in.reset_rise) && (channelbeats[0][2] > 0)) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
-    reset_active = true;
 
     if(led_sleep_mode_enabled) {
       handle_clock();
     }
-
-    #if LOGGING_ENABLED
-    Serial.println("RESET ACTIVE");
-    #endif
   }
 
-  if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
-    reset_active = false;
-
-    #if LOGGING_ENABLED
-    Serial.println("RESET INACTIVE");      
-    #endif
-  }
-
-  // TRIG INPUT 
-  if (trig_in_value > trig_in_value_previous) { 
+  // HANDLE TRIGGER INPUT
+  if (events_in.trig_rise) { 
     internal_clock_enabled = false; // turn off internal clock if external clock received
     handle_clock();
   }
-  trig_in_value_previous = trig_in_value;
   
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (lights_active && (time - last_clock > output_pulse_length)) {
