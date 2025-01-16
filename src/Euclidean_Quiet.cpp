@@ -763,7 +763,7 @@ void handle_clock() {
   // the LEDs on the bottom row in the loop() function.
   lc.setLed(LED_ADDR, 7, 7, true);
 
-  // Cycle through channels
+  // Update each channel's sequencer
   for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
     uint8_t length = euclidean_state.channels[a].length;
     uint8_t position = euclidean_state.channels[a].position;
