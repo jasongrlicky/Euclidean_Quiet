@@ -592,48 +592,6 @@ void loop() {
   int active_density = channelbeats[active_channel][1];
   int active_offset = channelbeats[active_channel][3];
 
-  // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
-  if (changes > 0) {
-    generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
-    lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
-    lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
-
-    if (changes == 1) {  
-      // 1 = K changes - display beats in the active channel
-      for (uint8_t a = 0; a < 8; a++) {
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
-        }
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
-        }
-      }
-    } else if (changes == 2) { 
-      // 2 = N changes, display total length of beat
-      for (uint8_t a = 0; a < 8; a++) {
-        if (a < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
-        }
-        if (a + 8 < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
-        }
-      }
-    } else if (changes == 3) {  
-      // 3 = Offset changes - display beats in the active channel
-      for (uint8_t a = 0; a < 8; a++) {
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
-        }
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
-        }
-      }
-    }
-
-    changes = 0;
-    last_changed = time;
-  }
-
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
   if (kknob) {
@@ -734,6 +692,48 @@ void loop() {
     Serial.print(" ");
     Serial.println(channelbeats[active_channel][3]);
     #endif
+  }
+
+  // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
+  if (changes > 0) {
+    generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
+    lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
+    lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
+
+    if (changes == 1) {  
+      // 1 = K changes - display beats in the active channel
+      for (uint8_t a = 0; a < 8; a++) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
+        }
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
+        }
+      }
+    } else if (changes == 2) { 
+      // 2 = N changes, display total length of beat
+      for (uint8_t a = 0; a < 8; a++) {
+        if (a < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
+        }
+        if (a + 8 < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
+        }
+      }
+    } else if (changes == 3) {  
+      // 3 = Offset changes - display beats in the active channel
+      for (uint8_t a = 0; a < 8; a++) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
+        }
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
+        }
+      }
+    }
+
+    changes = 0;
+    last_changed = time;
   }
 }
 
