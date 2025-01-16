@@ -23,7 +23,8 @@ extern "C" {
     - Made channel selection easier to see (two dots instead of 4 overlapping).
     - Shortened the time that LEDs stay lit when setting pattern length for a channel.
   - Bugs Fixed:
-    - The internal clock no longer restarts when the reset button is pressed.
+    - The internal clock started up again when the reset button was pressed.
+    - Reset did not function for any channel if channel 1's playhead was at position 0.
   - Internal:
     - Migrated firmware project to PlatformIO.
 */
@@ -546,7 +547,7 @@ void loop() {
   }
 
   // HANDLE RESET
-  if ((events_in.reset_rise) && (channelbeats[0][2] > 0)) {
+  if (events_in.reset_rise) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
