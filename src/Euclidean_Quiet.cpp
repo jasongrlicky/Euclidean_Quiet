@@ -216,26 +216,6 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
-/*
-  Eeprom schema:
-  Channel 1: n = 1 k = 2 position = 7
-  Channel 2: n = 3 k = 4 position = 8
-  Channel 3: n = 5 k = 6 position = 9
-*/
-
-#if EEPROM_READ
-uint8_t channelbeats[NUM_CHANNELS][5] = {
-  {
-    EEPROM.read(1), EEPROM.read(2), 0, EEPROM.read(7), EEPROM.read(10)
-  }
-  , {
-    EEPROM.read(3), EEPROM.read(4), 0, EEPROM.read(8), EEPROM.read(11)
-  }
-  , {
-    EEPROM.read(5), EEPROM.read(6), 0, EEPROM.read(9), EEPROM.read(12)
-  }
-}; // 0=n, 1=k, 2 = position , 3 = offset
-#else
 uint8_t channelbeats[NUM_CHANNELS][5] = {
   {
     16, 4, 0, 0, 0
@@ -247,7 +227,6 @@ uint8_t channelbeats[NUM_CHANNELS][5] = {
     16, 4, 0, 0, 0
   }
 };
-#endif
 
 /// State of the Euclidean rhythm generator and sequencer for a single channel
 typedef struct EuclideanChannel {
@@ -266,6 +245,8 @@ typedef struct EuclideanState {
   /// State for each of this module's channels
   EuclideanChannel channels[NUM_CHANNELS];
 } EuclideanState;
+
+static EuclideanState euclidean_state;
 
 Milliseconds time;
 Milliseconds last_clock;
@@ -337,8 +318,7 @@ void led_wake();
 void led_anim_wake();
 void led_anim_sleep();
 void startUpOK();
-static void channelbeats_from_state(uint8_t *channelbeats, EuclideanState state);
-static void channelbeats_from_state_channel(uint8_t *channelbeats_channel, EuclideanChannel channel);
+static void channelbeats_from_state_channel(uint8_t channelbeats_channel[5], EuclideanChannel channel);
 
 /// Initialize the MAX72XX LED Matrix
 void led_init(void) {
@@ -376,6 +356,27 @@ void eeprom_init(void) {
   #endif
 }
 
+/// Load state from EEPROM into the given `EuclideanState`
+static void eeprom_load(EuclideanState *s) {
+  /*
+  EEPROM Schema:
+  Channel 1: length = 1 density = 2 offset = 7
+  Channel 2: length = 3 density = 4 offset = 8
+  Channel 3: length = 5 density = 6 offset = 9
+  */
+  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+    s->channels[c].length = EEPROM.read((c << 1) + 1);
+    s->channels[c].density = EEPROM.read((c << 1) + 2);
+    s->channels[c].offset = EEPROM.read(c + 7);
+    s->channels[c].position = 0;
+  }
+
+  // TEMPORARY: Convert EuclideanState to channelbeats
+  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+    channelbeats_from_state_channel(channelbeats[c], s->channels[c]);
+  }
+}
+
 /// Turn on pull-up resistors for encoders
 void encoders_init(void) {
   digitalWrite(PIN_ENC_1A, HIGH);
@@ -407,6 +408,7 @@ void io_pins_init(void) {
 void setup() {
   led_init();
   eeprom_init();
+  eeprom_load(&euclidean_state);
   encoders_init();
   serial_init();
   io_pins_init();
@@ -949,13 +951,7 @@ void startUpOK() {
   delay(200);
 }
 
-static void channelbeats_from_state(uint8_t *channelbeats, EuclideanState state) {
-  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    channelbeats_from_state_channel(&channelbeats[channel * 5], state.channels[channel]);
-  }
-}
-
-static void channelbeats_from_state_channel(uint8_t *channelbeats_channel, EuclideanChannel channel) {
+static void channelbeats_from_state_channel(uint8_t channelbeats_channel[5], EuclideanChannel channel) {
   channelbeats_channel[0] = channel.length;
   channelbeats_channel[1] = channel.density;
   channelbeats_channel[2] = channel.position;
