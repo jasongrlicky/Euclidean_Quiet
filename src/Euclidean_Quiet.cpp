@@ -483,7 +483,7 @@ void loop() {
 
   // READ K KNOB
   int kknob = encoder_read(EncK);
-  if (kknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
+  if (kknob != 0 && time - last_read > READ_DELAY) {
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
     } // check within limits
@@ -517,7 +517,7 @@ void loop() {
 
   // READ N KNOB
   int nknob = encoder_read(EncN);
-  if (nknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
+  if (nknob != 0 && time - last_read > READ_DELAY) {
     // Sense check n encoder reading to prevent crashes
 
     if (active_length >= BEAT_LENGTH_MAX) {
@@ -564,7 +564,7 @@ void loop() {
 
   // READ O KNOB
   int oknob = encoder_read(EncO);
-  if (oknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
+  if (oknob != 0 && time - last_read > READ_DELAY) {
     // Sense check o encoder reading to prevent crashes
 
     if (active_offset + oknob > active_length - 1) {
