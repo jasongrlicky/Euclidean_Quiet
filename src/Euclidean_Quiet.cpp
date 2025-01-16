@@ -249,6 +249,19 @@ uint8_t channelbeats[NUM_CHANNELS][5] = {
 };
 #endif
 
+/// Stores state of the Euclidean rhythm generator and sequencer for one of this 
+/// module's three channels
+typedef struct EuclideanChannel {
+  /// Number of steps in the Euclidean rhythm, 1-16
+  uint8_t length;
+  /// Number of active steps in the Euclidean rhythm, 1-16
+  uint8_t density;
+  /// Number of steps to rotate the Euclidean rhythm to the right, 1-16
+  uint8_t offset;
+  /// Step index representing the playhead position for this channel's sequencer, 0-15
+  uint8_t position; 
+} EuclideanChannel;
+
 Milliseconds time;
 Milliseconds last_clock;
 #if LOGGING_ENABLED
