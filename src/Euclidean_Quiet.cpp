@@ -714,7 +714,7 @@ void loop() {
     #endif
   }
 
-  // Handle Enocder Pushes
+  // Handle Encoder Pushes
   switch (events_in.enc_push) {
     case ENCODER_1:
       active_channel_set(1);
