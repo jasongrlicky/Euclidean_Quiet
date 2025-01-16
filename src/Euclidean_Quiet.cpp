@@ -249,8 +249,7 @@ uint8_t channelbeats[NUM_CHANNELS][5] = {
 };
 #endif
 
-/// Stores state of the Euclidean rhythm generator and sequencer for one of this 
-/// module's three channels
+/// State of the Euclidean rhythm generator and sequencer for a single channel
 typedef struct EuclideanChannel {
   /// Number of steps in the Euclidean rhythm, 1-16
   uint8_t length;
@@ -261,6 +260,13 @@ typedef struct EuclideanChannel {
   /// Step index representing the playhead position for this channel's sequencer, 0-15
   uint8_t position; 
 } EuclideanChannel;
+
+/// State of the entire Euclidean module
+typedef struct EuclideanState {
+  /// State for each of this module's channels
+  EuclideanChannel channels[NUM_CHANNELS];
+} EuclideanState;
+
 
 Milliseconds time;
 Milliseconds last_clock;
@@ -282,8 +288,8 @@ unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
 
-// Represents the three encoders in the InputEvents struct.
-// Used as indices into its arrays.
+/// Represents the three encoders in the `InputEvents` struct.
+/// Indexes into its arrays.
 enum EncoderIdx {
   ENCODER_1 = 0,
   ENCODER_2 = 1,
@@ -291,14 +297,21 @@ enum EncoderIdx {
   ENCODER_NONE = 4,
 };
 
+/// Record of any input events that were received this cycle
 typedef struct InputEvents {
+  /// Some encoders were rotated, indexed by `EncoderIdx`
   int16_t enc_move[NUM_CHANNELS];
+  /// An encoder was pushed
   EncoderIdx enc_push;
+  /// "Trig" input detected a rising edge
   bool trig_rise;
+  /// "Reset" input or button detected a rising edge
   bool reset_rise;
+  /// The internal clock generated a tick
   bool internal_clock_tick;
 } InputEvents;
 
+/// An instance of `InputEvents` which represents no events happening
 static const InputEvents INPUT_EVENTS_EMPTY = {
   .enc_move = { 0, 0, 0 },
   .enc_push = ENCODER_NONE,
@@ -307,6 +320,7 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
+/// A parameter was changed for the Euclidean rhythm generator
 enum EuclideanParamChange {
   EUCLIDEAN_PARAM_CHANGE_NONE,
   EUCLIDEAN_PARAM_CHANGE_LENGTH,
