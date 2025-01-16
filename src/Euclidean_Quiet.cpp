@@ -364,6 +364,8 @@ static void eeprom_load(EuclideanState *s) {
   Channel 2: length = 3 density = 4 offset = 8
   Channel 3: length = 5 density = 6 offset = 9
   */
+
+  #if EEPROM_READ
   for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
     s->channels[c].length = EEPROM.read((c << 1) + 1);
     s->channels[c].density = EEPROM.read((c << 1) + 2);
@@ -375,6 +377,7 @@ static void eeprom_load(EuclideanState *s) {
   for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
     channelbeats_from_state_channel(channelbeats[c], s->channels[c]);
   }
+  #endif
 }
 
 /// Turn on pull-up resistors for encoders
