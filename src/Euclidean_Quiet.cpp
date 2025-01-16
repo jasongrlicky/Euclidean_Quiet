@@ -269,22 +269,26 @@ unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
 
-// Used as indices into the InputEvents struct's encoder arrays
-#define ENCODER_1 0 // Labeled "LENGTH (CH1)" on front panel
-#define ENCODER_2 1 // Labeled "DENSITY (CH2)" on front panel
-#define ENCODER_3 2 // Labeled "OFFSET (CH3)" on front panel
+// Represents the three encoders in the InputEvents struct.
+// Used as indices into its arrays.
+enum EncoderIdx {
+  ENCODER_1 = 0,
+  ENCODER_2 = 1,
+  ENCODER_3 = 2,
+  ENCODER_NONE = 4,
+};
 
 typedef struct InputEvents {
   int16_t enc_move[NUM_CHANNELS];
-  bool enc_push_start[NUM_CHANNELS];
+  EncoderIdx enc_push;
   bool trig_rise;
   bool reset_rise;
   bool internal_clock_tick;
 } InputEvents;
 
 static const InputEvents INPUT_EVENTS_EMPTY = {
-  .enc_move = { 0, 0, 0},
-  .enc_push_start = { false, false, false },
+  .enc_move = { 0, 0, 0 },
+  .enc_push = ENCODER_NONE,
   .trig_rise = false,
   .reset_rise = false,
   .internal_clock_tick = false,
@@ -434,7 +438,7 @@ void loop() {
   }
   trig_in_value_previous = trig_in_value;
 
-  // KNOB MOVEMENT
+  // ENCODER MOVEMENT
   if (time - last_read > READ_DELAY) {
     // Encoder 1: LENGTH (CH1)
     int val_enc_1 = encoder_read(Enc1);
@@ -472,6 +476,36 @@ void loop() {
       Serial.println(oknob);
       #endif
     }
+  }
+
+  // ENCODER PUSHES
+  int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
+  bool enc_pushed;
+  EncoderIdx enc_idx;
+  if (channel_switch_val < 100) {
+    // Nothing pushed
+    enc_pushed = false;
+    enc_idx = ENCODER_NONE;
+    channelPressedCounter = 0;
+  } else if (channel_switch_val < 200) {
+    // Density pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_2;
+    channelPressedCounter++;
+  } else if (channel_switch_val < 400) {
+    // Length pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_1;
+    channelPressedCounter++;
+  } else {
+    // Offset pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_3;
+    channelPressedCounter++;
+  }
+
+  if (enc_pushed && (channelPressedCounter <= 1)) {
+    events_in.enc_push = enc_idx;
   }
 
   /* UPDATE STATE */
@@ -680,26 +714,19 @@ void loop() {
     #endif
   }
 
-  // SELECT ACTIVE CHANNEL
-  // Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
-  int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH);
-  uint8_t channel_switch;
-  if (channel_switch_read < 100) {
-    channel_switch = 3;					//	Nothing pressed
-    channelPressedCounter = 0;
-  } else if (channel_switch_read < 200) {
-    channel_switch = 2;					//	Density pressed
-    channelPressedCounter++;
-  } else if (channel_switch_read < 400) {
-    channel_switch = 1;					//	Length pressed
-    channelPressedCounter++;
-  } else {
-    channel_switch = 0;					//	Offset pressed
-    channelPressedCounter++;
-  }
-
-  if (channel_switch != 3 && channelPressedCounter <= 1) {
-    active_channel_set(channel_switch);
+  // Handle Enocder Pushes
+  switch (events_in.enc_push) {
+    case ENCODER_1:
+      active_channel_set(1);
+      break;
+    case ENCODER_2:
+      active_channel_set(2);
+      break;
+    case ENCODER_3:
+      active_channel_set(0);
+      break;
+    default:
+      break;
   }
 }
 
