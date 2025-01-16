@@ -528,19 +528,6 @@ void loop() {
     handle_clock();
   }
 
-  // Log parameters at a certain interval
-  #if LOGGING_ENABLED
-  if (time - last_logged > LOGGING_INTERVAL) {
-    last_logged = time;
-    Serial.print("length =");
-    Serial.print(active_length);
-    Serial.print(" density =");
-    Serial.print(active_density);
-    Serial.print(" offset =");
-    Serial.print(active_offset);
-  }
-  #endif
-
   // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
   if ((!led_sleep_mode_enabled) && (time - last_clock > LED_SLEEP_TIME)) {
     led_sleep();
@@ -742,6 +729,19 @@ void loop() {
 
     last_changed = time;
   }
+
+  // Log parameters at a certain interval
+  #if LOGGING_ENABLED
+  if (time - last_logged > LOGGING_INTERVAL) {
+    last_logged = time;
+    Serial.print("length =");
+    Serial.print(active_length);
+    Serial.print(" density =");
+    Serial.print(active_density);
+    Serial.print(" offset =");
+    Serial.print(active_offset);
+  }
+  #endif
 }
 
 // Triggered when clock pulses are received via the "Trig" input or generated 
