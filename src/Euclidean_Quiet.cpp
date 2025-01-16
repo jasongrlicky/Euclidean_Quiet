@@ -269,6 +269,13 @@ unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
 
+typedef struct InputEvents {
+  int16_t enc_move[NUM_CHANNELS];
+  bool enc_push_start[NUM_CHANNELS];
+  bool trig_rise;
+  bool reset_rise;
+} InputEvents;
+
 /* INTERNAL */
 
 void handle_clock();
