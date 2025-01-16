@@ -206,9 +206,9 @@ bool internal_clock_enabled = false;
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
-Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
-Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
-Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
+Encoder Enc1(PIN_ENC_2B, PIN_ENC_2A); // Length  / N
+Encoder Enc2(PIN_ENC_1B, PIN_ENC_1A); // Density / K
+Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
@@ -437,10 +437,10 @@ void loop() {
   // KNOB MOVEMENT
   if (time - last_read > READ_DELAY) {
     // Encoder 1: LENGTH (CH1)
-    int nknob = encoder_read(EncN);
-    if (nknob != 0) {
+    int val_enc_1 = encoder_read(Enc1);
+    if (val_enc_1 != 0) {
       last_read = time;
-      events_in.enc_move[ENCODER_1] = nknob;
+      events_in.enc_move[ENCODER_1] = val_enc_1;
 
       #if LOGGING_ENABLED
       Serial.print("ENC_1: Move ");
@@ -449,10 +449,10 @@ void loop() {
     }
 
     // Encoder 2: DENSITY (CH2)
-    int kknob = encoder_read(EncK);
-    if (kknob != 0) {
+    int val_enc_2 = encoder_read(Enc2);
+    if (val_enc_2 != 0) {
       last_read = time;
-      events_in.enc_move[ENCODER_2] = kknob;
+      events_in.enc_move[ENCODER_2] = val_enc_2;
 
       #if LOGGING_ENABLED
       Serial.print("ENC_2: Move ");
@@ -461,11 +461,11 @@ void loop() {
     }
 
     // Encoder 3: OFFSET (CH3)
-    int oknob = encoder_read(EncO);
-    if (oknob != 0) {
+    int val_enc_3 = encoder_read(Enc3);
+    if (val_enc_3 != 0) {
       last_read = time;
       changes = 3; // o change = 3
-      events_in.enc_move[ENCODER_3] = oknob;
+      events_in.enc_move[ENCODER_3] = val_enc_3;
 
       #if LOGGING_ENABLED
       Serial.print("ENC_3: Move ");
