@@ -309,6 +309,12 @@ enum EuclideanParamChange {
 /* INTERNAL */
 
 void handle_clock();
+/// Read a single step from a pattern
+/// @param pattern The pattern to read from, stored as 16 bitflags.
+/// @param length The length of the pattern. Must be <= 16.
+/// @param position The step at which to read. Must be < `length`.
+/// @return `true` if there is an active step at this position, `false` otherwise.
+static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 int encoder_read(Encoder& enc);
 void active_channel_set(uint8_t channel);
 void led_sleep();
@@ -767,7 +773,7 @@ void handle_clock() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     uint8_t length = euclidean_state.channels[channel].length;
     uint8_t position = euclidean_state.channels[channel].position;
-    uint8_t read_head = length - position - 1;
+    uint16_t pattern = generated_rhythms[channel];
 
     // don't clear or draw cursor if channel is being changed
     if (channel != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
@@ -775,13 +781,13 @@ void handle_clock() {
 
       if (position < 8) {
         for (uint8_t step = 0; step < 8; step++) {
-          if (bitRead(generated_rhythms[channel], length - 1 - step) == 1 && step < length) {
+          if (pattern_read(pattern, length, step) && (step < length)) {
             lc.setLed(LED_ADDR, channel * 2, 7 - step, true);
           }
         }
       } else {
         for (uint8_t step = 8; step < 16; step++) {
-          if (bitRead(generated_rhythms[channel], length - 1 - step) == 1 && step < length) {
+          if (pattern_read(pattern, length, step) && (step < length)) {
             lc.setLed(LED_ADDR, channel * 2, 15 - step, true);
           }
         }
@@ -799,7 +805,7 @@ void handle_clock() {
     }
     
     // Turn on LEDs on the bottom row for channels where the step is active
-    if (bitRead(generated_rhythms[channel], read_head) == 1) {
+    if (pattern_read(pattern, length, position)) {
       output_set_high((OutputChannel)channel);
 
       if (channel == 0) {
@@ -815,8 +821,8 @@ void handle_clock() {
       lights_active = true;
     }
 
-    // send off pulses to spare output for the first channel
-    if (bitRead(generated_rhythms[channel], read_head) == 0 && channel == 0) { // only relates to first channel
+    // Create output pulses for Offbeat Channel - inverse of Channel 1
+    if ((channel == 0) && (!pattern_read(pattern, length, position))) {
       output_set_high(OUTPUT_CHANNEL_OFFBEAT);
       
       lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
@@ -833,6 +839,11 @@ void handle_clock() {
   output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
 
   last_clock = time;
+}
+
+static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
+  uint8_t idx = length - position - 1;
+  return (pattern >> idx) & 0x01;
 }
 
 /* Read an encoder
