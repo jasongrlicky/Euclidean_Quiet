@@ -226,18 +226,6 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
-uint8_t channelbeats[NUM_CHANNELS][5] = {
-  {
-    16, 4, 0, 0, 0
-  }
-  , {
-    16, 4, 0, 0, 0
-  }
-  , {
-    16, 4, 0, 0, 0
-  }
-};
-
 /// State of the Euclidean rhythm generator and sequencer for a single channel
 typedef struct EuclideanChannel {
   /// Number of steps in the Euclidean rhythm, 1-16
@@ -328,7 +316,6 @@ void led_wake();
 void led_anim_wake();
 void led_anim_sleep();
 void startUpOK();
-static void channelbeats_from_state_channel(uint8_t channelbeats_channel[5], EuclideanChannel channel);
 
 /// Initialize the MAX72XX LED Matrix
 void led_init(void) {
@@ -409,17 +396,13 @@ void setup() {
   led_init();
   eeprom_load(&euclidean_state);
   validate_euclidean_state(&euclidean_state);
-  // TEMPORARY: Convert EuclideanState to channelbeats
-  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-    channelbeats_from_state_channel(channelbeats[c], euclidean_state.channels[c]);
-  }
   encoders_init();
   serial_init();
   io_pins_init();
 
   // Initialise beat holders
   for (int a = 0; a < NUM_CHANNELS; a++) {
-    generated_rhythms[a] = euclidean_pattern_rotate(channelbeats[a][0], channelbeats[a][1], channelbeats[a][3]);
+    generated_rhythms[a] = euclidean_pattern_rotate(euclidean_state.channels[a].length, euclidean_state.channels[a].density, euclidean_state.channels[a].offset);
   }
 
   startUpOK();
@@ -431,16 +414,6 @@ void setup() {
 }
 
 void loop() {
-  /*
-    What's in the loop:
-    Update time variable
-    Check to see if it is time go go to sleep
-    Changes routine - update generated_rhythms when channelbeats changes - triggered by changes == true
-    Trigger routines - on trigget update displays and pulse
-    Read encoders
-    Read switches
-  */
-
   time = millis();
 
   /* INPUT EVENTS */
@@ -570,7 +543,7 @@ void loop() {
   // HANDLE RESET
   if (events_in.reset_rise) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-      channelbeats[a][2] = 0;
+      euclidean_state.channels[a].position = 0;
     }
 
     if(led_sleep_mode_enabled) {
@@ -610,14 +583,14 @@ void loop() {
       break;
   }
 
-  if (channelbeats[active_channel][0] > 16) {
-    channelbeats[active_channel][0] = 16;
+  if (euclidean_state.channels[active_channel].length > 16) {
+    euclidean_state.channels[active_channel].length = 16;
   }
 
   // Local copies of active channel parameters
-  int active_length = channelbeats[active_channel][0];
-  int active_density = channelbeats[active_channel][1];
-  int active_offset = channelbeats[active_channel][3];
+  int active_length = euclidean_state.channels[active_channel].length;
+  int active_density = euclidean_state.channels[active_channel].density;
+  int active_offset = euclidean_state.channels[active_channel].offset;
 
   EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
 
@@ -626,28 +599,28 @@ void loop() {
   if (kknob) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
-    if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
+    if (euclidean_state.channels[active_channel].density + kknob > euclidean_state.channels[active_channel].length) {
       kknob = 0;
     } // check within limits
-    if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
+    if (euclidean_state.channels[active_channel].density + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
     }
 
     // CHECK AGAIN FOR LOGIC
-    if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
-      channelbeats[active_channel][1] = channelbeats[active_channel][0] - 1;
+    if (euclidean_state.channels[active_channel].density > euclidean_state.channels[active_channel].length - 1) {
+      euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].length - 1;
     }
 
-    channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
+    euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
     #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
+    EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
     #endif
 
     #if LOGGING_ENABLED
     Serial.print("eeprom write K= ");
     Serial.print((active_channel * 2) + 2);
     Serial.print(" ");
-    Serial.println(channelbeats[active_channel][1]);
+    Serial.println(euclidean_state.channels[active_channel].density);
     #endif
   }
 
@@ -668,30 +641,30 @@ void loop() {
     } // check above BEAT_LENGTH_MIN
 
     if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
-      channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
+      euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + nknob;
     }
 
     if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
-      channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
+      euclidean_state.channels[active_channel].offset = euclidean_state.channels[active_channel].offset + nknob;
       #if EEPROM_WRITE
-      EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+      EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
       #endif
     }
 
-    channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
-    active_density = channelbeats[active_channel][1];
-    active_length = channelbeats[active_channel][0];  // update for ease of coding
-    active_offset = channelbeats[active_channel][3];
+    euclidean_state.channels[active_channel].length = active_length + nknob; // update with encoder reading
+    active_density = euclidean_state.channels[active_channel].density;
+    active_length = euclidean_state.channels[active_channel].length;  // update for ease of coding
+    active_offset = euclidean_state.channels[active_channel].offset;
     
     #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
+    EEPROM.update((active_channel * 2) + 1, euclidean_state.channels[active_channel].length); // write settings to 2/4/6 eproms
     #endif
       
     #if LOGGING_ENABLED
     Serial.print("eeprom write N= ");
     Serial.print((active_channel * 2) + 1);
     Serial.print(" ");
-    Serial.println(channelbeats[active_channel][0]);
+    Serial.println(euclidean_state.channels[active_channel].length);
     #endif
   }
 
@@ -708,18 +681,18 @@ void loop() {
       oknob = 0;
     } // check above BEAT_LENGTH_MIN
 
-    channelbeats[active_channel][3] = active_offset + oknob;
-    active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
+    euclidean_state.channels[active_channel].offset = active_offset + oknob;
+    active_offset = euclidean_state.channels[active_channel].offset;  // update active_offset for ease of coding
 
     #if EEPROM_WRITE
-    EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+    EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
     #endif
 
     #if LOGGING_ENABLED
     Serial.print("eeprom write O= ");
     Serial.print((active_channel) + 7);
     Serial.print(" ");
-    Serial.println(channelbeats[active_channel][3]);
+    Serial.println(euclidean_state.channels[active_channel].offset);
     #endif
   }
 
@@ -792,21 +765,23 @@ void handle_clock() {
 
   // Cycle through channels
   for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-    int read_head = channelbeats[a][0] - channelbeats[a][2] - 1;
+    uint8_t length = euclidean_state.channels[a].length;
+    uint8_t position = euclidean_state.channels[a].position;
+    int read_head = length - position - 1;
 
     // don't clear or draw cursor if channel is being changed
     if (a != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
       lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
 
-      if (channelbeats[a][2] < 8) {
+      if (position < 8) {
         for (uint8_t c = 0; c < 8; c++) {
-          if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
+          if (bitRead(generated_rhythms[a], length - 1 - c) == 1 && c < length) {
             lc.setLed(LED_ADDR, a * 2, 7 - c, true);
           }
         }
       } else {
         for (uint8_t c = 8; c < 16; c++) {
-          if (bitRead(generated_rhythms[a], channelbeats[a][0] - 1 - c) == 1 && c < channelbeats[a][0]) {
+          if (bitRead(generated_rhythms[a], length - 1 - c) == 1 && c < length) {
             lc.setLed(LED_ADDR, a * 2, 15 - c, true);
           }
         }
@@ -814,11 +789,11 @@ void handle_clock() {
 
       lc.setRow(LED_ADDR, a * 2 + 1, 0);//clear active row
       // draw cursor
-      if (channelbeats[a][2] < 8) {
-        lc.setLed(LED_ADDR, a * 2 + 1, 7 - channelbeats[a][2], true); // write cursor less than 8
+      if (position < 8) {
+        lc.setLed(LED_ADDR, a * 2 + 1, 7 - position, true); // write cursor less than 8
       } else {
-        if (channelbeats[a][2] < 16) {
-          lc.setLed(LED_ADDR, a * 2 + 1, 15 - channelbeats[a][2], true); // write cursor more than 8
+        if (position < 16) {
+          lc.setLed(LED_ADDR, a * 2 + 1, 15 - position, true); // write cursor more than 8
         }
       }
     }
@@ -849,9 +824,9 @@ void handle_clock() {
     }
 
     // move counter to next position, ready for next pulse
-    channelbeats[a][2]++;
-    if (channelbeats[a][2] >= channelbeats[a][0]) {
-      channelbeats[a][2] = 0;
+    euclidean_state.channels[a].position++;
+    if (euclidean_state.channels[a].position >= euclidean_state.channels[a].length) {
+      euclidean_state.channels[a].position = 0;
     }
   }
 
@@ -953,12 +928,4 @@ void startUpOK() {
   delay(50);
   digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
-}
-
-static void channelbeats_from_state_channel(uint8_t channelbeats_channel[5], EuclideanChannel channel) {
-  channelbeats_channel[0] = channel.length;
-  channelbeats_channel[1] = channel.density;
-  channelbeats_channel[2] = channel.position;
-  channelbeats_channel[3] = channel.offset;
-  channelbeats_channel[4] = 0;
 }
