@@ -25,8 +25,10 @@ extern "C" {
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
     - Reset did not function for any channel if channel 1's playhead was at position 0.
-  - Internal:
+    - Validating faulty saved data did not happen until after that data was used.
+  - Development:
     - Migrated firmware project to PlatformIO.
+    - Added tests for Euclidean rhythm generation.
 */
 
 /* Sebsongs Modular Euclidean v. 1.2. Dec 2 2022.
@@ -194,12 +196,20 @@ extern "C" {
 #define NUM_CHANNELS 3
 // Bounds for three channel parameters
 // N: Beat Length
-#define BEAT_LENGTH_MAX 16
 #define BEAT_LENGTH_MIN 1
+#define BEAT_LENGTH_MAX 16
+#define BEAT_LENGTH_DEFAULT 16
 // K: Density
 #define BEAT_DENSITY_MIN 0
+#define BEAT_DENSITY_MAX 16
+#define BEAT_DENSITY_DEFAULT 4
 // O: Offset
 #define BEAT_OFFSET_MIN 0
+#define BEAT_OFFSET_MAX 15
+#define BEAT_OFFSET_DEFAULT 0
+// Sequencer position
+#define BEAT_POSITION_MAX 15
+#define BEAT_POSITION_DEFAULT 0
 
 /* GLOBALS */
 
@@ -329,33 +339,6 @@ void led_init(void) {
   lc.clearDisplay(LED_ADDR);
 }
 
-/// If there is faulty data in the eeprom, clear it and reset to default values
-void eeprom_init(void) {
-  #if EEPROM_READ && EEPROM_WRITE
-  if ((EEPROM.read(1) > 16) || (EEPROM.read(2) > 16) || (EEPROM.read(3) > 16) ||
-      (EEPROM.read(4) > 16) || (EEPROM.read(5) > 16) || (EEPROM.read(6) > 16) ||
-      (EEPROM.read(7) > 15) || (EEPROM.read(8) > 15) || (EEPROM.read(9) > 15)) {
-    // write a 0 to all bytes of the EEPROM
-    for (int i = 0; i < 1024; i++){
-      EEPROM.write(i, 0);
-    }
-      
-    EEPROM.write(1, 16);
-    EEPROM.write(2, 4);
-    EEPROM.write(3, 16);
-    EEPROM.write(4, 4);
-    EEPROM.write(5, 16);
-    EEPROM.write(6, 4);
-    EEPROM.write(7, 0);
-    EEPROM.write(8, 0);
-    EEPROM.write(9, 0);
-    EEPROM.write(10, 0);
-    EEPROM.write(11, 0);
-    EEPROM.write(12, 0);
-  }
-  #endif
-}
-
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s) {
   /*
@@ -372,12 +355,26 @@ static void eeprom_load(EuclideanState *s) {
     s->channels[c].offset = EEPROM.read(c + 7);
     s->channels[c].position = 0;
   }
-
-  // TEMPORARY: Convert EuclideanState to channelbeats
-  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-    channelbeats_from_state_channel(channelbeats[c], s->channels[c]);
-  }
   #endif
+}
+
+/// Keep the data in the state in bounds. Bounds excursions can happen when 
+/// loading from the EEPROM.
+static void validate_euclidean_state(EuclideanState *s) {
+  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+    if (s->channels[c].length > BEAT_LENGTH_MAX) {
+      s->channels[c].length = BEAT_LENGTH_DEFAULT;
+    }
+    if (s->channels[c].density > BEAT_DENSITY_MAX) {
+      s->channels[c].density = BEAT_DENSITY_DEFAULT;
+    }
+    if (s->channels[c].offset > BEAT_OFFSET_MAX) {
+      s->channels[c].offset = BEAT_OFFSET_DEFAULT;
+    }
+    if (s->channels[c].position > BEAT_POSITION_MAX) {
+      s->channels[c].position = BEAT_POSITION_DEFAULT;
+    }
+  }
 }
 
 /// Turn on pull-up resistors for encoders
@@ -410,8 +407,12 @@ void io_pins_init(void) {
 
 void setup() {
   led_init();
-  eeprom_init();
   eeprom_load(&euclidean_state);
+  validate_euclidean_state(&euclidean_state);
+  // TEMPORARY: Convert EuclideanState to channelbeats
+  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+    channelbeats_from_state_channel(channelbeats[c], euclidean_state.channels[c]);
+  }
   encoders_init();
   serial_init();
   io_pins_init();
