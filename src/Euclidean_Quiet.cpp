@@ -443,7 +443,7 @@ void loop() {
       events_in.enc_move[ENCODER_1] = nknob;
 
       #if LOGGING_ENABLED
-      Serial.print("ENC_1: Move");
+      Serial.print("ENC_1: Move ");
       Serial.println(nknob);
       #endif
     }
@@ -455,7 +455,7 @@ void loop() {
       events_in.enc_move[ENCODER_2] = kknob;
 
       #if LOGGING_ENABLED
-      Serial.print("ENC_2: Move");
+      Serial.print("ENC_2: Move ");
       Serial.println(kknob);
       #endif
     }
@@ -468,7 +468,7 @@ void loop() {
       events_in.enc_move[ENCODER_3] = oknob;
 
       #if LOGGING_ENABLED
-      Serial.print("ENC_3: Move");
+      Serial.print("ENC_3: Move ");
       Serial.println(oknob);
       #endif
     }
