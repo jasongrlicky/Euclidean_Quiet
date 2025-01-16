@@ -764,51 +764,51 @@ void handle_clock() {
   lc.setLed(LED_ADDR, 7, 7, true);
 
   // Update each channel's sequencer
-  for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-    uint8_t length = euclidean_state.channels[a].length;
-    uint8_t position = euclidean_state.channels[a].position;
+  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    uint8_t length = euclidean_state.channels[channel].length;
+    uint8_t position = euclidean_state.channels[channel].position;
     int read_head = length - position - 1;
 
     // don't clear or draw cursor if channel is being changed
-    if (a != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
-      lc.setRow(LED_ADDR, a * 2, 0);//clear line above active row
+    if (channel != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
+      lc.setRow(LED_ADDR, channel * 2, 0);//clear line above active row
 
       if (position < 8) {
-        for (uint8_t c = 0; c < 8; c++) {
-          if (bitRead(generated_rhythms[a], length - 1 - c) == 1 && c < length) {
-            lc.setLed(LED_ADDR, a * 2, 7 - c, true);
+        for (uint8_t step = 0; step < 8; step++) {
+          if (bitRead(generated_rhythms[channel], length - 1 - step) == 1 && step < length) {
+            lc.setLed(LED_ADDR, channel * 2, 7 - step, true);
           }
         }
       } else {
-        for (uint8_t c = 8; c < 16; c++) {
-          if (bitRead(generated_rhythms[a], length - 1 - c) == 1 && c < length) {
-            lc.setLed(LED_ADDR, a * 2, 15 - c, true);
+        for (uint8_t step = 8; step < 16; step++) {
+          if (bitRead(generated_rhythms[channel], length - 1 - step) == 1 && step < length) {
+            lc.setLed(LED_ADDR, channel * 2, 15 - step, true);
           }
         }
       }
 
-      lc.setRow(LED_ADDR, a * 2 + 1, 0);//clear active row
+      lc.setRow(LED_ADDR, channel * 2 + 1, 0);//clear active row
       // draw cursor
       if (position < 8) {
-        lc.setLed(LED_ADDR, a * 2 + 1, 7 - position, true); // write cursor less than 8
+        lc.setLed(LED_ADDR, channel * 2 + 1, 7 - position, true); // write cursor less than 8
       } else {
         if (position < 16) {
-          lc.setLed(LED_ADDR, a * 2 + 1, 15 - position, true); // write cursor more than 8
+          lc.setLed(LED_ADDR, channel * 2 + 1, 15 - position, true); // write cursor more than 8
         }
       }
     }
     
     // Turn on LEDs on the bottom row for channels where the step is active
-    if (bitRead(generated_rhythms[a], read_head) == 1) {
-      output_set_high((OutputChannel)a);
+    if (bitRead(generated_rhythms[channel], read_head) == 1) {
+      output_set_high((OutputChannel)channel);
 
-      if (a == 0) {
+      if (channel == 0) {
         lc.setLed(LED_ADDR, 7, 5, true);
       }
-      if (a == 1) {
+      if (channel == 1) {
         lc.setLed(LED_ADDR, 7, 2, true);
       }
-      if (a == 2) {
+      if (channel == 2) {
         lc.setLed(LED_ADDR, 7, 0, true);
       }
 
@@ -816,7 +816,7 @@ void handle_clock() {
     }
 
     // send off pulses to spare output for the first channel
-    if (bitRead(generated_rhythms[a], read_head) == 0 && a == 0) { // only relates to first channel
+    if (bitRead(generated_rhythms[channel], read_head) == 0 && channel == 0) { // only relates to first channel
       output_set_high(OUTPUT_CHANNEL_OFFBEAT);
       
       lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
@@ -824,9 +824,9 @@ void handle_clock() {
     }
 
     // move counter to next position, ready for next pulse
-    euclidean_state.channels[a].position++;
-    if (euclidean_state.channels[a].position >= euclidean_state.channels[a].length) {
-      euclidean_state.channels[a].position = 0;
+    euclidean_state.channels[channel].position++;
+    if (euclidean_state.channels[channel].position >= euclidean_state.channels[channel].length) {
+      euclidean_state.channels[channel].position = 0;
     }
   }
 
