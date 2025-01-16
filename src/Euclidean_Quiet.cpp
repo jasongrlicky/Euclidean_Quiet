@@ -222,6 +222,7 @@ LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELE
   Channel 3: n = 5 k = 6 position = 9
 */
 
+#if EEPROM_READ
 uint8_t channelbeats[NUM_CHANNELS][5] = {
   {
     EEPROM.read(1), EEPROM.read(2), 0, EEPROM.read(7), EEPROM.read(10)
@@ -233,6 +234,19 @@ uint8_t channelbeats[NUM_CHANNELS][5] = {
     EEPROM.read(5), EEPROM.read(6), 0, EEPROM.read(9), EEPROM.read(12)
   }
 }; // 0=n, 1=k, 2 = position , 3 = offset
+#else
+uint8_t channelbeats[NUM_CHANNELS][5] = {
+  {
+    16, 4, 0, 0, 0
+  }
+  , {
+    16, 4, 0, 0, 0
+  }
+  , {
+    16, 4, 0, 0, 0
+  }
+};
+#endif
 
 Milliseconds time;
 Milliseconds last_clock;
@@ -277,6 +291,7 @@ void led_init(void) {
 
 /// If there is faulty data in the eeprom, clear it and reset to default values
 void eeprom_init(void) {
+  #if EEPROM_READ && EEPROM_WRITE
   if ((EEPROM.read(1) > 16) || (EEPROM.read(2) > 16) || (EEPROM.read(3) > 16) ||
       (EEPROM.read(4) > 16) || (EEPROM.read(5) > 16) || (EEPROM.read(6) > 16) ||
       (EEPROM.read(7) > 15) || (EEPROM.read(8) > 15) || (EEPROM.read(9) > 15)) {
@@ -298,6 +313,7 @@ void eeprom_init(void) {
     EEPROM.write(11, 0);
     EEPROM.write(12, 0);
   }
+  #endif
 }
 
 /// Turn on pull-up resistors for encoders
@@ -503,7 +519,9 @@ void loop() {
       }
 
       channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
+      #if EEPROM_WRITE
       EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
+      #endif
 
       #if LOGGING_ENABLED
       Serial.print("eeprom write K= ");
@@ -542,7 +560,9 @@ void loop() {
 
       if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
         channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
+        #if EEPROM_WRITE
         EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+        #endif
       }
 
       channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
@@ -550,7 +570,9 @@ void loop() {
       active_length = channelbeats[active_channel][0];  // update for ease of coding
       active_offset = channelbeats[active_channel][3];
       
+      #if EEPROM_WRITE
       EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
+      #endif
         
       #if LOGGING_ENABLED
       Serial.print("eeprom write N= ");
@@ -583,7 +605,9 @@ void loop() {
       channelbeats[active_channel][3] = active_offset + oknob;
       active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
 
+      #if EEPROM_WRITE
       EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+      #endif
 
       #if LOGGING_ENABLED
       Serial.print("eeprom write O= ");
