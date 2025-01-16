@@ -710,32 +710,32 @@ void loop() {
 
     if (param_changed == EUCLIDEAN_PARAM_CHANGE_DENSITY) {  
       // Display beats in the active channel
-      for (uint8_t a = 0; a < 8; a++) {
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
+      for (uint8_t step = 0; step < 8; step++) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - step) == 1 && step < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - step, true);
         }
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - step - 8) == 1 && step + 8 < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - step, true);
         }
       }
     } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) { 
       // Display total length of beat
-      for (uint8_t a = 0; a < 8; a++) {
-        if (a < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
+      for (uint8_t step = 0; step < 8; step++) {
+        if (step < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - step, true);
         }
-        if (a + 8 < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
+        if (step + 8 < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - step, true);
         }
       }
     } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_OFFSET) {  
       // Display beats in the active channel
-      for (uint8_t a = 0; a < 8; a++) {
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
+      for (uint8_t step = 0; step < 8; step++) {
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - step) == 1 && step < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2, 7 - step, true);
         }
-        if (bitRead(generated_rhythms[active_channel], active_length - 1 - a - 8) == 1 && a + 8 < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
+        if (bitRead(generated_rhythms[active_channel], active_length - 1 - step - 8) == 1 && step + 8 < active_length) {
+          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - step, true);
         }
       }
     }
