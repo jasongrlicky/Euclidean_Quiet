@@ -260,7 +260,6 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 uint8_t active_channel; // Which channel is active? zero indexed
 Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
 bool lights_active = false;
-int changes = 0;
 bool led_sleep_mode_enabled = true;
 
 int trig_in_value_previous = 0; // For recognizing trigger in rising edges
@@ -468,7 +467,6 @@ void loop() {
     int val_enc_3 = encoder_read(Enc3);
     if (val_enc_3 != 0) {
       last_read = time;
-      changes = 3; // o change = 3
       events_in.enc_move[ENCODER_3] = val_enc_3;
 
       #if LOGGING_ENABLED
@@ -591,6 +589,8 @@ void loop() {
   int active_length = channelbeats[active_channel][0];
   int active_density = channelbeats[active_channel][1];
   int active_offset = channelbeats[active_channel][3];
+
+  int changes = 0;
 
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
