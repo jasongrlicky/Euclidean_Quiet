@@ -767,7 +767,7 @@ void handle_clock() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     uint8_t length = euclidean_state.channels[channel].length;
     uint8_t position = euclidean_state.channels[channel].position;
-    int read_head = length - position - 1;
+    uint8_t read_head = length - position - 1;
 
     // don't clear or draw cursor if channel is being changed
     if (channel != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
