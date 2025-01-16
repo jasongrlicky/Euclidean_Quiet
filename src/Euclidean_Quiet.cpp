@@ -517,15 +517,6 @@ void loop() {
 
   /* UPDATE STATE */
 
-  if (channelbeats[active_channel][0] > 16) {
-    channelbeats[active_channel][0] = 16;
-  }
-
-  // Local copies of active channel parameters
-  int active_length = channelbeats[active_channel][0];
-  int active_density = channelbeats[active_channel][1];
-  int active_offset = channelbeats[active_channel][3];
-
   // Internal Clock
   if (events_in.internal_clock_tick) {
     handle_clock();
@@ -576,6 +567,30 @@ void loop() {
   if (output_any_active() && (time - last_clock > output_pulse_length)) {
     output_clear_all();
   }
+
+  // Handle Encoder Pushes
+  switch (events_in.enc_push) {
+    case ENCODER_1:
+      active_channel_set(1);
+      break;
+    case ENCODER_2:
+      active_channel_set(2);
+      break;
+    case ENCODER_3:
+      active_channel_set(0);
+      break;
+    default:
+      break;
+  }
+
+  if (channelbeats[active_channel][0] > 16) {
+    channelbeats[active_channel][0] = 16;
+  }
+
+  // Local copies of active channel parameters
+  int active_length = channelbeats[active_channel][0];
+  int active_density = channelbeats[active_channel][1];
+  int active_offset = channelbeats[active_channel][3];
 
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
   if (changes > 0) {
@@ -719,21 +734,6 @@ void loop() {
     Serial.print(" ");
     Serial.println(channelbeats[active_channel][3]);
     #endif
-  }
-
-  // Handle Encoder Pushes
-  switch (events_in.enc_push) {
-    case ENCODER_1:
-      active_channel_set(1);
-      break;
-    case ENCODER_2:
-      active_channel_set(2);
-      break;
-    case ENCODER_3:
-      active_channel_set(0);
-      break;
-    default:
-      break;
   }
 }
 
