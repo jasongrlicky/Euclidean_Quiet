@@ -269,6 +269,11 @@ unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
 
+// Used as indices into the InputEvents struct's encoder arrays
+#define ENCODER_1 0 // Labeled "LENGTH (CH1)" on front panel
+#define ENCODER_2 1 // Labeled "DENSITY (CH2)" on front panel
+#define ENCODER_3 2 // Labeled "OFFSET (CH3)" on front panel
+
 typedef struct InputEvents {
   int16_t enc_move[NUM_CHANNELS];
   bool enc_push_start[NUM_CHANNELS];
@@ -429,6 +434,46 @@ void loop() {
   }
   trig_in_value_previous = trig_in_value;
 
+  // KNOB MOVEMENT
+  if (time - last_read > READ_DELAY) {
+    // Encoder 1: LENGTH (CH1)
+    int nknob = encoder_read(EncN);
+    if (nknob != 0) {
+      last_read = time;
+      events_in.enc_move[ENCODER_1] = nknob;
+
+      #if LOGGING_ENABLED
+      Serial.print("ENC_1: Move");
+      Serial.println(nknob);
+      #endif
+    }
+
+    // Encoder 2: DENSITY (CH2)
+    int kknob = encoder_read(EncK);
+    if (kknob != 0) {
+      last_read = time;
+      events_in.enc_move[ENCODER_2] = kknob;
+
+      #if LOGGING_ENABLED
+      Serial.print("ENC_2: Move");
+      Serial.println(kknob);
+      #endif
+    }
+
+    // Encoder 3: OFFSET (CH3)
+    int oknob = encoder_read(EncO);
+    if (oknob != 0) {
+      last_read = time;
+      changes = 3; // o change = 3
+      events_in.enc_move[ENCODER_3] = oknob;
+
+      #if LOGGING_ENABLED
+      Serial.print("ENC_3: Move");
+      Serial.println(oknob);
+      #endif
+    }
+  }
+
   /* UPDATE STATE */
 
   if (channelbeats[active_channel][0] > 16) {
@@ -533,128 +578,106 @@ void loop() {
     last_changed = time;
   }
 
-  if (time - last_read > READ_DELAY) {
-    // READ K KNOB
-    int kknob = encoder_read(EncK);
-    if (kknob != 0) {
-      if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
-        kknob = 0;
-      } // check within limits
-      if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
-        kknob = 0;
-      }
+  // Handle Density Knob Movement
+  int kknob = events_in.enc_move[ENCODER_2];
+  if (kknob) {
+    changes = 1; // K change = 1
 
-      #if LOGGING_ENABLED
-      Serial.print("kknob: ");
-      Serial.println(kknob);
-      #endif
-
-      // CHECK AGAIN FOR LOGIC
-      if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
-        channelbeats[active_channel][1] = channelbeats[active_channel][0] - 1;
-      }
-
-      channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
-      #if EEPROM_WRITE
-      EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
-      #endif
-
-      #if LOGGING_ENABLED
-      Serial.print("eeprom write K= ");
-      Serial.print((active_channel * 2) + 2);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][1]);
-      #endif
-
-      last_read = time;
-      changes = 1; // K change = 1
+    if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
+      kknob = 0;
+    } // check within limits
+    if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
+      kknob = 0;
     }
 
-    // READ N KNOB
-    int nknob = encoder_read(EncN);
-    if (nknob != 0) {
-      // Sense check n encoder reading to prevent crashes
-
-      if (active_length >= BEAT_LENGTH_MAX) {
-        active_length = BEAT_LENGTH_MAX;
-      } // Check for eeprom values over maximum.
-      if (active_length + nknob > BEAT_LENGTH_MAX) {
-        nknob = 0;
-      } // check below BEAT_LENGTH_MAX
-      if (active_length + nknob < BEAT_LENGTH_MIN) {
-        nknob = 0;
-      } // check above BEAT_LENGTH_MIN
-
-      #if LOGGING_ENABLED
-      Serial.print("nknob: ");
-      Serial.println(nknob);
-      #endif
-
-      if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
-        channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
-      }
-
-      if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
-        channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
-        #if EEPROM_WRITE
-        EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
-        #endif
-      }
-
-      channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
-      active_density = channelbeats[active_channel][1];
-      active_length = channelbeats[active_channel][0];  // update for ease of coding
-      active_offset = channelbeats[active_channel][3];
-      
-      #if EEPROM_WRITE
-      EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
-      #endif
-        
-      #if LOGGING_ENABLED
-      Serial.print("eeprom write N= ");
-      Serial.print((active_channel * 2) + 1);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][0]);
-      #endif
-
-      last_read = time;
-      changes = 2; // n change = 2
+    // CHECK AGAIN FOR LOGIC
+    if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
+      channelbeats[active_channel][1] = channelbeats[active_channel][0] - 1;
     }
 
-    // READ O KNOB
-    int oknob = encoder_read(EncO);
-    if (oknob != 0) {
-      // Sense check o encoder reading to prevent crashes
+    channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
+    #endif
 
-      if (active_offset + oknob > active_length - 1) {
-        oknob = 0;
-      } // check below BEAT_OFFSET_MAX
-      if (active_offset + oknob < BEAT_OFFSET_MIN) {
-        oknob = 0;
-      } // check above BEAT_LENGTH_MIN
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write K= ");
+    Serial.print((active_channel * 2) + 2);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][1]);
+    #endif
+  }
 
-      #if LOGGING_ENABLED
-      Serial.print("oknob: ");
-      Serial.println(oknob);
-      #endif
+  // Handle Length Knob Movement
+  int nknob = events_in.enc_move[ENCODER_1];
+  if (nknob != 0) {
+    changes = 2; // n change = 2
 
-      channelbeats[active_channel][3] = active_offset + oknob;
-      active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
+    // Sense check n encoder reading to prevent crashes
+    if (active_length >= BEAT_LENGTH_MAX) {
+      active_length = BEAT_LENGTH_MAX;
+    } // Check for eeprom values over maximum.
+    if (active_length + nknob > BEAT_LENGTH_MAX) {
+      nknob = 0;
+    } // check below BEAT_LENGTH_MAX
+    if (active_length + nknob < BEAT_LENGTH_MIN) {
+      nknob = 0;
+    } // check above BEAT_LENGTH_MIN
 
+    if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
+      channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
+    }
+
+    if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
+      channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
       #if EEPROM_WRITE
       EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
       #endif
-
-      #if LOGGING_ENABLED
-      Serial.print("eeprom write O= ");
-      Serial.print((active_channel) + 7);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][3]);
-      #endif
-
-      last_read = time;
-      changes = 3; // o change = 3
     }
+
+    channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
+    active_density = channelbeats[active_channel][1];
+    active_length = channelbeats[active_channel][0];  // update for ease of coding
+    active_offset = channelbeats[active_channel][3];
+    
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
+    #endif
+      
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write N= ");
+    Serial.print((active_channel * 2) + 1);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][0]);
+    #endif
+  }
+
+  // Handle Offset Knob Movement
+  int oknob = events_in.enc_move[ENCODER_3];
+  if (oknob != 0) {
+    changes = 3; // o change = 3
+
+    // Sense check o encoder reading to prevent crashes
+    if (active_offset + oknob > active_length - 1) {
+      oknob = 0;
+    } // check below BEAT_OFFSET_MAX
+    if (active_offset + oknob < BEAT_OFFSET_MIN) {
+      oknob = 0;
+    } // check above BEAT_LENGTH_MIN
+
+    channelbeats[active_channel][3] = active_offset + oknob;
+    active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
+
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+    #endif
+
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write O= ");
+    Serial.print((active_channel) + 7);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][3]);
+    #endif
   }
 
   // SELECT ACTIVE CHANNEL
