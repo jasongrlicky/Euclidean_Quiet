@@ -277,6 +277,14 @@ typedef struct InputEvents {
   bool internal_clock_tick;
 } InputEvents;
 
+static const InputEvents INPUT_EVENTS_EMPTY = {
+  .enc_move = { 0, 0, 0},
+  .enc_push_start = { false, false, false },
+  .trig_rise = false,
+  .reset_rise = false,
+  .internal_clock_tick = false,
+};
+
 /* INTERNAL */
 
 void handle_clock();
