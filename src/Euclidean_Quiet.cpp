@@ -798,7 +798,7 @@ void handle_clock() {
       }
     }
     
-    // turn on pulses on channels where a beat is present
+    // Turn on LEDs on the bottom row for channels where the step is active
     if (bitRead(generated_rhythms[a], read_head) == 1) {
       output_set_high((OutputChannel)a);
 
