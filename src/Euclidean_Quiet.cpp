@@ -206,9 +206,9 @@ bool internal_clock_enabled = false;
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
-Encoder EncK(PIN_ENC_1B, PIN_ENC_1A); // Density
-Encoder EncN(PIN_ENC_2B, PIN_ENC_2A); // Length
-Encoder EncO(PIN_ENC_3B, PIN_ENC_3A); // Offset
+Encoder Enc1(PIN_ENC_2B, PIN_ENC_2A); // Length  / N
+Encoder Enc2(PIN_ENC_1B, PIN_ENC_1A); // Density / K
+Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
@@ -260,7 +260,6 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 uint8_t active_channel; // Which channel is active? zero indexed
 Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
 bool lights_active = false;
-int changes = 0;
 bool led_sleep_mode_enabled = true;
 
 int trig_in_value_previous = 0; // For recognizing trigger in rising edges
@@ -268,6 +267,38 @@ bool reset_active = false;
 unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
+
+// Represents the three encoders in the InputEvents struct.
+// Used as indices into its arrays.
+enum EncoderIdx {
+  ENCODER_1 = 0,
+  ENCODER_2 = 1,
+  ENCODER_3 = 2,
+  ENCODER_NONE = 4,
+};
+
+typedef struct InputEvents {
+  int16_t enc_move[NUM_CHANNELS];
+  EncoderIdx enc_push;
+  bool trig_rise;
+  bool reset_rise;
+  bool internal_clock_tick;
+} InputEvents;
+
+static const InputEvents INPUT_EVENTS_EMPTY = {
+  .enc_move = { 0, 0, 0 },
+  .enc_push = ENCODER_NONE,
+  .trig_rise = false,
+  .reset_rise = false,
+  .internal_clock_tick = false,
+};
+
+enum EuclideanParamChange {
+  EUCLIDEAN_PARAM_CHANGE_NONE,
+  EUCLIDEAN_PARAM_CHANGE_LENGTH,
+  EUCLIDEAN_PARAM_CHANGE_DENSITY,
+  EUCLIDEAN_PARAM_CHANGE_OFFSET,
+};
 
 /* INTERNAL */
 
@@ -377,17 +408,122 @@ void loop() {
 
   time = millis();
 
-  if (channelbeats[active_channel][0] > 16) {
-    channelbeats[active_channel][0] = 16;
+  /* INPUT EVENTS */
+
+  InputEvents events_in = INPUT_EVENTS_EMPTY;
+
+  // READ TRIG AND RESET INPUTS
+  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
+  int reset_button = analogRead(A1);
+
+  // RESET INPUT & BUTTON
+  if ((!reset_active) && (reset_button > RESET_PIN_THRESHOLD)) {
+    reset_active = true;
+
+    events_in.reset_rise = true;
+
+    #if LOGGING_ENABLED
+    Serial.println("INPUT: Reset Rise");
+    #endif
+  }
+  if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
+    reset_active = false;
+
+    #if LOGGING_ENABLED
+    Serial.println("INPUT: Reset Fall");      
+    #endif
   }
 
-  // Local copies of active channel parameters
-  int active_length = channelbeats[active_channel][0];
-  int active_density = channelbeats[active_channel][1];
-  int active_offset = channelbeats[active_channel][3];
+  // TRIG INPUT 
+  if (trig_in_value > trig_in_value_previous) { 
+    events_in.trig_rise = true;
+
+    #if LOGGING_ENABLED
+    Serial.println("INPUT: Trigger Rise");
+    #endif
+  }
+  trig_in_value_previous = trig_in_value;
+
+  // ENCODER MOVEMENT
+  if (time - last_read > READ_DELAY) {
+    // Encoder 1: LENGTH (CH1)
+    int val_enc_1 = encoder_read(Enc1);
+    if (val_enc_1 != 0) {
+      last_read = time;
+      events_in.enc_move[ENCODER_1] = val_enc_1;
+
+      #if LOGGING_ENABLED
+      Serial.print("ENC_1: Move ");
+      Serial.println(nknob);
+      #endif
+    }
+
+    // Encoder 2: DENSITY (CH2)
+    int val_enc_2 = encoder_read(Enc2);
+    if (val_enc_2 != 0) {
+      last_read = time;
+      events_in.enc_move[ENCODER_2] = val_enc_2;
+
+      #if LOGGING_ENABLED
+      Serial.print("ENC_2: Move ");
+      Serial.println(kknob);
+      #endif
+    }
+
+    // Encoder 3: OFFSET (CH3)
+    int val_enc_3 = encoder_read(Enc3);
+    if (val_enc_3 != 0) {
+      last_read = time;
+      events_in.enc_move[ENCODER_3] = val_enc_3;
+
+      #if LOGGING_ENABLED
+      Serial.print("ENC_3: Move ");
+      Serial.println(oknob);
+      #endif
+    }
+  }
+
+  // ENCODER PUSHES
+  int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
+  bool enc_pushed;
+  EncoderIdx enc_idx;
+  if (channel_switch_val < 100) {
+    // Nothing pushed
+    enc_pushed = false;
+    enc_idx = ENCODER_NONE;
+    channelPressedCounter = 0;
+  } else if (channel_switch_val < 200) {
+    // Density pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_2;
+    channelPressedCounter++;
+  } else if (channel_switch_val < 400) {
+    // Length pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_1;
+    channelPressedCounter++;
+  } else {
+    // Offset pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_3;
+    channelPressedCounter++;
+  }
+
+  if (enc_pushed && (channelPressedCounter <= 1)) {
+    events_in.enc_push = enc_idx;
+  }
+
+  /* INTERNAL EVENTS */
 
   // Internal Clock
   if (internal_clock_enabled && (time - last_clock > INTERNAL_CLOCK_PERIOD)) {
+    events_in.internal_clock_tick = true;
+  }
+
+  /* UPDATE STATE */
+
+  // Internal Clock
+  if (events_in.internal_clock_tick) {
     handle_clock();
   }
 
@@ -409,40 +545,22 @@ void loop() {
     led_sleep();
   }
 
-  // READ TRIG AND RESET INPUTS
-  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
-  int reset_button = analogRead(A1);
-
-  // RESET INPUT & BUTTON
-  if ((!reset_active) && (reset_button > RESET_PIN_THRESHOLD) && (channelbeats[0][2] > 0)) {
+  // HANDLE RESET
+  if ((events_in.reset_rise) && (channelbeats[0][2] > 0)) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       channelbeats[a][2] = 0;
     }
-    reset_active = true;
 
     if(led_sleep_mode_enabled) {
       handle_clock();
     }
-
-    #if LOGGING_ENABLED
-    Serial.println("RESET ACTIVE");
-    #endif
   }
 
-  if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
-    reset_active = false;
-
-    #if LOGGING_ENABLED
-    Serial.println("RESET INACTIVE");      
-    #endif
-  }
-
-  // TRIG INPUT 
-  if (trig_in_value > trig_in_value_previous) { 
+  // HANDLE TRIGGER INPUT
+  if (events_in.trig_rise) { 
     internal_clock_enabled = false; // turn off internal clock if external clock received
     handle_clock();
   }
-  trig_in_value_previous = trig_in_value;
   
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (lights_active && (time - last_clock > output_pulse_length)) {
@@ -455,14 +573,142 @@ void loop() {
     output_clear_all();
   }
 
+  // Handle Encoder Pushes
+  switch (events_in.enc_push) {
+    case ENCODER_1:
+      active_channel_set(1);
+      break;
+    case ENCODER_2:
+      active_channel_set(2);
+      break;
+    case ENCODER_3:
+      active_channel_set(0);
+      break;
+    default:
+      break;
+  }
+
+  if (channelbeats[active_channel][0] > 16) {
+    channelbeats[active_channel][0] = 16;
+  }
+
+  // Local copies of active channel parameters
+  int active_length = channelbeats[active_channel][0];
+  int active_density = channelbeats[active_channel][1];
+  int active_offset = channelbeats[active_channel][3];
+
+  EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
+
+  // Handle Density Knob Movement
+  int kknob = events_in.enc_move[ENCODER_2];
+  if (kknob) {
+    param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
+
+    if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
+      kknob = 0;
+    } // check within limits
+    if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
+      kknob = 0;
+    }
+
+    // CHECK AGAIN FOR LOGIC
+    if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
+      channelbeats[active_channel][1] = channelbeats[active_channel][0] - 1;
+    }
+
+    channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
+    #endif
+
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write K= ");
+    Serial.print((active_channel * 2) + 2);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][1]);
+    #endif
+  }
+
+  // Handle Length Knob Movement
+  int nknob = events_in.enc_move[ENCODER_1];
+  if (nknob != 0) {
+    param_changed = EUCLIDEAN_PARAM_CHANGE_LENGTH;
+
+    // Sense check n encoder reading to prevent crashes
+    if (active_length >= BEAT_LENGTH_MAX) {
+      active_length = BEAT_LENGTH_MAX;
+    } // Check for eeprom values over maximum.
+    if (active_length + nknob > BEAT_LENGTH_MAX) {
+      nknob = 0;
+    } // check below BEAT_LENGTH_MAX
+    if (active_length + nknob < BEAT_LENGTH_MIN) {
+      nknob = 0;
+    } // check above BEAT_LENGTH_MIN
+
+    if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
+      channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
+    }
+
+    if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
+      channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
+      #if EEPROM_WRITE
+      EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+      #endif
+    }
+
+    channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
+    active_density = channelbeats[active_channel][1];
+    active_length = channelbeats[active_channel][0];  // update for ease of coding
+    active_offset = channelbeats[active_channel][3];
+    
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
+    #endif
+      
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write N= ");
+    Serial.print((active_channel * 2) + 1);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][0]);
+    #endif
+  }
+
+  // Handle Offset Knob Movement
+  int oknob = events_in.enc_move[ENCODER_3];
+  if (oknob != 0) {
+    param_changed = EUCLIDEAN_PARAM_CHANGE_OFFSET;
+
+    // Sense check o encoder reading to prevent crashes
+    if (active_offset + oknob > active_length - 1) {
+      oknob = 0;
+    } // check below BEAT_OFFSET_MAX
+    if (active_offset + oknob < BEAT_OFFSET_MIN) {
+      oknob = 0;
+    } // check above BEAT_LENGTH_MIN
+
+    channelbeats[active_channel][3] = active_offset + oknob;
+    active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
+
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
+    #endif
+
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write O= ");
+    Serial.print((active_channel) + 7);
+    Serial.print(" ");
+    Serial.println(channelbeats[active_channel][3]);
+    #endif
+  }
+
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
-  if (changes > 0) {
+  if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
-    if (changes == 1) {  
-      // 1 = K changes - display beats in the active channel
+    if (param_changed == EUCLIDEAN_PARAM_CHANGE_DENSITY) {  
+      // Display beats in the active channel
       for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -471,8 +717,8 @@ void loop() {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
-    } else if (changes == 2) { 
-      // 2 = N changes, display total length of beat
+    } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) { 
+      // Display total length of beat
       for (uint8_t a = 0; a < 8; a++) {
         if (a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -481,8 +727,8 @@ void loop() {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
-    } else if (changes == 3) {  
-      // 3 = Offset changes - display beats in the active channel
+    } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_OFFSET) {  
+      // Display beats in the active channel
       for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -493,154 +739,7 @@ void loop() {
       }
     }
 
-    changes = 0;
     last_changed = time;
-  }
-
-  if (time - last_read > READ_DELAY) {
-    // READ K KNOB
-    int kknob = encoder_read(EncK);
-    if (kknob != 0) {
-      if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
-        kknob = 0;
-      } // check within limits
-      if (channelbeats[active_channel][1] + kknob < BEAT_DENSITY_MIN) {
-        kknob = 0;
-      }
-
-      #if LOGGING_ENABLED
-      Serial.print("kknob: ");
-      Serial.println(kknob);
-      #endif
-
-      // CHECK AGAIN FOR LOGIC
-      if (channelbeats[active_channel][1] > channelbeats[active_channel][0] - 1) {
-        channelbeats[active_channel][1] = channelbeats[active_channel][0] - 1;
-      }
-
-      channelbeats[active_channel][1] = channelbeats[active_channel][1] + kknob; // update with encoder reading
-      #if EEPROM_WRITE
-      EEPROM.update((active_channel * 2) + 2, channelbeats[active_channel][1]); // write settings to 2/4/6 eproms
-      #endif
-
-      #if LOGGING_ENABLED
-      Serial.print("eeprom write K= ");
-      Serial.print((active_channel * 2) + 2);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][1]);
-      #endif
-
-      last_read = time;
-      changes = 1; // K change = 1
-    }
-
-    // READ N KNOB
-    int nknob = encoder_read(EncN);
-    if (nknob != 0) {
-      // Sense check n encoder reading to prevent crashes
-
-      if (active_length >= BEAT_LENGTH_MAX) {
-        active_length = BEAT_LENGTH_MAX;
-      } // Check for eeprom values over maximum.
-      if (active_length + nknob > BEAT_LENGTH_MAX) {
-        nknob = 0;
-      } // check below BEAT_LENGTH_MAX
-      if (active_length + nknob < BEAT_LENGTH_MIN) {
-        nknob = 0;
-      } // check above BEAT_LENGTH_MIN
-
-      #if LOGGING_ENABLED
-      Serial.print("nknob: ");
-      Serial.println(nknob);
-      #endif
-
-      if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
-        channelbeats[active_channel][1] = channelbeats[active_channel][1] + nknob;
-      }
-
-      if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
-        channelbeats[active_channel][3] = channelbeats[active_channel][3] + nknob;
-        #if EEPROM_WRITE
-        EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
-        #endif
-      }
-
-      channelbeats[active_channel][0] = active_length + nknob; // update with encoder reading
-      active_density = channelbeats[active_channel][1];
-      active_length = channelbeats[active_channel][0];  // update for ease of coding
-      active_offset = channelbeats[active_channel][3];
-      
-      #if EEPROM_WRITE
-      EEPROM.update((active_channel * 2) + 1, channelbeats[active_channel][0]); // write settings to 2/4/6 eproms
-      #endif
-        
-      #if LOGGING_ENABLED
-      Serial.print("eeprom write N= ");
-      Serial.print((active_channel * 2) + 1);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][0]);
-      #endif
-
-      last_read = time;
-      changes = 2; // n change = 2
-    }
-
-    // READ O KNOB
-    int oknob = encoder_read(EncO);
-    if (oknob != 0) {
-      // Sense check o encoder reading to prevent crashes
-
-      if (active_offset + oknob > active_length - 1) {
-        oknob = 0;
-      } // check below BEAT_OFFSET_MAX
-      if (active_offset + oknob < BEAT_OFFSET_MIN) {
-        oknob = 0;
-      } // check above BEAT_LENGTH_MIN
-
-      #if LOGGING_ENABLED
-      Serial.print("oknob: ");
-      Serial.println(oknob);
-      #endif
-
-      channelbeats[active_channel][3] = active_offset + oknob;
-      active_offset = channelbeats[active_channel][3];  // update active_offset for ease of coding
-
-      #if EEPROM_WRITE
-      EEPROM.update((active_channel) + 7, channelbeats[active_channel][3]); // write settings to 2/4/6 eproms
-      #endif
-
-      #if LOGGING_ENABLED
-      Serial.print("eeprom write O= ");
-      Serial.print((active_channel) + 7);
-      Serial.print(" ");
-      Serial.println(channelbeats[active_channel][3]);
-      #endif
-
-      last_read = time;
-      changes = 3; // o change = 3
-    }
-  }
-
-  // SELECT ACTIVE CHANNEL
-  // Knobs on Syinsi PCB (from top to bottom) are Length, Density, Offset.
-  int channel_switch_read = analogRead(PIN_IN_CHANNEL_SWITCH);
-  uint8_t channel_switch;
-  if (channel_switch_read < 100) {
-    channel_switch = 3;					//	Nothing pressed
-    channelPressedCounter = 0;
-  } else if (channel_switch_read < 200) {
-    channel_switch = 2;					//	Density pressed
-    channelPressedCounter++;
-  } else if (channel_switch_read < 400) {
-    channel_switch = 1;					//	Length pressed
-    channelPressedCounter++;
-  } else {
-    channel_switch = 0;					//	Offset pressed
-    channelPressedCounter++;
-  }
-
-  if (channel_switch != 3 && channelPressedCounter <= 1) {
-    active_channel_set(channel_switch);
   }
 }
 
