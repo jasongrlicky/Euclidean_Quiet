@@ -361,6 +361,10 @@ void loop() {
 
   time = millis();
 
+  if (channelbeats[active_channel][0] > 16) {
+    channelbeats[active_channel][0] = 16;
+  }
+
   // Local copies of active channel parameters
   int active_length = channelbeats[active_channel][0];
   int active_density = channelbeats[active_channel][1];
@@ -513,10 +517,6 @@ void loop() {
 
   // READ N KNOB
   int nknob = encoder_read(EncN);
-  if (channelbeats[active_channel][0] > 16) {
-    channelbeats[active_channel][0] = 16;
-  }
-
   if (nknob != 0 && time - last_read > READ_DELAY && active_channel != 3) {
     // Sense check n encoder reading to prevent crashes
 
