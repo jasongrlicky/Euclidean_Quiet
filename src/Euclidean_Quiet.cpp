@@ -293,6 +293,13 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
+enum EuclideanParamChange {
+  EUCLIDEAN_PARAM_CHANGE_NONE,
+  EUCLIDEAN_PARAM_CHANGE_LENGTH,
+  EUCLIDEAN_PARAM_CHANGE_DENSITY,
+  EUCLIDEAN_PARAM_CHANGE_OFFSET,
+};
+
 /* INTERNAL */
 
 void handle_clock();
@@ -590,12 +597,12 @@ void loop() {
   int active_density = channelbeats[active_channel][1];
   int active_offset = channelbeats[active_channel][3];
 
-  int changes = 0;
+  EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
 
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
   if (kknob) {
-    changes = 1; // K change = 1
+    param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
     if (channelbeats[active_channel][1] + kknob > channelbeats[active_channel][0]) {
       kknob = 0;
@@ -625,7 +632,7 @@ void loop() {
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
   if (nknob != 0) {
-    changes = 2; // n change = 2
+    param_changed = EUCLIDEAN_PARAM_CHANGE_LENGTH;
 
     // Sense check n encoder reading to prevent crashes
     if (active_length >= BEAT_LENGTH_MAX) {
@@ -669,7 +676,7 @@ void loop() {
   // Handle Offset Knob Movement
   int oknob = events_in.enc_move[ENCODER_3];
   if (oknob != 0) {
-    changes = 3; // o change = 3
+    param_changed = EUCLIDEAN_PARAM_CHANGE_OFFSET;
 
     // Sense check o encoder reading to prevent crashes
     if (active_offset + oknob > active_length - 1) {
@@ -695,13 +702,13 @@ void loop() {
   }
 
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
-  if (changes > 0) {
+  if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
     lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
     lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
 
-    if (changes == 1) {  
-      // 1 = K changes - display beats in the active channel
+    if (param_changed == EUCLIDEAN_PARAM_CHANGE_DENSITY) {  
+      // Display beats in the active channel
       for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -710,8 +717,8 @@ void loop() {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
-    } else if (changes == 2) { 
-      // 2 = N changes, display total length of beat
+    } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) { 
+      // Display total length of beat
       for (uint8_t a = 0; a < 8; a++) {
         if (a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -720,8 +727,8 @@ void loop() {
           lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - a, true);
         }
       }
-    } else if (changes == 3) {  
-      // 3 = Offset changes - display beats in the active channel
+    } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_OFFSET) {  
+      // Display beats in the active channel
       for (uint8_t a = 0; a < 8; a++) {
         if (bitRead(generated_rhythms[active_channel], active_length - 1 - a) == 1 && a < active_length) {
           lc.setLed(LED_ADDR, active_channel * 2, 7 - a, true);
@@ -732,7 +739,6 @@ void loop() {
       }
     }
 
-    changes = 0;
     last_changed = time;
   }
 }
