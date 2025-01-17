@@ -317,11 +317,13 @@ void handle_clock();
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 int encoder_read(Encoder& enc);
 void active_channel_set(uint8_t channel);
+#define led_pixel_on(x, y) (led_pixel_set(x, y, true))
+#define led_pixel_off(x, y) (led_pixel_set(x, y, false))
 /// Set a single pixel on the LED Matrix to be on or off, using a sensible coordinate system.
 /// @param x Zero-indexed position, from left to right.
 /// @param y Zero-indexed position, from top to bottom.
 /// @param val If `true`, lights pixel. If `false`, turns off pixel.
-static inline void led_set_pixel(uint8_t x, uint8_t y, bool val);
+static inline void led_pixel_set(uint8_t x, uint8_t y, bool val);
 void led_sleep();
 void led_wake();
 void led_anim_wake();
@@ -723,7 +725,7 @@ void loop() {
           y += 1;
         }
 
-        led_set_pixel(x, y, true);
+        led_pixel_set(x, y, true);
       }
     } else {  
       // Density or Offset changed -  Display beats in the active channel
@@ -736,7 +738,7 @@ void loop() {
             y += 1;
           }
 
-          led_set_pixel(x, y, true);
+          led_pixel_set(x, y, true);
         }
       }
     }
@@ -783,13 +785,13 @@ void handle_clock() {
       if (position < 8) {
         for (uint8_t step = 0; step < 8; step++) {
           if (pattern_read(pattern, length, step) && (step < length)) {
-            lc.setLed(LED_ADDR, channel * 2, 7 - step, true);
+            led_pixel_on(step, channel * 2);
           }
         }
       } else {
         for (uint8_t step = 8; step < 16; step++) {
           if (pattern_read(pattern, length, step) && (step < length)) {
-            lc.setLed(LED_ADDR, channel * 2, 15 - step, true);
+            led_pixel_on(8 - step, channel * 2);
           }
         }
       }
@@ -797,10 +799,10 @@ void handle_clock() {
       lc.setRow(LED_ADDR, channel * 2 + 1, 0);//clear active row
       // draw cursor
       if (position < 8) {
-        lc.setLed(LED_ADDR, channel * 2 + 1, 7 - position, true); // write cursor less than 8
+        led_pixel_on(position, (channel * 2) + 1); // write cursor less than 8
       } else {
         if (position < 16) {
-          lc.setLed(LED_ADDR, channel * 2 + 1, 15 - position, true); // write cursor more than 8
+          led_pixel_on(8 - position, (channel * 2) + 1); // write cursor more than 8
         }
       }
     }
@@ -810,13 +812,13 @@ void handle_clock() {
       output_set_high((OutputChannel)channel);
 
       if (channel == 0) {
-        lc.setLed(LED_ADDR, 7, 5, true);
+        led_pixel_on(2, 7);
       }
       if (channel == 1) {
-        lc.setLed(LED_ADDR, 7, 2, true);
+        led_pixel_on(5, 7);
       }
       if (channel == 2) {
-        lc.setLed(LED_ADDR, 7, 0, true);
+        led_pixel_on(7, 7);
       }
 
       lights_active = true;
@@ -826,7 +828,7 @@ void handle_clock() {
     if ((channel == 0) && (!pattern_read(pattern, length, position))) {
       output_set_high(OUTPUT_CHANNEL_OFFBEAT);
       
-      lc.setLed(LED_ADDR, 7, 4, true); // bottom row flash
+      led_pixel_on(3, 7); // bottom row flash
       lights_active = true;
     }
 
@@ -888,7 +890,7 @@ void active_channel_set(uint8_t channel) {
     lc.setRow(LED_ADDR, 6, row_bits);
 }
 
-static inline void led_set_pixel(uint8_t x, uint8_t y, bool val) {
+static inline void led_pixel_set(uint8_t x, uint8_t y, bool val) {
   lc.setLed(LED_ADDR, y, 7 - x, val);
 }
 
