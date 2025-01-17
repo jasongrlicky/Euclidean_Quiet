@@ -793,7 +793,8 @@ void handle_clock() {
     draw_channel((Channel)channel, pattern, length, position);
   
     // Turn on LEDs on the bottom row for channels where the step is active
-    if (pattern_read(pattern, length, position)) {
+    bool step_is_active = pattern_read(pattern, length, position);
+    if (step_is_active) {
       output_set_high((OutputChannel)channel);
 
       if (channel == CHANNEL_1) {
@@ -810,7 +811,7 @@ void handle_clock() {
     }
 
     // Create output pulses for Offbeat Channel - inverse of Channel 1
-    if ((channel == CHANNEL_1) && (!pattern_read(pattern, length, position))) {
+    if ((channel == CHANNEL_1) && (!step_is_active)) {
       output_set_high(OUTPUT_CHANNEL_OFFBEAT);
       
       led_pixel_on(3, 7); // bottom row flash
