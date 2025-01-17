@@ -327,6 +327,7 @@ static void draw_channel_playhead(uint8_t y, uint8_t position);
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 int encoder_read(Encoder& enc);
+static void eeprom_load(EuclideanState *s);
 static void active_channel_set(Channel channel);
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
@@ -352,25 +353,6 @@ void led_init(void) {
   lc.shutdown(LED_ADDR, false);
   lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
   lc.clearDisplay(LED_ADDR);
-}
-
-/// Load state from EEPROM into the given `EuclideanState`
-static void eeprom_load(EuclideanState *s) {
-  /*
-  EEPROM Schema:
-  Channel 1: length = 1 density = 2 offset = 7
-  Channel 2: length = 3 density = 4 offset = 8
-  Channel 3: length = 5 density = 6 offset = 9
-  */
-
-  #if EEPROM_READ
-  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-    s->channels[c].length = EEPROM.read((c << 1) + 1);
-    s->channels[c].density = EEPROM.read((c << 1) + 2);
-    s->channels[c].offset = EEPROM.read(c + 7);
-    s->channels[c].position = 0;
-  }
-  #endif
 }
 
 /// Keep the data in the state in bounds. Bounds excursions can happen when 
@@ -917,6 +899,25 @@ static void active_channel_set(Channel channel) {
       row_bits = B11000000;
     } 
     lc.setRow(LED_ADDR, 6, row_bits);
+}
+
+/// Load state from EEPROM into the given `EuclideanState`
+static void eeprom_load(EuclideanState *s) {
+  /*
+  EEPROM Schema:
+  Channel 1: length = 1 density = 2 offset = 7
+  Channel 2: length = 3 density = 4 offset = 8
+  Channel 3: length = 5 density = 6 offset = 9
+  */
+
+  #if EEPROM_READ
+  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+    s->channels[c].length = EEPROM.read((c << 1) + 1);
+    s->channels[c].density = EEPROM.read((c << 1) + 2);
+    s->channels[c].offset = EEPROM.read(c + 7);
+    s->channels[c].position = 0;
+  }
+  #endif
 }
 
 static inline void led_pixel_set(uint8_t x, uint8_t y, bool val) {
