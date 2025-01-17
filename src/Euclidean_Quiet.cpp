@@ -656,9 +656,6 @@ void loop() {
     }
 
     euclidean_state.channels[active_channel].length = length + nknob; // update with encoder reading
-    density = euclidean_state.channels[active_channel].density;
-    length = euclidean_state.channels[active_channel].length;  // update for ease of coding
-    offset = euclidean_state.channels[active_channel].offset;
     
     #if EEPROM_WRITE
     EEPROM.update((active_channel * 2) + 1, euclidean_state.channels[active_channel].length); // write settings to 2/4/6 eproms
@@ -694,7 +691,6 @@ void loop() {
     }
 
     euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
-    density = euclidean_state.channels[active_channel].density;
     #if EEPROM_WRITE
     EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
     #endif
@@ -725,7 +721,6 @@ void loop() {
     } // check above BEAT_LENGTH_MIN
 
     euclidean_state.channels[active_channel].offset = offset + oknob;
-    offset = euclidean_state.channels[active_channel].offset;  // update active_offset for ease of coding
 
     #if EEPROM_WRITE
     EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
