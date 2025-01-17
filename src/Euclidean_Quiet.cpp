@@ -621,17 +621,16 @@ void loop() {
     euclidean_state.channels[active_channel].length = 16;
   }
 
-  // Local copies of active channel parameters
-  int active_length = euclidean_state.channels[active_channel].length;
-  int active_density = euclidean_state.channels[active_channel].density;
-  int active_offset = euclidean_state.channels[active_channel].offset;
-
   EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
 
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
   if (nknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_LENGTH;
+
+    int active_length = euclidean_state.channels[active_channel].length;
+    int active_density = euclidean_state.channels[active_channel].density;
+    int active_offset = euclidean_state.channels[active_channel].offset;
 
     // Sense check n encoder reading to prevent crashes
     if (active_length >= BEAT_LENGTH_MAX) {
@@ -677,6 +676,9 @@ void loop() {
   if (kknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
+    int active_length = euclidean_state.channels[active_channel].length;
+    int active_density = euclidean_state.channels[active_channel].density;
+
     if (active_density + kknob > active_length) {
       kknob = 0;
     } // check within limits
@@ -708,6 +710,9 @@ void loop() {
   if (oknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_OFFSET;
 
+    int active_length = euclidean_state.channels[active_channel].length;
+    int active_offset = euclidean_state.channels[active_channel].offset;
+
     // Sense check o encoder reading to prevent crashes
     if (active_offset + oknob > active_length - 1) {
       oknob = 0;
@@ -733,6 +738,9 @@ void loop() {
 
   // Update generated rhythm and redraw channel display
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
+    int active_length = euclidean_state.channels[active_channel].length;
+    int active_density = euclidean_state.channels[active_channel].density;
+    int active_offset = euclidean_state.channels[active_channel].offset;
     generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
     last_changed = time;
 
