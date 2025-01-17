@@ -790,7 +790,10 @@ void handle_clock() {
     uint8_t position = euclidean_state.channels[channel].position;
     uint16_t pattern = generated_rhythms[channel];
 
-    draw_channel((Channel)channel, pattern, length, position);
+    // Only draw this channel if is not currently being adjusted
+    if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
+      draw_channel((Channel)channel, pattern, length, position);
+    }
   
     // Turn on LEDs on the bottom row for channels where the step is active
     bool step_is_active = pattern_read(pattern, length, position);
@@ -833,11 +836,6 @@ void handle_clock() {
 }
 
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
-  // Early return: Don't draw this channel if it is being adjusted
-  if ((channel == active_channel) && (time - last_changed < ADJUSTMENT_DISPLAY_TIME)) {
-    return;
-  }
-
   led_row_off(channel * 2);
 
   if (position < 8) {
