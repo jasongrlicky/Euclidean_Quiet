@@ -627,36 +627,6 @@ void loop() {
 
   EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
 
-  // Handle Density Knob Movement
-  int kknob = events_in.enc_move[ENCODER_2];
-  if (kknob) {
-    param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
-
-    if (euclidean_state.channels[active_channel].density + kknob > euclidean_state.channels[active_channel].length) {
-      kknob = 0;
-    } // check within limits
-    if (euclidean_state.channels[active_channel].density + kknob < BEAT_DENSITY_MIN) {
-      kknob = 0;
-    }
-
-    // CHECK AGAIN FOR LOGIC
-    if (euclidean_state.channels[active_channel].density > euclidean_state.channels[active_channel].length - 1) {
-      euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].length - 1;
-    }
-
-    euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
-    #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
-    #endif
-
-    #if LOGGING_ENABLED
-    Serial.print("eeprom write K= ");
-    Serial.print((active_channel * 2) + 2);
-    Serial.print(" ");
-    Serial.println(euclidean_state.channels[active_channel].density);
-    #endif
-  }
-
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
   if (nknob != 0) {
@@ -698,6 +668,36 @@ void loop() {
     Serial.print((active_channel * 2) + 1);
     Serial.print(" ");
     Serial.println(euclidean_state.channels[active_channel].length);
+    #endif
+  }
+
+  // Handle Density Knob Movement
+  int kknob = events_in.enc_move[ENCODER_2];
+  if (kknob) {
+    param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
+
+    if (euclidean_state.channels[active_channel].density + kknob > euclidean_state.channels[active_channel].length) {
+      kknob = 0;
+    } // check within limits
+    if (euclidean_state.channels[active_channel].density + kknob < BEAT_DENSITY_MIN) {
+      kknob = 0;
+    }
+
+    // CHECK AGAIN FOR LOGIC
+    if (euclidean_state.channels[active_channel].density > euclidean_state.channels[active_channel].length - 1) {
+      euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].length - 1;
+    }
+
+    euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
+    #if EEPROM_WRITE
+    EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
+    #endif
+
+    #if LOGGING_ENABLED
+    Serial.print("eeprom write K= ");
+    Serial.print((active_channel * 2) + 2);
+    Serial.print(" ");
+    Serial.println(euclidean_state.channels[active_channel].density);
     #endif
   }
 
