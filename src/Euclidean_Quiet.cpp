@@ -628,36 +628,37 @@ void loop() {
   if (nknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_LENGTH;
 
-    int active_length = euclidean_state.channels[active_channel].length;
-    int active_density = euclidean_state.channels[active_channel].density;
-    int active_offset = euclidean_state.channels[active_channel].offset;
+    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    int length = channel_state.length;
+    int density = channel_state.density;
+    int offset = channel_state.offset;
 
     // Sense check n encoder reading to prevent crashes
-    if (active_length >= BEAT_LENGTH_MAX) {
-      active_length = BEAT_LENGTH_MAX;
+    if (length >= BEAT_LENGTH_MAX) {
+      length = BEAT_LENGTH_MAX;
     } // Check for eeprom values over maximum.
-    if (active_length + nknob > BEAT_LENGTH_MAX) {
+    if (length + nknob > BEAT_LENGTH_MAX) {
       nknob = 0;
     } // check below BEAT_LENGTH_MAX
-    if (active_length + nknob < BEAT_LENGTH_MIN) {
+    if (length + nknob < BEAT_LENGTH_MIN) {
       nknob = 0;
     } // check above BEAT_LENGTH_MIN
 
-    if (active_density >= active_length + nknob && active_density > 1) {// check if new n is lower than k + reduce K if it is
+    if (density >= length + nknob && density > 1) {// check if new n is lower than k + reduce K if it is
       euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + nknob;
     }
 
-    if (active_offset >= active_length + nknob && active_offset < 16) {// check if new n is lower than o + reduce o if it is
+    if (offset >= length + nknob && offset < 16) {// check if new n is lower than o + reduce o if it is
       euclidean_state.channels[active_channel].offset = euclidean_state.channels[active_channel].offset + nknob;
       #if EEPROM_WRITE
       EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
       #endif
     }
 
-    euclidean_state.channels[active_channel].length = active_length + nknob; // update with encoder reading
-    active_density = euclidean_state.channels[active_channel].density;
-    active_length = euclidean_state.channels[active_channel].length;  // update for ease of coding
-    active_offset = euclidean_state.channels[active_channel].offset;
+    euclidean_state.channels[active_channel].length = length + nknob; // update with encoder reading
+    density = euclidean_state.channels[active_channel].density;
+    length = euclidean_state.channels[active_channel].length;  // update for ease of coding
+    offset = euclidean_state.channels[active_channel].offset;
     
     #if EEPROM_WRITE
     EEPROM.update((active_channel * 2) + 1, euclidean_state.channels[active_channel].length); // write settings to 2/4/6 eproms
@@ -676,23 +677,24 @@ void loop() {
   if (kknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
-    int active_length = euclidean_state.channels[active_channel].length;
-    int active_density = euclidean_state.channels[active_channel].density;
+    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    int length = channel_state.length;
+    int density = channel_state.density;
 
-    if (active_density + kknob > active_length) {
+    if (density + kknob > length) {
       kknob = 0;
     } // check within limits
-    if (active_density + kknob < BEAT_DENSITY_MIN) {
+    if (density + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
     }
 
     // CHECK AGAIN FOR LOGIC
-    if (active_density > active_length - 1) {
-      euclidean_state.channels[active_channel].density = active_length - 1;
+    if (density > length - 1) {
+      euclidean_state.channels[active_channel].density = length - 1;
     }
 
     euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
-    active_density = euclidean_state.channels[active_channel].density;
+    density = euclidean_state.channels[active_channel].density;
     #if EEPROM_WRITE
     EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
     #endif
@@ -710,19 +712,20 @@ void loop() {
   if (oknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_OFFSET;
 
-    int active_length = euclidean_state.channels[active_channel].length;
-    int active_offset = euclidean_state.channels[active_channel].offset;
+    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    int length = channel_state.length;
+    int offset = channel_state.offset;
 
     // Sense check o encoder reading to prevent crashes
-    if (active_offset + oknob > active_length - 1) {
+    if (offset + oknob > length - 1) {
       oknob = 0;
     } // check below BEAT_OFFSET_MAX
-    if (active_offset + oknob < BEAT_OFFSET_MIN) {
+    if (offset + oknob < BEAT_OFFSET_MIN) {
       oknob = 0;
     } // check above BEAT_LENGTH_MIN
 
-    euclidean_state.channels[active_channel].offset = active_offset + oknob;
-    active_offset = euclidean_state.channels[active_channel].offset;  // update active_offset for ease of coding
+    euclidean_state.channels[active_channel].offset = offset + oknob;
+    offset = euclidean_state.channels[active_channel].offset;  // update active_offset for ease of coding
 
     #if EEPROM_WRITE
     EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
@@ -738,15 +741,17 @@ void loop() {
 
   // Update generated rhythm and redraw channel display
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
-    int active_length = euclidean_state.channels[active_channel].length;
-    int active_density = euclidean_state.channels[active_channel].density;
-    int active_offset = euclidean_state.channels[active_channel].offset;
-    generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
     last_changed = time;
+
+    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    int length = channel_state.length;
+    int density = channel_state.density;
+    int offset = channel_state.offset;
+    generated_rhythms[active_channel] = euclidean_pattern_rotate(length, density, offset);
 
     led_row_off(active_channel * 2);
     led_row_off(active_channel * 2 + 1);
-    for (uint8_t step = 0; step < active_length; step++) {
+    for (uint8_t step = 0; step < length; step++) {
       uint8_t x = step;
       uint8_t y = active_channel * 2;
       if (step > 7) {
@@ -754,7 +759,7 @@ void loop() {
         y += 1;
       }
 
-      if ((param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) || (pattern_read(generated_rhythms[active_channel], active_length, step))) {
+      if ((param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) || (pattern_read(generated_rhythms[active_channel], length, step))) {
         led_pixel_set(x, y, true);
       }
     }
