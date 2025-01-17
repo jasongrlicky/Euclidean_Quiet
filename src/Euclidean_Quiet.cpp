@@ -317,6 +317,11 @@ void handle_clock();
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 int encoder_read(Encoder& enc);
 void active_channel_set(uint8_t channel);
+/// Set a single pixel on the LED Matrix to be on or off, using a sensible coordinate system.
+/// @param x Zero-indexed position, from left to right.
+/// @param y Zero-indexed position, from top to bottom.
+/// @param val If `true`, lights pixel. If `false`, turns off pixel.
+static inline void led_set_pixel(uint8_t x, uint8_t y, bool val);
 void led_sleep();
 void led_wake();
 void led_anim_wake();
@@ -718,7 +723,7 @@ void loop() {
           y += 1;
         }
 
-        lc.setLed(LED_ADDR, y, 7 - x, true);
+        led_set_pixel(x, y, true);
       }
     } else {  
       // Density or Offset changed -  Display beats in the active channel
@@ -731,7 +736,7 @@ void loop() {
             y += 1;
           }
 
-          lc.setLed(LED_ADDR, y, 7 - x, true);
+          led_set_pixel(x, y, true);
         }
       }
     }
@@ -881,6 +886,10 @@ void active_channel_set(uint8_t channel) {
       row_bits = B11000000;
     } 
     lc.setRow(LED_ADDR, 6, row_bits);
+}
+
+static inline void led_set_pixel(uint8_t x, uint8_t y, bool val) {
+  lc.setLed(LED_ADDR, y, 7 - x, val);
 }
 
 void led_sleep() {
