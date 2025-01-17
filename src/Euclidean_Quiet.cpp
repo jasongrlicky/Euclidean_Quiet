@@ -265,7 +265,7 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 Channel active_channel; // Channel that is currently active
 Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
 bool lights_active = false;
-bool led_sleep_mode_enabled = true;
+bool led_sleep_mode_enabled = false;
 
 int trig_in_value_previous = 0; // For recognizing trigger in rising edges
 bool reset_active = false;
@@ -433,7 +433,7 @@ void setup() {
 
   startUpOK();
 
-  handle_clock();
+  led_wake();
 
   // Select first channel on startup
   active_channel_set(CHANNEL_1);
