@@ -729,41 +729,25 @@ void loop() {
     #endif
   }
 
-  // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
+  // Update generated rhythm and redraw channel display
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
+    last_changed = time;
+
     led_row_off(active_channel * 2);
     led_row_off(active_channel * 2 + 1);
+    for (uint8_t step = 0; step < active_length; step++) {
+      uint8_t x = step;
+      uint8_t y = active_channel * 2;
+      if (step > 7) {
+        x -= 8;
+        y += 1;
+      }
 
-    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) { 
-      // Length changed - Display total length of beat
-      for (uint8_t step = 0; step < active_length; step++) {
-        uint8_t x = step;
-        uint8_t y = active_channel * 2;
-        if (step > 7) {
-          x -= 8;
-          y += 1;
-        }
-
+      if ((param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) || (pattern_read(generated_rhythms[active_channel], active_length, step))) {
         led_pixel_set(x, y, true);
       }
-    } else {  
-      // Density or Offset changed -  Display beats in the active channel
-      for (uint8_t step = 0; step < active_length; step++) {
-        if (pattern_read(generated_rhythms[active_channel], active_length, step)) {
-          uint8_t x = step;
-          uint8_t y = active_channel * 2;
-          if (step > 7) {
-            x -= 8;
-            y += 1;
-          }
-
-          led_pixel_set(x, y, true);
-        }
-      }
     }
-
-    last_changed = time;
   }
 
   // Log parameters at a certain interval
