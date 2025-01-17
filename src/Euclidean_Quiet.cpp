@@ -801,7 +801,7 @@ void handle_clock() {
       }
 
       led_row_off(channel * 2 + 1);
-      // draw cursor
+      // Draw sequencer playhead
       if (position < 8) {
         led_pixel_on(position, (channel * 2) + 1);
       } else {
