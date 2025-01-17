@@ -710,13 +710,15 @@ void loop() {
 
     if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) { 
       // Length changed - Display total length of beat
-      for (uint8_t step = 0; step < 8; step++) {
-        if (step < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2, 7 - step, true);
+      for (uint8_t step = 0; step < active_length; step++) {
+        uint8_t x = step;
+        uint8_t y = active_channel * 2;
+        if (step > 7) {
+          x -= 8;
+          y += 1;
         }
-        if ((step + 8) < active_length) {
-          lc.setLed(LED_ADDR, active_channel * 2 + 1, 7 - step, true);
-        }
+
+        lc.setLed(LED_ADDR, y, 7 - x, true);
       }
     } else {  
       // Density or Offset changed -  Display beats in the active channel
