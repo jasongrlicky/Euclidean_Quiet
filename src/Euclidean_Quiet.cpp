@@ -309,6 +309,7 @@ enum EuclideanParamChange {
 /* INTERNAL */
 
 void handle_clock();
+static void draw_channel(uint8_t channel_idx, uint16_t pattern, uint8_t length, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -782,33 +783,8 @@ void handle_clock() {
     uint8_t position = euclidean_state.channels[channel].position;
     uint16_t pattern = generated_rhythms[channel];
 
-    // don't clear or draw cursor if channel is being changed
-    if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
-      led_row_off(channel * 2);
-
-      if (position < 8) {
-        for (uint8_t step = 0; step < 8; step++) {
-          if (pattern_read(pattern, length, step) && (step < length)) {
-            led_pixel_on(step, channel * 2);
-          }
-        }
-      } else {
-        for (uint8_t step = 8; step < 16; step++) {
-          if (pattern_read(pattern, length, step) && (step < length)) {
-            led_pixel_on(step - 8, channel * 2);
-          }
-        }
-      }
-
-      led_row_off(channel * 2 + 1);
-      // Draw sequencer playhead
-      if (position < 8) {
-        led_pixel_on(position, (channel * 2) + 1);
-      } else {
-        led_pixel_on(position - 8, (channel * 2) + 1);
-      }
-    }
-    
+    draw_channel(channel, pattern, length, position);
+  
     // Turn on LEDs on the bottom row for channels where the step is active
     if (pattern_read(pattern, length, position)) {
       output_set_high((OutputChannel)channel);
@@ -846,6 +822,35 @@ void handle_clock() {
   output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
 
   last_clock = time;
+}
+
+static void draw_channel(uint8_t channel_idx, uint16_t pattern, uint8_t length, uint8_t position) {
+  // don't clear or draw cursor if channel is being changed
+  if ((channel_idx != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
+    led_row_off(channel_idx * 2);
+
+    if (position < 8) {
+      for (uint8_t step = 0; step < 8; step++) {
+        if (pattern_read(pattern, length, step) && (step < length)) {
+          led_pixel_on(step, channel_idx * 2);
+        }
+      }
+    } else {
+      for (uint8_t step = 8; step < 16; step++) {
+        if (pattern_read(pattern, length, step) && (step < length)) {
+          led_pixel_on(step - 8, channel_idx * 2);
+        }
+      }
+    }
+
+    led_row_off(channel_idx * 2 + 1);
+    // Draw sequencer playhead
+    if (position < 8) {
+      led_pixel_on(position, (channel_idx * 2) + 1);
+    } else {
+      led_pixel_on(position - 8, (channel_idx * 2) + 1);
+    }
+  }
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
