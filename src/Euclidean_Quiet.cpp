@@ -317,6 +317,7 @@ enum EuclideanParamChange {
 
 void handle_clock();
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
+static void draw_channel_playhead(uint8_t y, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -845,8 +846,10 @@ static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint
     }
   }
 
-  // Draw sequencer playhead
-  y += 1;
+  draw_channel_playhead(y + 1, position);
+}
+
+static void draw_channel_playhead(uint8_t y, uint8_t position) {
   led_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
   led_pixel_on(x, y);
