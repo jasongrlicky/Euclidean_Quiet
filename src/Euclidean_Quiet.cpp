@@ -376,7 +376,7 @@ static void eeprom_load(EuclideanState *s) {
 /// loading from the EEPROM.
 static void validate_euclidean_state(EuclideanState *s) {
   for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-    if (s->channels[c].length > BEAT_LENGTH_MAX) {
+    if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
       s->channels[c].length = BEAT_LENGTH_DEFAULT;
     }
     if (s->channels[c].density > BEAT_DENSITY_MAX) {
