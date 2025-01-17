@@ -674,7 +674,7 @@ void loop() {
 
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
-  if (kknob) {
+  if (kknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
     if (active_density + kknob > active_length) {
