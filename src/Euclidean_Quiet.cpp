@@ -24,6 +24,7 @@ extern "C" {
     - Shortened the time that LEDs stay lit when setting pattern length for a channel.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
+    - Turning the density up if it was already at the maximum would cause it to toggle between the two highest values.
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
     - When reducing the length parameter for a channel, its adjusted density would not be saved.
@@ -691,11 +692,6 @@ void loop() {
     }
     if (density + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
-    }
-
-    // CHECK AGAIN FOR LOGIC
-    if (density > length - 1) {
-      density = length - 1;
     }
 
     density += kknob;
