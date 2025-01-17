@@ -644,28 +644,32 @@ void loop() {
       nknob = 0;
     }
 
-    if (density >= length + nknob && density > 1) {// check if new n is lower than k + reduce K if it is
-      euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + nknob;
+    // Reduce density and offset to remain in line with the new length if necessary
+    if ((density >= (length + nknob)) && (density > 1)) {
+      density += nknob;
+      euclidean_state.channels[active_channel].density = density;
     }
+    if ((offset >= (length + nknob)) && (offset < 16)) {
+      offset += nknob;
+      euclidean_state.channels[active_channel].offset = offset;
 
-    if (offset >= length + nknob && offset < 16) {// check if new n is lower than o + reduce o if it is
-      euclidean_state.channels[active_channel].offset = euclidean_state.channels[active_channel].offset + nknob;
       #if EEPROM_WRITE
-      EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
+      EEPROM.update((active_channel) + 7, offset);
       #endif
     }
 
-    euclidean_state.channels[active_channel].length = length + nknob; // update with encoder reading
+    length += nknob;
+    euclidean_state.channels[active_channel].length = length;
     
     #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 1, euclidean_state.channels[active_channel].length); // write settings to 2/4/6 eproms
+    EEPROM.update((active_channel * 2) + 1, length);
     #endif
       
     #if LOGGING_ENABLED
     Serial.print("eeprom write N= ");
     Serial.print((active_channel * 2) + 1);
     Serial.print(" ");
-    Serial.println(euclidean_state.channels[active_channel].length);
+    Serial.println(length);
     #endif
   }
 
