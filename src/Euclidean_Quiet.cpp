@@ -629,7 +629,8 @@ void loop() {
   if (nknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_LENGTH;
 
-    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    Channel channel = active_channel;
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
     int length = channel_state.length;
     uint8_t density = channel_state.density;
     uint8_t offset = channel_state.offset;
@@ -648,31 +649,31 @@ void loop() {
     // Reduce density and offset to remain in line with the new length if necessary
     if ((density >= (length + nknob)) && (density > 1)) {
       density += nknob;
-      euclidean_state.channels[active_channel].density = density;
+      euclidean_state.channels[channel].density = density;
 
       #if EEPROM_WRITE
-      EEPROM.update((active_channel * 2) + 2, density);
+      EEPROM.update((channel * 2) + 2, density);
       #endif
     }
     if ((offset >= (length + nknob)) && (offset < 16)) {
       offset += nknob;
-      euclidean_state.channels[active_channel].offset = offset;
+      euclidean_state.channels[channel].offset = offset;
 
       #if EEPROM_WRITE
-      EEPROM.update((active_channel) + 7, offset);
+      EEPROM.update((channel) + 7, offset);
       #endif
     }
 
     length += nknob;
-    euclidean_state.channels[active_channel].length = length;
+    euclidean_state.channels[channel].length = length;
     
     #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 1, length);
+    EEPROM.update((channel * 2) + 1, length);
     #endif
       
     #if LOGGING_ENABLED
     Serial.print("eeprom write N= ");
-    Serial.print((active_channel * 2) + 1);
+    Serial.print((channel * 2) + 1);
     Serial.print(" ");
     Serial.println(length);
     #endif
@@ -683,7 +684,8 @@ void loop() {
   if (kknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
-    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    Channel channel = active_channel;
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
     int length = channel_state.length;
     int density = channel_state.density;
 
@@ -701,15 +703,15 @@ void loop() {
     }
 
     density += kknob;
-    euclidean_state.channels[active_channel].density = density;
+    euclidean_state.channels[channel].density = density;
 
     #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 2, density);
+    EEPROM.update((channel * 2) + 2, density);
     #endif
 
     #if LOGGING_ENABLED
     Serial.print("eeprom write K= ");
-    Serial.print((active_channel * 2) + 2);
+    Serial.print((channel * 2) + 2);
     Serial.print(" ");
     Serial.println(density);
     #endif
@@ -720,7 +722,8 @@ void loop() {
   if (oknob != 0) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_OFFSET;
 
-    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    Channel channel = active_channel;
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
     int length = channel_state.length;
     int offset = channel_state.offset;
 
@@ -733,15 +736,15 @@ void loop() {
     }
 
     offset += oknob;
-    euclidean_state.channels[active_channel].offset = offset;
+    euclidean_state.channels[channel].offset = offset;
 
     #if EEPROM_WRITE
-    EEPROM.update((active_channel) + 7, offset);
+    EEPROM.update((channel) + 7, offset);
     #endif
 
     #if LOGGING_ENABLED
     Serial.print("eeprom write O= ");
-    Serial.print((active_channel) + 7);
+    Serial.print((channel) + 7);
     Serial.print(" ");
     Serial.println(offset);
     #endif
@@ -751,23 +754,24 @@ void loop() {
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     last_changed = time;
 
-    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    Channel channel = active_channel;
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t density = channel_state.density;
     uint8_t offset = channel_state.offset;
-    generated_rhythms[active_channel] = euclidean_pattern_rotate(length, density, offset);
+    generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
-    led_row_off(active_channel * 2);
-    led_row_off(active_channel * 2 + 1);
+    led_row_off(channel * 2);
+    led_row_off(channel * 2 + 1);
     for (uint8_t step = 0; step < length; step++) {
       uint8_t x = step;
-      uint8_t y = active_channel * 2;
+      uint8_t y = channel * 2;
       if (step > 7) {
         x -= 8;
         y += 1;
       }
 
-      if ((param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) || (pattern_read(generated_rhythms[active_channel], length, step))) {
+      if ((param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) || (pattern_read(generated_rhythms[channel], length, step))) {
         led_pixel_set(x, y, true);
       }
     }
