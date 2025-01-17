@@ -319,11 +319,15 @@ int encoder_read(Encoder& enc);
 void active_channel_set(uint8_t channel);
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
-/// Set a single pixel on the LED Matrix to be on or off, using a sensible coordinate system.
+/// Set a single pixel on the LED Matrix to be on or off, using a coordinate 
+/// system that is not mirrored left-to-right.
 /// @param x Zero-indexed position, from left to right.
 /// @param y Zero-indexed position, from top to bottom.
 /// @param val If `true`, lights pixel. If `false`, turns off pixel.
 static inline void led_pixel_set(uint8_t x, uint8_t y, bool val);
+/// Clear a row of pixels on the LED Matrix.
+/// @param y Zero-indexed position, from top to bottom.
+static inline void led_row_off(uint8_t y);
 void led_sleep();
 void led_wake();
 void led_anim_wake();
@@ -572,7 +576,7 @@ void loop() {
   
   // TURN OFF ANY LIGHTS THAT ARE ON
   if (lights_active && (time - last_clock > output_pulse_length)) {
-    lc.setRow(LED_ADDR, 7, 0); // Clear row
+    led_row_off(7);
     lights_active = false;
   }
 
@@ -712,8 +716,8 @@ void loop() {
   // UPDATE BEAT HOLDER WHEN KNOBS ARE MOVED
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     generated_rhythms[active_channel] = euclidean_pattern_rotate(active_length, active_density, active_offset);
-    lc.setRow(LED_ADDR, active_channel * 2 + 1, 0);//clear active row
-    lc.setRow(LED_ADDR, active_channel * 2, 0);//clear line above active row
+    led_row_off(active_channel * 2);
+    led_row_off(active_channel * 2 + 1);
 
     if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) { 
       // Length changed - Display total length of beat
@@ -780,7 +784,7 @@ void handle_clock() {
 
     // don't clear or draw cursor if channel is being changed
     if (channel != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
-      lc.setRow(LED_ADDR, channel * 2, 0);//clear line above active row
+      led_row_off(channel * 2);
 
       if (position < 8) {
         for (uint8_t step = 0; step < 8; step++) {
@@ -796,7 +800,7 @@ void handle_clock() {
         }
       }
 
-      lc.setRow(LED_ADDR, channel * 2 + 1, 0);//clear active row
+      led_row_off(channel * 2 + 1);
       // draw cursor
       if (position < 8) {
         led_pixel_on(position, (channel * 2) + 1); // write cursor less than 8
@@ -892,6 +896,10 @@ void active_channel_set(uint8_t channel) {
 
 static inline void led_pixel_set(uint8_t x, uint8_t y, bool val) {
   lc.setLed(LED_ADDR, y, 7 - x, val);
+}
+
+static inline void led_row_off(uint8_t y) {
+  lc.setRow(LED_ADDR, y, 0);
 }
 
 void led_sleep() {
