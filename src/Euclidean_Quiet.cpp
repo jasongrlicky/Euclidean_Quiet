@@ -677,16 +677,16 @@ void loop() {
   if (kknob) {
     param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
 
-    if (euclidean_state.channels[active_channel].density + kknob > euclidean_state.channels[active_channel].length) {
+    if (active_density + kknob > active_length) {
       kknob = 0;
     } // check within limits
-    if (euclidean_state.channels[active_channel].density + kknob < BEAT_DENSITY_MIN) {
+    if (active_density + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
     }
 
     // CHECK AGAIN FOR LOGIC
-    if (euclidean_state.channels[active_channel].density > euclidean_state.channels[active_channel].length - 1) {
-      euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].length - 1;
+    if (active_density > active_length - 1) {
+      euclidean_state.channels[active_channel].density = active_length - 1;
     }
 
     euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
