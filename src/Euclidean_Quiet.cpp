@@ -238,9 +238,16 @@ typedef struct EuclideanChannel {
   uint8_t position; 
 } EuclideanChannel;
 
+/// References one of the three channels
+typedef enum Channel {
+  CHANNEL_1,
+  CHANNEL_2,
+  CHANNEL_3,
+} Channel;
+
 /// State of the entire Euclidean module
 typedef struct EuclideanState {
-  /// State for each of this module's channels
+  /// State for each of this module's channels, indexed by `Channel` enum.
   EuclideanChannel channels[NUM_CHANNELS];
 } EuclideanState;
 
@@ -255,7 +262,7 @@ Milliseconds last_logged;
 // Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
 
-uint8_t active_channel; // Which channel is active? zero indexed
+Channel active_channel; // Channel that is currently active
 Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
 bool lights_active = false;
 bool led_sleep_mode_enabled = true;
@@ -309,7 +316,7 @@ enum EuclideanParamChange {
 /* INTERNAL */
 
 void handle_clock();
-static void draw_channel(uint8_t channel_idx, uint16_t pattern, uint8_t length, uint8_t position);
+static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -317,7 +324,7 @@ static void draw_channel(uint8_t channel_idx, uint16_t pattern, uint8_t length, 
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 int encoder_read(Encoder& enc);
-void active_channel_set(uint8_t channel);
+static void active_channel_set(Channel channel);
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
 /// Set a single pixel on the LED Matrix to be on or off, using a coordinate 
@@ -428,7 +435,7 @@ void setup() {
   handle_clock();
 
   // Select first channel on startup
-  active_channel_set(0);
+  active_channel_set(CHANNEL_1);
 }
 
 void loop() {
@@ -589,13 +596,13 @@ void loop() {
   // Handle Encoder Pushes
   switch (events_in.enc_push) {
     case ENCODER_1:
-      active_channel_set(1);
+      active_channel_set(CHANNEL_2);
       break;
     case ENCODER_2:
-      active_channel_set(2);
+      active_channel_set(CHANNEL_3);
       break;
     case ENCODER_3:
-      active_channel_set(0);
+      active_channel_set(CHANNEL_1);
       break;
     default:
       break;
@@ -783,19 +790,19 @@ void handle_clock() {
     uint8_t position = euclidean_state.channels[channel].position;
     uint16_t pattern = generated_rhythms[channel];
 
-    draw_channel(channel, pattern, length, position);
+    draw_channel((Channel)channel, pattern, length, position);
   
     // Turn on LEDs on the bottom row for channels where the step is active
     if (pattern_read(pattern, length, position)) {
       output_set_high((OutputChannel)channel);
 
-      if (channel == 0) {
+      if (channel == CHANNEL_1) {
         led_pixel_on(2, 7);
       }
-      if (channel == 1) {
+      if (channel == CHANNEL_2) {
         led_pixel_on(5, 7);
       }
-      if (channel == 2) {
+      if (channel == CHANNEL_3) {
         led_pixel_on(7, 7);
       }
 
@@ -803,7 +810,7 @@ void handle_clock() {
     }
 
     // Create output pulses for Offbeat Channel - inverse of Channel 1
-    if ((channel == 0) && (!pattern_read(pattern, length, position))) {
+    if ((channel == CHANNEL_1) && (!pattern_read(pattern, length, position))) {
       output_set_high(OUTPUT_CHANNEL_OFFBEAT);
       
       led_pixel_on(3, 7); // bottom row flash
@@ -824,31 +831,31 @@ void handle_clock() {
   last_clock = time;
 }
 
-static void draw_channel(uint8_t channel_idx, uint16_t pattern, uint8_t length, uint8_t position) {
+static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
   // don't clear or draw cursor if channel is being changed
-  if ((channel_idx != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
-    led_row_off(channel_idx * 2);
+  if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
+    led_row_off(channel * 2);
 
     if (position < 8) {
       for (uint8_t step = 0; step < 8; step++) {
         if (pattern_read(pattern, length, step) && (step < length)) {
-          led_pixel_on(step, channel_idx * 2);
+          led_pixel_on(step, channel * 2);
         }
       }
     } else {
       for (uint8_t step = 8; step < 16; step++) {
         if (pattern_read(pattern, length, step) && (step < length)) {
-          led_pixel_on(step - 8, channel_idx * 2);
+          led_pixel_on(step - 8, channel * 2);
         }
       }
     }
 
-    led_row_off(channel_idx * 2 + 1);
+    led_row_off(channel * 2 + 1);
     // Draw sequencer playhead
     if (position < 8) {
-      led_pixel_on(position, (channel_idx * 2) + 1);
+      led_pixel_on(position, (channel * 2) + 1);
     } else {
-      led_pixel_on(position - 8, (channel_idx * 2) + 1);
+      led_pixel_on(position - 8, (channel * 2) + 1);
     }
   }
 }
@@ -878,7 +885,7 @@ int encoder_read(Encoder& enc) {
   return result;
 }
 
-void active_channel_set(uint8_t channel) {
+static void active_channel_set(Channel channel) {
     // Update state
     active_channel = channel;
     
@@ -889,11 +896,11 @@ void active_channel_set(uint8_t channel) {
     
     // Update LED Matrix
     uint8_t row_bits = B00000000;
-    if (channel == 0) {
+    if (channel == CHANNEL_1) {
       row_bits = B00000011;
-    } else if (channel == 1) {
+    } else if (channel == CHANNEL_2) {
       row_bits = B00011000;
-    } else if (channel == 2) {
+    } else if (channel == CHANNEL_3) {
       row_bits = B11000000;
     } 
     lc.setRow(LED_ADDR, 6, row_bits);
