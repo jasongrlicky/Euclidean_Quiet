@@ -739,9 +739,9 @@ void loop() {
     last_changed = time;
 
     EuclideanChannel channel_state = euclidean_state.channels[active_channel];
-    int length = channel_state.length;
-    int density = channel_state.density;
-    int offset = channel_state.offset;
+    uint8_t length = channel_state.length;
+    uint8_t density = channel_state.density;
+    uint8_t offset = channel_state.offset;
     generated_rhythms[active_channel] = euclidean_pattern_rotate(length, density, offset);
 
     led_row_off(active_channel * 2);
