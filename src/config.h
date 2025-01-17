@@ -9,9 +9,10 @@
 
 /* FEATURES */
 
-#define EEPROM_READ 1 // 0 = reading from EEPROM disabled, 1 = enabled
-#define EEPROM_WRITE 1 // 0 = writing to EEPROM disabled, 1 = enabled
-#define LOGGING_ENABLED 0 // 0 = logging over serial disabled, 1 = enabled
+#define INTERNAL_CLOCK_DEFAULT 0 // 0 = Internal clock begins disabled, 1 = begins enabled
+#define EEPROM_READ 1 // 0 = Reading from EEPROM disabled, 1 = enabled
+#define EEPROM_WRITE 1 // 0 = Writing to EEPROM disabled, 1 = enabled
+#define LOGGING_ENABLED 0 // 0 = Logging over serial disabled, 1 = enabled
 #define LOGGING_INTERVAL 1000 // Milliseconds between periodic log messages
 
 #endif /* CONFIG_H_ */ 

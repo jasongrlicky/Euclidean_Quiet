@@ -213,7 +213,7 @@ extern "C" {
 
 /* GLOBALS */
 
-bool internal_clock_enabled = false;
+bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
