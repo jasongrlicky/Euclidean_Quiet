@@ -630,8 +630,8 @@ void loop() {
 
     EuclideanChannel channel_state = euclidean_state.channels[active_channel];
     int length = channel_state.length;
-    int density = channel_state.density;
-    int offset = channel_state.offset;
+    uint8_t density = channel_state.density;
+    uint8_t offset = channel_state.offset;
 
     // Keep length in bounds
     if (length >= BEAT_LENGTH_MAX) {
