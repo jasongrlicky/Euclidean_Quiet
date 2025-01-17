@@ -690,6 +690,7 @@ void loop() {
     }
 
     euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
+    active_density = euclidean_state.channels[active_channel].density;
     #if EEPROM_WRITE
     EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
     #endif
