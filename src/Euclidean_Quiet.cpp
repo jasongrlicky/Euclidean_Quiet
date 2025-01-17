@@ -26,6 +26,7 @@ extern "C" {
     - The internal clock started up again when the reset button was pressed.
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
+    - When reducing the length parameter for a channel, its adjusted density would not be saved.
   - Development:
     - Migrated firmware project to PlatformIO.
     - Added tests for Euclidean rhythm generation.
@@ -648,6 +649,10 @@ void loop() {
     if ((density >= (length + nknob)) && (density > 1)) {
       density += nknob;
       euclidean_state.channels[active_channel].density = density;
+
+      #if EEPROM_WRITE
+      EEPROM.update((active_channel * 2) + 2, density);
+      #endif
     }
     if ((offset >= (length + nknob)) && (offset < 16)) {
       offset += nknob;
