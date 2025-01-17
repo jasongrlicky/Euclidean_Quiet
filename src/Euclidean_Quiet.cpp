@@ -783,7 +783,7 @@ void handle_clock() {
     uint16_t pattern = generated_rhythms[channel];
 
     // don't clear or draw cursor if channel is being changed
-    if (channel != active_channel || time - last_changed > ADJUSTMENT_DISPLAY_TIME) {
+    if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
       led_row_off(channel * 2);
 
       if (position < 8) {
