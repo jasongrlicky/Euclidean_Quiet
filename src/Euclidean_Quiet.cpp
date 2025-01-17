@@ -808,14 +808,14 @@ void handle_clock() {
       }
 
       lights_active = true;
-    }
-
-    // Create output pulses for Offbeat Channel - inverse of Channel 1
-    if ((channel == CHANNEL_1) && (!step_is_active)) {
-      output_set_high(OUTPUT_CHANNEL_OFFBEAT);
-      
-      led_pixel_on(3, 7); // bottom row flash
-      lights_active = true;
+    } else {
+      // Create output pulses for Offbeat Channel - inverse of Channel 1
+      if (channel == CHANNEL_1) {
+        output_set_high(OUTPUT_CHANNEL_OFFBEAT);
+        
+        led_pixel_on(3, 7); // bottom row flash
+        lights_active = true;
+      }
     }
 
     // Move sequencer playhead to next step
