@@ -844,13 +844,11 @@ static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint
     }
   }
 
-  led_row_off(channel * 2 + 1);
   // Draw sequencer playhead
-  if (position < 8) {
-    led_pixel_on(position, (channel * 2) + 1);
-  } else {
-    led_pixel_on(position - 8, (channel * 2) + 1);
-  }
+  uint8_t y = (channel * 2) + 1;
+  led_row_off(y);
+  uint8_t x = (position < 8) ? position : position - 8;
+  led_pixel_on(x, y);
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
