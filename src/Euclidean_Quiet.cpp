@@ -688,19 +688,21 @@ void loop() {
 
     // CHECK AGAIN FOR LOGIC
     if (density > length - 1) {
-      euclidean_state.channels[active_channel].density = length - 1;
+      density = length - 1;
     }
 
-    euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + kknob; // update with encoder reading
+    density += kknob;
+    euclidean_state.channels[active_channel].density = density;
+
     #if EEPROM_WRITE
-    EEPROM.update((active_channel * 2) + 2, euclidean_state.channels[active_channel].density); // write settings to 2/4/6 eproms
+    EEPROM.update((active_channel * 2) + 2, density);
     #endif
 
     #if LOGGING_ENABLED
     Serial.print("eeprom write K= ");
     Serial.print((active_channel * 2) + 2);
     Serial.print(" ");
-    Serial.println(euclidean_state.channels[active_channel].density);
+    Serial.println(density);
     #endif
   }
 
