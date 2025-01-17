@@ -803,11 +803,9 @@ void handle_clock() {
       led_row_off(channel * 2 + 1);
       // draw cursor
       if (position < 8) {
-        led_pixel_on(position, (channel * 2) + 1); // write cursor less than 8
+        led_pixel_on(position, (channel * 2) + 1);
       } else {
-        if (position < 16) {
-          led_pixel_on(8 - position, (channel * 2) + 1); // write cursor more than 8
-        }
+        led_pixel_on(8 - position, (channel * 2) + 1);
       }
     }
     
