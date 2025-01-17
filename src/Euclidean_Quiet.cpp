@@ -633,16 +633,16 @@ void loop() {
     int density = channel_state.density;
     int offset = channel_state.offset;
 
-    // Sense check n encoder reading to prevent crashes
+    // Keep length in bounds
     if (length >= BEAT_LENGTH_MAX) {
       length = BEAT_LENGTH_MAX;
-    } // Check for eeprom values over maximum.
+    }
     if (length + nknob > BEAT_LENGTH_MAX) {
       nknob = 0;
-    } // check below BEAT_LENGTH_MAX
+    }
     if (length + nknob < BEAT_LENGTH_MIN) {
       nknob = 0;
-    } // check above BEAT_LENGTH_MIN
+    }
 
     if (density >= length + nknob && density > 1) {// check if new n is lower than k + reduce K if it is
       euclidean_state.channels[active_channel].density = euclidean_state.channels[active_channel].density + nknob;
@@ -678,9 +678,10 @@ void loop() {
     int length = channel_state.length;
     int density = channel_state.density;
 
+    // Keep density in bounds
     if (density + kknob > length) {
       kknob = 0;
-    } // check within limits
+    }
     if (density + kknob < BEAT_DENSITY_MIN) {
       kknob = 0;
     }
@@ -712,13 +713,13 @@ void loop() {
     int length = channel_state.length;
     int offset = channel_state.offset;
 
-    // Sense check o encoder reading to prevent crashes
+    // Keep offset in bounds
     if (offset + oknob > length - 1) {
       oknob = 0;
-    } // check below BEAT_OFFSET_MAX
+    }
     if (offset + oknob < BEAT_OFFSET_MIN) {
       oknob = 0;
-    } // check above BEAT_LENGTH_MIN
+    }
 
     euclidean_state.channels[active_channel].offset = offset + oknob;
 
