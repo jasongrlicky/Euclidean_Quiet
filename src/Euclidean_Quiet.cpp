@@ -795,7 +795,7 @@ void handle_clock() {
       } else {
         for (uint8_t step = 8; step < 16; step++) {
           if (pattern_read(pattern, length, step) && (step < length)) {
-            led_pixel_on(8 - step, channel * 2);
+            led_pixel_on(step - 8, channel * 2);
           }
         }
       }
@@ -805,7 +805,7 @@ void handle_clock() {
       if (position < 8) {
         led_pixel_on(position, (channel * 2) + 1);
       } else {
-        led_pixel_on(8 - position, (channel * 2) + 1);
+        led_pixel_on(position - 8, (channel * 2) + 1);
       }
     }
     
