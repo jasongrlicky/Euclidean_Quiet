@@ -828,24 +828,25 @@ void handle_clock() {
 }
 
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
-  led_row_off(channel * 2);
+  uint8_t y = channel * 2;
+  led_row_off(y);
 
   if (position < 8) {
     for (uint8_t step = 0; step < 8; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        led_pixel_on(step, channel * 2);
+        led_pixel_on(step, y);
       }
     }
   } else {
     for (uint8_t step = 8; step < 16; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        led_pixel_on(step - 8, channel * 2);
+        led_pixel_on(step - 8, y);
       }
     }
   }
 
   // Draw sequencer playhead
-  uint8_t y = (channel * 2) + 1;
+  y += 1;
   led_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
   led_pixel_on(x, y);
