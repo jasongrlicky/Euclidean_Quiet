@@ -618,10 +618,6 @@ void loop() {
       break;
   }
 
-  if (euclidean_state.channels[active_channel].length > 16) {
-    euclidean_state.channels[active_channel].length = 16;
-  }
-
   EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
 
   // Handle Length Knob Movement
