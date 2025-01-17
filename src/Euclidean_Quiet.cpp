@@ -834,11 +834,13 @@ void handle_clock() {
       lights_active = true;
     }
 
-    // move counter to next position, ready for next pulse
-    euclidean_state.channels[channel].position++;
-    if (euclidean_state.channels[channel].position >= euclidean_state.channels[channel].length) {
-      euclidean_state.channels[channel].position = 0;
+    // Move sequencer playhead to next step
+    uint8_t new_position = euclidean_state.channels[channel].position;
+    new_position++;
+    if (new_position >= euclidean_state.channels[channel].length) {
+      new_position = 0;
     }
+    euclidean_state.channels[channel].position = new_position;
   }
 
   output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
