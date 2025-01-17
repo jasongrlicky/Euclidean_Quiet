@@ -833,31 +833,33 @@ void handle_clock() {
 }
 
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
-  // don't clear or draw cursor if channel is being changed
-  if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
-    led_row_off(channel * 2);
+  // Early return: Don't draw this channel if it is being adjusted
+  if ((channel == active_channel) && (time - last_changed < ADJUSTMENT_DISPLAY_TIME)) {
+    return;
+  }
 
-    if (position < 8) {
-      for (uint8_t step = 0; step < 8; step++) {
-        if (pattern_read(pattern, length, step) && (step < length)) {
-          led_pixel_on(step, channel * 2);
-        }
-      }
-    } else {
-      for (uint8_t step = 8; step < 16; step++) {
-        if (pattern_read(pattern, length, step) && (step < length)) {
-          led_pixel_on(step - 8, channel * 2);
-        }
+  led_row_off(channel * 2);
+
+  if (position < 8) {
+    for (uint8_t step = 0; step < 8; step++) {
+      if (pattern_read(pattern, length, step) && (step < length)) {
+        led_pixel_on(step, channel * 2);
       }
     }
-
-    led_row_off(channel * 2 + 1);
-    // Draw sequencer playhead
-    if (position < 8) {
-      led_pixel_on(position, (channel * 2) + 1);
-    } else {
-      led_pixel_on(position - 8, (channel * 2) + 1);
+  } else {
+    for (uint8_t step = 8; step < 16; step++) {
+      if (pattern_read(pattern, length, step) && (step < length)) {
+        led_pixel_on(step - 8, channel * 2);
+      }
     }
+  }
+
+  led_row_off(channel * 2 + 1);
+  // Draw sequencer playhead
+  if (position < 8) {
+    led_pixel_on(position, (channel * 2) + 1);
+  } else {
+    led_pixel_on(position - 8, (channel * 2) + 1);
   }
 }
 
