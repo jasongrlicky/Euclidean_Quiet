@@ -721,17 +721,18 @@ void loop() {
       oknob = 0;
     }
 
-    euclidean_state.channels[active_channel].offset = offset + oknob;
+    offset += oknob;
+    euclidean_state.channels[active_channel].offset = offset;
 
     #if EEPROM_WRITE
-    EEPROM.update((active_channel) + 7, euclidean_state.channels[active_channel].offset); // write settings to 2/4/6 eproms
+    EEPROM.update((active_channel) + 7, offset);
     #endif
 
     #if LOGGING_ENABLED
     Serial.print("eeprom write O= ");
     Serial.print((active_channel) + 7);
     Serial.print(" ");
-    Serial.println(euclidean_state.channels[active_channel].offset);
+    Serial.println(offset);
     #endif
   }
 
