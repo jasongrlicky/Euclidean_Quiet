@@ -318,7 +318,9 @@ enum EuclideanParamChange {
 
 /* INTERNAL */
 
-void handle_clock();
+
+static void handle_clock();
+static void sequencer_position_updated();
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -764,7 +766,7 @@ void loop() {
 
 // Triggered when clock pulses are received via the "Trig" input or generated 
 // internally
-void handle_clock() {
+static void handle_clock() {
   // wake up routine & animation
   if (led_sleep_mode_enabled) {
     led_wake();
@@ -774,12 +776,10 @@ void handle_clock() {
   // the LEDs on the bottom row in the loop() function.
   lc.setLed(LED_ADDR, 7, 7, true);
 
-  // Update each channel's sequencer
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
-    uint16_t pattern = generated_rhythms[channel];
 
     // Move sequencer playhead to next step
     position++;
@@ -787,6 +787,18 @@ void handle_clock() {
       position = 0;
     }
     euclidean_state.channels[channel].position = position;
+  }
+
+  sequencer_position_updated();
+}
+
+static void sequencer_position_updated() {
+  // Update each channel's sequencer
+  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    uint8_t length = channel_state.length;
+    uint8_t position = channel_state.position;
+    uint16_t pattern = generated_rhythms[channel];
 
     // Only draw this channel if is not currently being adjusted
     if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
