@@ -456,7 +456,7 @@ void loop() {
 
     events_in.reset_rise = true;
 
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && LOGGING_INPUT
     Serial.println("INPUT: Reset");
     #endif
   }
@@ -468,7 +468,7 @@ void loop() {
   if (trig_in_value > trig_in_value_previous) { 
     events_in.trig_rise = true;
 
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && LOGGING_INPUT
     Serial.println("INPUT: Trigger");
     #endif
   }
@@ -482,7 +482,7 @@ void loop() {
       last_read = time;
       events_in.enc_move[ENCODER_1] = val_enc_1;
 
-      #if LOGGING_ENABLED
+      #if LOGGING_ENABLED && LOGGING_INPUT
       Serial.print("ENC_1: Move ");
       Serial.println(val_enc_1);
       #endif
@@ -494,7 +494,7 @@ void loop() {
       last_read = time;
       events_in.enc_move[ENCODER_2] = val_enc_2;
 
-      #if LOGGING_ENABLED
+      #if LOGGING_ENABLED && LOGGING_INPUT
       Serial.print("ENC_2: Move ");
       Serial.println(val_enc_2);
       #endif
@@ -506,7 +506,7 @@ void loop() {
       last_read = time;
       events_in.enc_move[ENCODER_3] = val_enc_3;
 
-      #if LOGGING_ENABLED
+      #if LOGGING_ENABLED && LOGGING_INPUT
       Serial.print("ENC_3: Move ");
       Serial.println(val_enc_3);
       #endif
@@ -792,6 +792,13 @@ static void sequencer_advance() {
       position = 0;
     }
     euclidean_state.channels[channel].position = position;
+
+    #if LOGGING_ENABLED && LOGGING_POSITION
+    if (channel == 0) {
+      Serial.print("> CH_1 Position: ");
+      Serial.println(position);
+    }
+    #endif
   }
 }
 
