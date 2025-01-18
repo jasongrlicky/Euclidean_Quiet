@@ -318,6 +318,8 @@ enum EuclideanParamChange {
 /* INTERNAL */
 
 void handle_clock();
+static void draw_channel(Channel channel, uint16_t pattern, uint8_t length);
+static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static void draw_channel_playhead(uint8_t y, uint8_t position);
 /// Read a single step from a pattern
@@ -736,21 +738,13 @@ void loop() {
     uint8_t length = channel_state.length;
     uint8_t density = channel_state.density;
     uint8_t offset = channel_state.offset;
+
     generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
-    led_row_off(channel * 2);
-    led_row_off(channel * 2 + 1);
-    for (uint8_t step = 0; step < length; step++) {
-      uint8_t x = step;
-      uint8_t y = channel * 2;
-      if (step > 7) {
-        x -= 8;
-        y += 1;
-      }
-
-      if ((param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) || (pattern_read(generated_rhythms[channel], length, step))) {
-        led_pixel_set(x, y, true);
-      }
+    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
+      draw_channel_length(channel, length);  
+    } else {
+      draw_channel(channel, generated_rhythms[channel], length);
     }
   }
 
@@ -829,6 +823,42 @@ void handle_clock() {
   output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
 
   last_clock = time;
+}
+
+static void draw_channel(Channel channel, uint16_t pattern, uint8_t length) {
+    uint8_t row = channel * 2;
+    led_row_off(row);
+    led_row_off(row + 1);
+
+    for (uint8_t step = 0; step < length; step++) {
+      uint8_t x = step;
+      uint8_t y = row;
+      if (step > 7) {
+        x -= 8;
+        y += 1;
+      }
+
+      if (pattern_read(pattern, length, step)) {
+        led_pixel_set(x, y, true);
+      }
+    }
+}
+
+static void draw_channel_length(Channel channel, uint8_t length) {
+    uint8_t row = channel * 2;
+    led_row_off(row);
+    led_row_off(row + 1);
+
+    for (uint8_t step = 0; step < length; step++) {
+      uint8_t x = step;
+      uint8_t y = row;
+      if (step > 7) {
+        x -= 8;
+        y += 1;
+      }
+
+      led_pixel_set(x, y, true);
+    }
 }
 
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
