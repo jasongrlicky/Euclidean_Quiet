@@ -730,7 +730,7 @@ void loop() {
     #endif
   }
 
-  /* UPDATE STATE */
+  /* UPDATE SEQUENCER */
 
   // Clock ticks merge the internal and external clocks
   bool clock_tick = events_in.trig || events_in.internal_clock_tick;
@@ -752,20 +752,6 @@ void loop() {
   // Turn off internal clock when external clock received
   if (events_in.trig) { 
     internal_clock_enabled = false; 
-  }
-
-  if (led_sleep_mode_enabled) {
-    // LED is sleeping:
-    // If a clock or reset is received, wake it.
-    if (clock_tick || events_in.reset) {
-      led_wake();
-    }
-  } else {
-    // LED is awake:
-    // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
-    if (time - last_clock_or_reset > LED_SLEEP_TIME) {
-      led_sleep();
-    }
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
@@ -802,6 +788,22 @@ void loop() {
       draw_channel_length(channel, length);  
     } else {
       draw_channel_pattern(channel, generated_rhythms[channel], length);
+    }
+  }
+
+  /* UPDATE LED SLEEP */
+
+  if (led_sleep_mode_enabled) {
+    // LED is sleeping:
+    // If a clock or reset is received, wake it.
+    if (clock_tick || events_in.reset) {
+      led_wake();
+    }
+  } else {
+    // LED is awake:
+    // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
+    if (time - last_clock_or_reset > LED_SLEEP_TIME) {
+      led_sleep();
     }
   }
 }
