@@ -330,7 +330,8 @@ enum EuclideanParamChange {
 
 /* INTERNAL */
 
-
+static void sequencer_handle_reset();
+static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
@@ -735,25 +736,11 @@ void loop() {
   bool clock_tick = events_in.trig || events_in.internal_clock_tick;
 
   if (events_in.reset) {
-    // Go to the first step
-    sequencer_reset();
-
-    // Stop the sequencer
-    euclidean_state.sequencer_running = false;
+    sequencer_handle_reset();
   }
 
   if (clock_tick) {
-    // Advance sequencer if it is running
-    if (euclidean_state.sequencer_running) {
-      // Only advance if sequencer is running
-      sequencer_advance();
-    } else {
-      // If sequencer is stopped, start it so that the next clock advances
-      euclidean_state.sequencer_running = true;
-    }
-
-    // Trigger current step
-    sequencer_send_output();
+    sequencer_handle_clock();
   }
 
   if (clock_tick || events_in.reset) {
@@ -812,6 +799,28 @@ void loop() {
       draw_channel_pattern(channel, generated_rhythms[channel], length);
     }
   }
+}
+
+static void sequencer_handle_reset() {
+  // Go to the first step
+  sequencer_reset();
+
+  // Stop the sequencer
+  euclidean_state.sequencer_running = false;
+}
+
+static void sequencer_handle_clock() {
+  // Advance sequencer if it is running
+  if (euclidean_state.sequencer_running) {
+    // Only advance if sequencer is running
+    sequencer_advance();
+  } else {
+    // If sequencer is stopped, start it so that the next clock advances
+    euclidean_state.sequencer_running = true;
+  }
+
+  // Trigger current step
+  sequencer_send_output();
 }
 
 static void sequencer_advance() {
