@@ -783,11 +783,6 @@ void loop() {
 // Triggered when clock pulses are received via the "Trig" input or generated 
 // internally
 static void handle_clock() {
-  // wake up routine & animation
-  if (led_sleep_mode_enabled) {
-    led_wake();
-  }
-
   // Flash LED in bottom-left corner. It will get turned off with the rest of
   // the LEDs on the bottom row in the loop() function.
   lc.setLed(LED_ADDR, 7, 7, true);
