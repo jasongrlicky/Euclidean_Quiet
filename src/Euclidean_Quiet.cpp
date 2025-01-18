@@ -757,8 +757,6 @@ void loop() {
   }
 
   if (clock_tick || events_in.reset) {
-    draw_channels();
-
     // If a clock or reset is received, keep the LED from sleeping
     if(led_sleep_mode_enabled) {
       led_wake();
