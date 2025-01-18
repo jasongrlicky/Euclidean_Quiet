@@ -561,37 +561,29 @@ void loop() {
 
   if (clock_tick && events_in.reset_rise) {
     // Go to the first step and trigger it if both clock and reset are received
-
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       euclidean_state.channels[a].position = 0;
     }
-
-    sequencer_position_updated();
   } else if (clock_tick) {
     // Advance sequencer and trigger current step if only clock is received
     handle_clock();
-
-    sequencer_position_updated();
   } else if (events_in.reset_rise) {
     // Go to the first step without triggering it if only reset is received
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       euclidean_state.channels[a].position = 0;
     }
-
-    sequencer_position_updated();
   }
 
-  // If the sequencer position gets updated, keep the LED from sleeping
   if (clock_tick || events_in.reset_rise) {
+    sequencer_position_updated();
+
+    // If a clock or reset is received, keep the LED from sleeping
     if(led_sleep_mode_enabled) {
       led_wake();
     }
-  }
 
-  // Update last_clock_or_reset
-  if (clock_tick || events_in.reset_rise) {
+    // Update last_clock_or_reset and output_pulse_length
     output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
-
     last_clock_or_reset = time;
   }
 
