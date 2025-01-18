@@ -588,6 +588,12 @@ void loop() {
     }
   }
 
+  if (clock_tick) {
+    // Flash LED in bottom-left corner. It will get turned off with the rest of
+    // the LEDs on the bottom row later in the loop() function.
+    led_pixel_on(0, 7);
+  }
+
   // Turn off internal clock when external clock received
   if (events_in.trig_rise) { 
     internal_clock_enabled = false; 
@@ -783,10 +789,6 @@ void loop() {
 // Triggered when clock pulses are received via the "Trig" input or generated 
 // internally
 static void handle_clock() {
-  // Flash LED in bottom-left corner. It will get turned off with the rest of
-  // the LEDs on the bottom row in the loop() function.
-  lc.setLed(LED_ADDR, 7, 7, true);
-
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
