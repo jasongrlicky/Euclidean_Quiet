@@ -1,4 +1,6 @@
+#if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>
+#endif
 #include <Encoder.h>
 #include <LedControl.h>
 
@@ -254,9 +256,17 @@ typedef enum Channel {
 typedef struct EuclideanState {
   /// State for each of this module's channels, indexed by `Channel` enum.
   EuclideanChannel channels[NUM_CHANNELS];
+  bool sequencer_running;
 } EuclideanState;
 
-static EuclideanState euclidean_state;
+static EuclideanState euclidean_state = {
+  .channels = {
+    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
+    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
+    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 }
+  },
+  .sequencer_running = false,
+};
 
 Milliseconds time;
 Milliseconds last_clock_or_reset;
