@@ -749,13 +749,6 @@ void loop() {
     last_clock_or_reset = time;
   }
 
-  if (clock_tick) {
-    // Flash LED in bottom-left corner. It will get turned off with the rest of
-    // the LEDs on the bottom row later in the loop() function.
-    led_pixel_on(0, 7);
-    lights_active = true;
-  }
-
   // Turn off internal clock when external clock received
   if (events_in.trig) { 
     internal_clock_enabled = false; 
@@ -774,16 +767,24 @@ void loop() {
       led_sleep();
     }
   }
-  
-  // TURN OFF ANY LIGHTS THAT ARE ON
-  if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
-    led_row_off(7);
-    lights_active = false;
-  }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
   if (output_any_active() && (time - last_clock_or_reset > output_pulse_length)) {
     output_clear_all();
+  }
+
+  /* DRAWING */
+
+  // Flash Trig Indicator LED if we received a clock tick
+  if (clock_tick) {
+    led_pixel_on(0, 7);
+    lights_active = true;
+  }
+  
+  // Turn off indicator LEDs that have been on long enough
+  if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
+    led_row_off(7);
+    lights_active = false;
   }
 
   // If the sequencer was updated, draw channels' playing display
