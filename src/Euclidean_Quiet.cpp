@@ -457,15 +457,11 @@ void loop() {
     events_in.reset_rise = true;
 
     #if LOGGING_ENABLED
-    Serial.println("INPUT: Reset Rise");
+    Serial.println("INPUT: Reset");
     #endif
   }
   if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
     reset_active = false;
-
-    #if LOGGING_ENABLED
-    Serial.println("INPUT: Reset Fall");      
-    #endif
   }
 
   // TRIG INPUT 
@@ -473,7 +469,7 @@ void loop() {
     events_in.trig_rise = true;
 
     #if LOGGING_ENABLED
-    Serial.println("INPUT: Trigger Rise");
+    Serial.println("INPUT: Trigger");
     #endif
   }
   trig_in_value_previous = trig_in_value;
