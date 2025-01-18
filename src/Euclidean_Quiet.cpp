@@ -769,7 +769,7 @@ void loop() {
     #endif
   }
 
-  // Update generated rhythm and redraw active channel's display
+  // Update generated rhythm 
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     last_changed = time;
 
@@ -780,12 +780,6 @@ void loop() {
     uint8_t offset = channel_state.offset;
 
     generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
-
-    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
-      draw_channel_length(channel, length);  
-    } else {
-      draw_channel(channel, generated_rhythms[channel], length);
-    }
 
     #if LOGGING_ENABLED
     if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
@@ -799,6 +793,19 @@ void loop() {
       Serial.print(offset);
     }
     #endif
+  }
+
+  // Redraw active channel's display
+  if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
+    Channel channel = active_channel;
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    uint8_t length = channel_state.length;
+
+    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
+      draw_channel_length(channel, length);  
+    } else {
+      draw_channel(channel, generated_rhythms[channel], length);
+    }
   }
 }
 
