@@ -599,6 +599,7 @@ void loop() {
     // Flash LED in bottom-left corner. It will get turned off with the rest of
     // the LEDs on the bottom row later in the loop() function.
     led_pixel_on(0, 7);
+    lights_active = true;
   }
 
   // Turn off internal clock when external clock received
