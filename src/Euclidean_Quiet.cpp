@@ -18,14 +18,15 @@ extern "C" {
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
-    - Now handles simultaneous triggers in the "Trig" and "Reset" inputs
   - UI Polish:
+    - Reset is now visible immediately
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
     - Shortened the time that LEDs stay lit when setting pattern length for a channel.
     - Before a clock trigger has been received, the full pattern is drawn for each channel.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
+    - Ignored "Reset" input that happened simultaneously with "Trig"
     - Turning the density up if it was already at the maximum would cause it to toggle between the two highest values.
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
@@ -322,7 +323,8 @@ enum EuclideanParamChange {
 
 static void sequencer_advance();
 static void sequencer_reset();
-static void sequencer_position_updated();
+static void sequencer_send_output();
+static void draw_channels();
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -563,16 +565,18 @@ void loop() {
   if (clock_tick && events_in.reset_rise) {
     // Go to the first step and trigger it if both clock and reset are received
     sequencer_reset();
+    sequencer_send_output();
   } else if (clock_tick) {
     // Advance sequencer and trigger current step if only clock is received
     sequencer_advance();
+    sequencer_send_output();
   } else if (events_in.reset_rise) {
     // Go to the first step without triggering it if only reset is received
     sequencer_reset();
   }
 
   if (clock_tick || events_in.reset_rise) {
-    sequencer_position_updated();
+    draw_channels();
 
     // If a clock or reset is received, keep the LED from sleeping
     if(led_sleep_mode_enabled) {
@@ -804,18 +808,12 @@ static void sequencer_reset() {
   }
 }
 
-static void sequencer_position_updated() {
-  // Update each channel's sequencer
+static void sequencer_send_output() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
-
-    // Only draw this channel if is not currently being adjusted
-    if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
-      draw_channel_with_playhead((Channel)channel, pattern, length, position);
-    }
   
     // Turn on LEDs on the bottom row for channels where the step is active
     bool step_is_active = pattern_read(pattern, length, position);
@@ -841,6 +839,20 @@ static void sequencer_position_updated() {
         led_pixel_on(3, 7); // bottom row flash
         lights_active = true;
       }
+    }
+  }
+}
+
+static void draw_channels() {
+  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    uint8_t length = channel_state.length;
+    uint8_t position = channel_state.position;
+    uint16_t pattern = generated_rhythms[channel];
+
+    // Only draw this channel if is not currently being adjusted
+    if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
+      draw_channel_with_playhead((Channel)channel, pattern, length, position);
     }
   }
 }
