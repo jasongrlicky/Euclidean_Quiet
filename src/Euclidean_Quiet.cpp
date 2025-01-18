@@ -318,7 +318,7 @@ enum EuclideanParamChange {
 /* INTERNAL */
 
 void handle_clock();
-static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
+static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static void draw_channel_playhead(uint8_t y, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
@@ -430,7 +430,7 @@ void setup() {
     uint8_t length = euclidean_state.channels[channel].length;
     uint8_t position = euclidean_state.channels[channel].position;
     uint16_t pattern = generated_rhythms[channel];
-    draw_channel((Channel)channel, pattern, length, position);
+    draw_channel_with_playhead((Channel)channel, pattern, length, position);
   }
 }
 
@@ -788,7 +788,7 @@ void handle_clock() {
 
     // Only draw this channel if is not currently being adjusted
     if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
-      draw_channel((Channel)channel, pattern, length, position);
+      draw_channel_with_playhead((Channel)channel, pattern, length, position);
     }
   
     // Turn on LEDs on the bottom row for channels where the step is active
@@ -831,7 +831,7 @@ void handle_clock() {
   last_clock = time;
 }
 
-static void draw_channel(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
+static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t y = channel * 2;
   led_row_off(y);
 
