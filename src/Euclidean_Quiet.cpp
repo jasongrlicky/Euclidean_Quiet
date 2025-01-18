@@ -761,16 +761,18 @@ void loop() {
     internal_clock_enabled = false; 
   }
 
-  // If a clock or reset is received, wake the LED
-  if (led_sleep_mode_enabled && (clock_tick || events_in.reset)) {
-    if(led_sleep_mode_enabled) {
+  if (led_sleep_mode_enabled) {
+    // LED is sleeping:
+    // If a clock or reset is received, wake it.
+    if (clock_tick || events_in.reset) {
       led_wake();
     }
-  }
-
-  // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
-  if ((!led_sleep_mode_enabled) && (time - last_clock_or_reset > LED_SLEEP_TIME)) {
-    led_sleep();
+  } else {
+    // LED is awake:
+    // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
+    if (time - last_clock_or_reset > LED_SLEEP_TIME) {
+      led_sleep();
+    }
   }
   
   // TURN OFF ANY LIGHTS THAT ARE ON
