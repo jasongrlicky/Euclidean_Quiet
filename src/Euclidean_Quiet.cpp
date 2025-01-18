@@ -491,7 +491,7 @@ void loop() {
 
       #if LOGGING_ENABLED
       Serial.print("ENC_1: Move ");
-      Serial.println(nknob);
+      Serial.println(val_enc_1);
       #endif
     }
 
@@ -503,7 +503,7 @@ void loop() {
 
       #if LOGGING_ENABLED
       Serial.print("ENC_2: Move ");
-      Serial.println(kknob);
+      Serial.println(val_enc_2);
       #endif
     }
 
@@ -515,7 +515,7 @@ void loop() {
 
       #if LOGGING_ENABLED
       Serial.print("ENC_3: Move ");
-      Serial.println(oknob);
+      Serial.println(val_enc_3);
       #endif
     }
   }
@@ -774,15 +774,20 @@ void loop() {
   }
 
   // Log parameters at a certain interval
-  #if LOGGING_ENABLED
+  #if LOGGING_ENABLED && LOGGING_PERIODIC_ENABLED
   if (time - last_logged > LOGGING_INTERVAL) {
+    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
+    uint8_t length = channel_state.length;
+    uint8_t density = channel_state.density;
+    uint8_t offset = channel_state.offset;
+
     last_logged = time;
     Serial.print("length =");
-    Serial.print(active_length);
+    Serial.print(length);
     Serial.print(" density =");
-    Serial.print(active_density);
+    Serial.print(density);
     Serial.print(" offset =");
-    Serial.print(active_offset);
+    Serial.print(offset);
   }
   #endif
 }
