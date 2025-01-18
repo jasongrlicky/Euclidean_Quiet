@@ -555,12 +555,7 @@ void loop() {
 
   /* UPDATE STATE */
 
-  // Internal Clock
-  if (events_in.internal_clock_tick) {
-    handle_clock();
-  }
-
-  // HANDLE RESET
+  // Handle Reset Event
   if (events_in.reset_rise) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       euclidean_state.channels[a].position = 0;
@@ -571,9 +566,14 @@ void loop() {
     }
   }
 
-  // HANDLE TRIGGER INPUT
+  // Handle Trigger Input Event
   if (events_in.trig_rise) { 
-    internal_clock_enabled = false; // turn off internal clock if external clock received
+    // Turn off internal clock when external clock received
+    internal_clock_enabled = false; 
+  }
+
+  // Handle Clock Events
+  if (events_in.trig_rise || events_in.internal_clock_tick) { 
     handle_clock();
   }
 
