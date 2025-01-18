@@ -18,6 +18,7 @@ extern "C" {
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
+    - Now handles simultaneous triggers in the "Trig" and "Reset" inputs
   - UI Polish:
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
@@ -555,28 +556,41 @@ void loop() {
 
   /* UPDATE STATE */
 
-  // Handle Reset Event
-  if (events_in.reset_rise) {
+  // Clock ticks merge the internal and external clocks
+  bool clock_tick = events_in.trig_rise || events_in.internal_clock_tick;
+
+  if (clock_tick && events_in.reset_rise) {
+    // Go to the first step and trigger it if both clock and reset are received
+
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
       euclidean_state.channels[a].position = 0;
     }
 
-    if(led_sleep_mode_enabled) {
-      led_wake();
+    sequencer_position_updated();
+  } else if (clock_tick) {
+    // Advance sequencer and trigger current step if only clock is received
+    handle_clock();
+
+    sequencer_position_updated();
+  } else if (events_in.reset_rise) {
+    // Go to the first step without triggering it if only reset is received
+    for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
+      euclidean_state.channels[a].position = 0;
     }
 
     sequencer_position_updated();
   }
 
-  // Handle Trigger Input Event
-  if (events_in.trig_rise) { 
-    // Turn off internal clock when external clock received
-    internal_clock_enabled = false; 
+  // If the sequencer position gets updated, keep the LED from sleeping
+  if (clock_tick || events_in.reset_rise) {
+    if(led_sleep_mode_enabled) {
+      led_wake();
+    }
   }
 
-  // Handle Clock Events
-  if (events_in.trig_rise || events_in.internal_clock_tick) { 
-    handle_clock();
+  // Turn off internal clock when external clock received
+  if (events_in.trig_rise) { 
+    internal_clock_enabled = false; 
   }
 
   // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
@@ -790,8 +804,6 @@ static void handle_clock() {
     }
     euclidean_state.channels[channel].position = position;
   }
-
-  sequencer_position_updated();
 }
 
 static void sequencer_position_updated() {
