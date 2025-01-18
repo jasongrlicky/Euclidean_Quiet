@@ -588,6 +588,13 @@ void loop() {
     }
   }
 
+  // Update last_clock_or_reset
+  if (clock_tick || events_in.reset_rise) {
+    output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
+
+    last_clock_or_reset = time;
+  }
+
   if (clock_tick) {
     // Flash LED in bottom-left corner. It will get turned off with the rest of
     // the LEDs on the bottom row later in the loop() function.
@@ -842,10 +849,6 @@ static void sequencer_position_updated() {
       }
     }
   }
-
-  output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
-
-  last_clock_or_reset = time;
 }
 
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length) {
