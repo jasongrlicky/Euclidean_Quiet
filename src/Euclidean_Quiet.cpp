@@ -1,3 +1,7 @@
+extern "C" {
+#include "config.h"
+}
+
 #if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>
 #endif
@@ -5,7 +9,6 @@
 #include <LedControl.h>
 
 extern "C" {
-#include "config.h"
 #include <euclidean.h>
 #include "hardware.h"
 #include "output.h"
