@@ -31,7 +31,7 @@ extern "C" {
     - Before a clock trigger has been received, the full pattern is drawn for each channel.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
-    - Ignored "Reset" input that happened simultaneously with "Trig"
+    - Sometimes ignored "Reset" input that happened simultaneously with "Trig" input
     - Turning the density up if it was already at the maximum would cause it to toggle between the two highest values.
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
@@ -568,17 +568,26 @@ void loop() {
   // Clock ticks merge the internal and external clocks
   bool clock_tick = events_in.trig || events_in.internal_clock_tick;
 
-  if (clock_tick && events_in.reset) {
-    // Go to the first step and trigger it if both clock and reset are received
+  if (events_in.reset) {
+    // Go to the first step
     sequencer_reset();
+
+    // Stop the sequencer
+    euclidean_state.sequencer_running = false;
+  }
+
+  if (clock_tick) {
+    // Advance sequencer if it is running
+    if (euclidean_state.sequencer_running) {
+      // Only advance if sequencer is running
+      sequencer_advance();
+    } else {
+      // If sequencer is stopped, start it so that the next clock advances
+      euclidean_state.sequencer_running = true;
+    }
+
+    // Trigger current step
     sequencer_send_output();
-  } else if (clock_tick) {
-    // Advance sequencer and trigger current step if only clock is received
-    sequencer_send_output();
-    sequencer_advance();
-  } else if (events_in.reset) {
-    // Go to the first step without triggering it if only reset is received
-    sequencer_reset();
   }
 
   if (clock_tick || events_in.reset) {
