@@ -328,6 +328,9 @@ static void draw_channel_playhead(uint8_t y, uint8_t position);
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 int encoder_read(Encoder& enc);
 static void eeprom_load(EuclideanState *s);
+static inline int eeprom_addr_length(Channel channel);
+static inline int eeprom_addr_density(Channel channel);
+static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
@@ -631,7 +634,7 @@ void loop() {
       euclidean_state.channels[channel].density = density;
 
       #if EEPROM_WRITE
-      EEPROM.update((channel * 2) + 2, density);
+      EEPROM.update(eeprom_addr_density(channel), density);
       #endif
     }
     if ((offset >= (length + nknob)) && (offset < 16)) {
@@ -639,7 +642,7 @@ void loop() {
       euclidean_state.channels[channel].offset = offset;
 
       #if EEPROM_WRITE
-      EEPROM.update((channel) + 7, offset);
+      EEPROM.update(eeprom_addr_offset(channel), offset);
       #endif
     }
 
@@ -647,7 +650,7 @@ void loop() {
     euclidean_state.channels[channel].length = length;
     
     #if EEPROM_WRITE
-    EEPROM.update((channel * 2) + 1, length);
+    EEPROM.update(eeprom_addr_length(channel), length);
     #endif
       
     #if LOGGING_ENABLED
@@ -680,7 +683,7 @@ void loop() {
     euclidean_state.channels[channel].density = density;
 
     #if EEPROM_WRITE
-    EEPROM.update((channel * 2) + 2, density);
+    EEPROM.update(eeprom_addr_density(channel), density);
     #endif
 
     #if LOGGING_ENABLED
@@ -713,7 +716,7 @@ void loop() {
     euclidean_state.channels[channel].offset = offset;
 
     #if EEPROM_WRITE
-    EEPROM.update((channel) + 7, offset);
+    EEPROM.update(eeprom_addr_offset(channel), offset);
     #endif
 
     #if LOGGING_ENABLED
@@ -912,12 +915,25 @@ static void eeprom_load(EuclideanState *s) {
 
   #if EEPROM_READ
   for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-    s->channels[c].length = EEPROM.read((c << 1) + 1);
-    s->channels[c].density = EEPROM.read((c << 1) + 2);
-    s->channels[c].offset = EEPROM.read(c + 7);
+    Channel channel = (Channel)c;
+    s->channels[c].length = EEPROM.read(eeprom_addr_length(channel));
+    s->channels[c].density = EEPROM.read(eeprom_addr_density(channel));
+    s->channels[c].offset = EEPROM.read(eeprom_addr_offset(channel));
     s->channels[c].position = 0;
   }
   #endif
+}
+
+static inline int eeprom_addr_length(Channel channel) {
+  return (channel * 2) + 1;
+}
+
+static inline int eeprom_addr_density(Channel channel) {
+  return (channel * 2) + 2;
+}
+
+static inline int eeprom_addr_offset(Channel channel) {
+  return channel + 7;
 }
 
 static inline void led_pixel_set(uint8_t x, uint8_t y, bool val) {
