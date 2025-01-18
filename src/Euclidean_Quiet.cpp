@@ -754,7 +754,7 @@ void loop() {
     #endif
   }
 
-  // Update generated rhythm and redraw channel display
+  // Update generated rhythm and redraw active channel's display
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     last_changed = time;
 
