@@ -451,7 +451,7 @@ void loop() {
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
-  if ((!reset_active) && (reset_button > RESET_PIN_THRESHOLD)) {
+  if ((!reset_active) && (reset_button >= RESET_PIN_THRESHOLD)) {
     reset_active = true;
 
     events_in.reset_rise = true;
