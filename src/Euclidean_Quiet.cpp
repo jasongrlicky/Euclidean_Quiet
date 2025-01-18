@@ -36,6 +36,7 @@ extern "C" {
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
     - When reducing the length parameter for a channel, its adjusted density would not be saved.
+    - When a pattern length was reduced to below the sequencer's current position, the position was not reset
   - Development:
     - Migrated firmware project to PlatformIO.
     - Added tests for Euclidean rhythm generation.
