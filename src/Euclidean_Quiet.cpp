@@ -776,9 +776,17 @@ void handle_clock() {
 
   // Update each channel's sequencer
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    uint8_t length = euclidean_state.channels[channel].length;
-    uint8_t position = euclidean_state.channels[channel].position;
+    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    uint8_t length = channel_state.length;
+    uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
+
+    // Move sequencer playhead to next step
+    position++;
+    if (position >= length) {
+      position = 0;
+    }
+    euclidean_state.channels[channel].position = position;
 
     // Only draw this channel if is not currently being adjusted
     if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
@@ -810,14 +818,6 @@ void handle_clock() {
         lights_active = true;
       }
     }
-
-    // Move sequencer playhead to next step
-    uint8_t new_position = euclidean_state.channels[channel].position;
-    new_position++;
-    if (new_position >= euclidean_state.channels[channel].length) {
-      new_position = 0;
-    }
-    euclidean_state.channels[channel].position = new_position;
   }
 
   output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
