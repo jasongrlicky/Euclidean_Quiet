@@ -562,8 +562,10 @@ void loop() {
     }
 
     if(led_sleep_mode_enabled) {
-      handle_clock();
+      led_wake();
     }
+
+    sequencer_position_updated();
   }
 
   // Handle Trigger Input Event
