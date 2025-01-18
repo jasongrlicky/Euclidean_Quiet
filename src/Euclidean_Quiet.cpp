@@ -677,7 +677,7 @@ void loop() {
     EEPROM.update(eeprom_addr_length(channel), length);
     #endif
       
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && EEPROM_WRITE
     Serial.print("eeprom write N= ");
     Serial.print((channel * 2) + 1);
     Serial.print(" ");
@@ -710,7 +710,7 @@ void loop() {
     EEPROM.update(eeprom_addr_density(channel), density);
     #endif
 
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && EEPROM_WRITE
     Serial.print("eeprom write K= ");
     Serial.print((channel * 2) + 2);
     Serial.print(" ");
@@ -743,7 +743,7 @@ void loop() {
     EEPROM.update(eeprom_addr_offset(channel), offset);
     #endif
 
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && EEPROM_WRITE
     Serial.print("eeprom write O= ");
     Serial.print((channel) + 7);
     Serial.print(" ");
