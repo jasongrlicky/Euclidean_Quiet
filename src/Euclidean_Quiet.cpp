@@ -744,11 +744,6 @@ void loop() {
   }
 
   if (clock_tick || events_in.reset) {
-    // If a clock or reset is received, keep the LED from sleeping
-    if(led_sleep_mode_enabled) {
-      led_wake();
-    }
-
     // Update last_clock_or_reset and output_pulse_length
     output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
     last_clock_or_reset = time;
@@ -764,6 +759,13 @@ void loop() {
   // Turn off internal clock when external clock received
   if (events_in.trig) { 
     internal_clock_enabled = false; 
+  }
+
+  // If a clock or reset is received, wake the LED
+  if (led_sleep_mode_enabled && (clock_tick || events_in.reset)) {
+    if(led_sleep_mode_enabled) {
+      led_wake();
+    }
   }
 
   // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
