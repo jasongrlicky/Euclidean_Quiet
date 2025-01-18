@@ -260,9 +260,6 @@ static EuclideanState euclidean_state;
 
 Milliseconds time;
 Milliseconds last_clock_or_reset;
-#if LOGGING_ENABLED
-Milliseconds last_logged;
-#endif
 
 // Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
@@ -771,25 +768,20 @@ void loop() {
     } else {
       draw_channel(channel, generated_rhythms[channel], length);
     }
-  }
 
-  // Log parameters at a certain interval
-  #if LOGGING_ENABLED && LOGGING_PERIODIC_ENABLED
-  if (time - last_logged > LOGGING_INTERVAL) {
-    EuclideanChannel channel_state = euclidean_state.channels[active_channel];
-    uint8_t length = channel_state.length;
-    uint8_t density = channel_state.density;
-    uint8_t offset = channel_state.offset;
-
-    last_logged = time;
-    Serial.print("length =");
-    Serial.print(length);
-    Serial.print(" density =");
-    Serial.print(density);
-    Serial.print(" offset =");
-    Serial.print(offset);
+    #if LOGGING_ENABLED
+    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
+      Serial.print("length: ");
+      Serial.print(length);
+    } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_DENSITY) {
+      Serial.print(" density: ");
+      Serial.print(density);
+    } else {
+      Serial.print(" offset: ");
+      Serial.print(offset);
+    }
+    #endif
   }
-  #endif
 }
 
 static void sequencer_advance() {
