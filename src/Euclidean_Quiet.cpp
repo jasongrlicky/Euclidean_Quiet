@@ -22,6 +22,7 @@ extern "C" {
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
     - Shortened the time that LEDs stay lit when setting pattern length for a channel.
+    - Before a clock trigger has been received, the full pattern is drawn for each channel.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
     - Turning the density up if it was already at the maximum would cause it to toggle between the two highest values.
@@ -430,9 +431,8 @@ void setup() {
   // Draw all channel displays initially
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     uint8_t length = euclidean_state.channels[channel].length;
-    uint8_t position = euclidean_state.channels[channel].position;
     uint16_t pattern = generated_rhythms[channel];
-    draw_channel_with_playhead((Channel)channel, pattern, length, position);
+    draw_channel((Channel) channel, pattern, length);
   }
 }
 
