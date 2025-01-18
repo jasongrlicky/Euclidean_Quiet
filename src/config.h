@@ -13,7 +13,7 @@
 #define EEPROM_READ 1 // 0 = Reading from EEPROM disabled, 1 = enabled
 #define EEPROM_WRITE 1 // 0 = Writing to EEPROM disabled, 1 = enabled
 #define LOGGING_ENABLED 0 // 0 = Logging over serial disabled, 1 = enabled
-#define LOGGING_PERIODIC_ENABLED 0 // 0 = Logging over serial disabled, 1 = enabled
+#define LOGGING_PERIODIC_ENABLED 0 // 0 = Logging every LOGGING_INTERVAL disabled, 1 = enabled
 #define LOGGING_INTERVAL 1000 // Milliseconds between periodic log messages
 
 #endif /* CONFIG_H_ */ 
