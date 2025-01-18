@@ -568,8 +568,8 @@ void loop() {
     sequencer_send_output();
   } else if (clock_tick) {
     // Advance sequencer and trigger current step if only clock is received
-    sequencer_advance();
     sequencer_send_output();
+    sequencer_advance();
   } else if (events_in.reset_rise) {
     // Go to the first step without triggering it if only reset is received
     sequencer_reset();
