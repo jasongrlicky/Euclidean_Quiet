@@ -221,6 +221,21 @@ extern "C" {
 #define BEAT_POSITION_MAX 15
 #define BEAT_POSITION_DEFAULT 0
 
+/// Row of LED Display marked "CH SEL" on panel
+#define LED_CH_SEL_Y 6
+/// Column of LED Display marked "TRIG" on panel
+#define LED_OUT_TRIG_X 0
+/// Column of LED Display marked "1" on panel
+#define LED_OUT_CH1_X 2
+/// Column of LED Display marked "OFF" on panel
+#define LED_OUT_OFFBEAT_X 3
+/// Column of LED Display marked "2" on panel
+#define LED_OUT_CH2_X 5
+/// Column of LED Display marked "3" on panel
+#define LED_OUT_CH3_X 7
+/// Row of LED Display marked "OUT" on panel
+#define LED_OUT_Y 7
+
 /* GLOBALS */
 
 bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
@@ -762,13 +777,13 @@ void loop() {
 
   // Flash Trig Indicator LED if we received a clock tick
   if (clock_tick) {
-    led_pixel_on(0, 7);
+    led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
     lights_active = true;
   }
   
   // Turn off indicator LEDs that have been on long enough
   if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
-    led_row_off(7);
+    led_row_off(LED_OUT_Y);
     lights_active = false;
   }
 
@@ -870,13 +885,13 @@ static void sequencer_send_output() {
       output_set_high((OutputChannel)channel);
 
       if (channel == CHANNEL_1) {
-        led_pixel_on(2, 7);
+        led_pixel_on(LED_OUT_CH1_X, LED_OUT_Y);
       }
       if (channel == CHANNEL_2) {
-        led_pixel_on(5, 7);
+        led_pixel_on(LED_OUT_CH2_X, LED_OUT_Y);
       }
       if (channel == CHANNEL_3) {
-        led_pixel_on(7, 7);
+        led_pixel_on(LED_OUT_CH3_X, LED_OUT_Y);
       }
 
       lights_active = true;
@@ -885,7 +900,7 @@ static void sequencer_send_output() {
       if (channel == CHANNEL_1) {
         output_set_high(OUTPUT_CHANNEL_OFFBEAT);
         
-        led_pixel_on(3, 7); // bottom row flash
+        led_pixel_on(LED_OUT_OFFBEAT_X, LED_OUT_Y);
         lights_active = true;
       }
     }
@@ -1012,7 +1027,7 @@ static void active_channel_set(Channel channel) {
     } else if (channel == CHANNEL_3) {
       row_bits = B11000000;
     } 
-    lc.setRow(LED_ADDR, 6, row_bits);
+    lc.setRow(LED_ADDR, LED_CH_SEL_Y, row_bits);
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
