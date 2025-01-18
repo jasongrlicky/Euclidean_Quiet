@@ -560,11 +560,6 @@ void loop() {
     handle_clock();
   }
 
-  // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
-  if ((!led_sleep_mode_enabled) && (time - last_clock > LED_SLEEP_TIME)) {
-    led_sleep();
-  }
-
   // HANDLE RESET
   if (events_in.reset_rise) {
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
@@ -580,6 +575,11 @@ void loop() {
   if (events_in.trig_rise) { 
     internal_clock_enabled = false; // turn off internal clock if external clock received
     handle_clock();
+  }
+
+  // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
+  if ((!led_sleep_mode_enabled) && (time - last_clock > LED_SLEEP_TIME)) {
+    led_sleep();
   }
   
   // TURN OFF ANY LIGHTS THAT ARE ON
