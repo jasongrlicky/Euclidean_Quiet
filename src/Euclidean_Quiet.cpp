@@ -304,9 +304,9 @@ typedef struct InputEvents {
   /// An encoder was pushed
   EncoderIdx enc_push;
   /// "Trig" input detected a rising edge
-  bool trig_rise;
+  bool trig;
   /// "Reset" input or button detected a rising edge
-  bool reset_rise;
+  bool reset;
   /// The internal clock generated a tick
   bool internal_clock_tick;
 } InputEvents;
@@ -315,8 +315,8 @@ typedef struct InputEvents {
 static const InputEvents INPUT_EVENTS_EMPTY = {
   .enc_move = { 0, 0, 0 },
   .enc_push = ENCODER_NONE,
-  .trig_rise = false,
-  .reset_rise = false,
+  .trig = false,
+  .reset = false,
   .internal_clock_tick = false,
 };
 
@@ -467,7 +467,7 @@ void loop() {
   if ((!reset_active) && (reset_button >= RESET_PIN_THRESHOLD)) {
     reset_active = true;
 
-    events_in.reset_rise = true;
+    events_in.reset = true;
 
     #if LOGGING_ENABLED && LOGGING_INPUT
     Serial.println("INPUT: Reset");
@@ -479,7 +479,7 @@ void loop() {
 
   // TRIG INPUT 
   if (trig_in_value > trig_in_value_previous) { 
-    events_in.trig_rise = true;
+    events_in.trig = true;
 
     #if LOGGING_ENABLED && LOGGING_INPUT
     Serial.println("INPUT: Trigger");
@@ -566,9 +566,9 @@ void loop() {
   /* UPDATE STATE */
 
   // Clock ticks merge the internal and external clocks
-  bool clock_tick = events_in.trig_rise || events_in.internal_clock_tick;
+  bool clock_tick = events_in.trig || events_in.internal_clock_tick;
 
-  if (clock_tick && events_in.reset_rise) {
+  if (clock_tick && events_in.reset) {
     // Go to the first step and trigger it if both clock and reset are received
     sequencer_reset();
     sequencer_send_output();
@@ -576,12 +576,12 @@ void loop() {
     // Advance sequencer and trigger current step if only clock is received
     sequencer_send_output();
     sequencer_advance();
-  } else if (events_in.reset_rise) {
+  } else if (events_in.reset) {
     // Go to the first step without triggering it if only reset is received
     sequencer_reset();
   }
 
-  if (clock_tick || events_in.reset_rise) {
+  if (clock_tick || events_in.reset) {
     draw_channels();
 
     // If a clock or reset is received, keep the LED from sleeping
@@ -602,7 +602,7 @@ void loop() {
   }
 
   // Turn off internal clock when external clock received
-  if (events_in.trig_rise) { 
+  if (events_in.trig) { 
     internal_clock_enabled = false; 
   }
 
