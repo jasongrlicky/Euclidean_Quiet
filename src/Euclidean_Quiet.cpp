@@ -321,6 +321,7 @@ enum EuclideanParamChange {
 
 
 static void sequencer_advance();
+static void sequencer_reset();
 static void sequencer_position_updated();
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
@@ -561,17 +562,13 @@ void loop() {
 
   if (clock_tick && events_in.reset_rise) {
     // Go to the first step and trigger it if both clock and reset are received
-    for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-      euclidean_state.channels[a].position = 0;
-    }
+    sequencer_reset();
   } else if (clock_tick) {
     // Advance sequencer and trigger current step if only clock is received
     sequencer_advance();
   } else if (events_in.reset_rise) {
     // Go to the first step without triggering it if only reset is received
-    for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
-      euclidean_state.channels[a].position = 0;
-    }
+    sequencer_reset();
   }
 
   if (clock_tick || events_in.reset_rise) {
@@ -798,6 +795,12 @@ static void sequencer_advance() {
       position = 0;
     }
     euclidean_state.channels[channel].position = position;
+  }
+}
+
+static void sequencer_reset() {
+  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    euclidean_state.channels[channel].position = 0;
   }
 }
 
