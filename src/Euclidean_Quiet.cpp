@@ -557,13 +557,6 @@ void loop() {
     events_in.enc_push = enc_idx;
   }
 
-  /* INTERNAL EVENTS */
-
-  // Internal Clock
-  if (internal_clock_enabled && (time - last_clock_or_reset > INTERNAL_CLOCK_PERIOD)) {
-    events_in.internal_clock_tick = true;
-  }
-
   /* HANDLE INPUT */
 
   // Handle Encoder Pushes
@@ -730,6 +723,17 @@ void loop() {
     #endif
   }
 
+  /* UPDATE INTERNAL CLOCK */
+
+  // Turn off internal clock when external clock received
+  if (events_in.trig) { 
+    internal_clock_enabled = false; 
+  }
+
+  if (internal_clock_enabled && (time - last_clock_or_reset > INTERNAL_CLOCK_PERIOD)) {
+    events_in.internal_clock_tick = true;
+  }
+
   /* UPDATE SEQUENCER */
 
   // Clock ticks merge the internal and external clocks
@@ -747,11 +751,6 @@ void loop() {
     // Update last_clock_or_reset and output_pulse_length
     output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
     last_clock_or_reset = time;
-  }
-
-  // Turn off internal clock when external clock received
-  if (events_in.trig) { 
-    internal_clock_enabled = false; 
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
