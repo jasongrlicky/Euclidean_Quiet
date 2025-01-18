@@ -601,6 +601,7 @@ void loop() {
     int length = channel_state.length;
     uint8_t density = channel_state.density;
     uint8_t offset = channel_state.offset;
+    uint8_t position = channel_state.position;
 
     // Keep length in bounds
     if (length >= BEAT_LENGTH_MAX) {
@@ -633,6 +634,11 @@ void loop() {
 
     length += nknob;
     euclidean_state.channels[channel].length = length;
+
+    // Reset position if length has been reduced past it
+    if (position >= length) {
+      euclidean_state.channels[channel].position = 0;
+    }
     
     #if EEPROM_WRITE
     EEPROM.update(eeprom_addr_length(channel), length);
