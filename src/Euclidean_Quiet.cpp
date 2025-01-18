@@ -797,7 +797,12 @@ void loop() {
     output_clear_all();
   }
 
-  // Redraw active channel's display
+  // If the sequencer was updated, draw channels' playing display
+  if (clock_tick || events_in.reset) {
+    draw_channels();
+  }
+
+  // Redraw active channel's display if parameters have changed
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
