@@ -563,73 +563,7 @@ void loop() {
     events_in.internal_clock_tick = true;
   }
 
-  /* UPDATE STATE */
-
-  // Clock ticks merge the internal and external clocks
-  bool clock_tick = events_in.trig || events_in.internal_clock_tick;
-
-  if (events_in.reset) {
-    // Go to the first step
-    sequencer_reset();
-
-    // Stop the sequencer
-    euclidean_state.sequencer_running = false;
-  }
-
-  if (clock_tick) {
-    // Advance sequencer if it is running
-    if (euclidean_state.sequencer_running) {
-      // Only advance if sequencer is running
-      sequencer_advance();
-    } else {
-      // If sequencer is stopped, start it so that the next clock advances
-      euclidean_state.sequencer_running = true;
-    }
-
-    // Trigger current step
-    sequencer_send_output();
-  }
-
-  if (clock_tick || events_in.reset) {
-    draw_channels();
-
-    // If a clock or reset is received, keep the LED from sleeping
-    if(led_sleep_mode_enabled) {
-      led_wake();
-    }
-
-    // Update last_clock_or_reset and output_pulse_length
-    output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
-    last_clock_or_reset = time;
-  }
-
-  if (clock_tick) {
-    // Flash LED in bottom-left corner. It will get turned off with the rest of
-    // the LEDs on the bottom row later in the loop() function.
-    led_pixel_on(0, 7);
-    lights_active = true;
-  }
-
-  // Turn off internal clock when external clock received
-  if (events_in.trig) { 
-    internal_clock_enabled = false; 
-  }
-
-  // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
-  if ((!led_sleep_mode_enabled) && (time - last_clock_or_reset > LED_SLEEP_TIME)) {
-    led_sleep();
-  }
-  
-  // TURN OFF ANY LIGHTS THAT ARE ON
-  if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
-    led_row_off(7);
-    lights_active = false;
-  }
-
-  // FINISH ANY PULSES THAT ARE ACTIVE
-  if (output_any_active() && (time - last_clock_or_reset > output_pulse_length)) {
-    output_clear_all();
-  }
+  /* HANDLE INPUT */
 
   // Handle Encoder Pushes
   switch (events_in.enc_push) {
@@ -769,7 +703,7 @@ void loop() {
     #endif
   }
 
-  // Update generated rhythm 
+  // Update Generated Rhythms Based On Parameter Changes
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     last_changed = time;
 
@@ -793,6 +727,74 @@ void loop() {
       Serial.print(offset);
     }
     #endif
+  }
+
+  /* UPDATE STATE */
+
+  // Clock ticks merge the internal and external clocks
+  bool clock_tick = events_in.trig || events_in.internal_clock_tick;
+
+  if (events_in.reset) {
+    // Go to the first step
+    sequencer_reset();
+
+    // Stop the sequencer
+    euclidean_state.sequencer_running = false;
+  }
+
+  if (clock_tick) {
+    // Advance sequencer if it is running
+    if (euclidean_state.sequencer_running) {
+      // Only advance if sequencer is running
+      sequencer_advance();
+    } else {
+      // If sequencer is stopped, start it so that the next clock advances
+      euclidean_state.sequencer_running = true;
+    }
+
+    // Trigger current step
+    sequencer_send_output();
+  }
+
+  if (clock_tick || events_in.reset) {
+    draw_channels();
+
+    // If a clock or reset is received, keep the LED from sleeping
+    if(led_sleep_mode_enabled) {
+      led_wake();
+    }
+
+    // Update last_clock_or_reset and output_pulse_length
+    output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
+    last_clock_or_reset = time;
+  }
+
+  if (clock_tick) {
+    // Flash LED in bottom-left corner. It will get turned off with the rest of
+    // the LEDs on the bottom row later in the loop() function.
+    led_pixel_on(0, 7);
+    lights_active = true;
+  }
+
+  // Turn off internal clock when external clock received
+  if (events_in.trig) { 
+    internal_clock_enabled = false; 
+  }
+
+  // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
+  if ((!led_sleep_mode_enabled) && (time - last_clock_or_reset > LED_SLEEP_TIME)) {
+    led_sleep();
+  }
+  
+  // TURN OFF ANY LIGHTS THAT ARE ON
+  if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
+    led_row_off(7);
+    lights_active = false;
+  }
+
+  // FINISH ANY PULSES THAT ARE ACTIVE
+  if (output_any_active() && (time - last_clock_or_reset > output_pulse_length)) {
+    output_clear_all();
   }
 
   // Redraw active channel's display
