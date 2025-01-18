@@ -335,7 +335,7 @@ static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
 static void draw_channels();
-static void draw_channel(Channel channel, uint16_t pattern, uint8_t length);
+static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static void draw_channel_playhead(uint8_t y, uint8_t position);
@@ -448,7 +448,7 @@ void setup() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     uint8_t length = euclidean_state.channels[channel].length;
     uint16_t pattern = generated_rhythms[channel];
-    draw_channel((Channel) channel, pattern, length);
+    draw_channel_pattern((Channel) channel, pattern, length);
   }
 }
 
@@ -811,7 +811,7 @@ void loop() {
     if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
       draw_channel_length(channel, length);  
     } else {
-      draw_channel(channel, generated_rhythms[channel], length);
+      draw_channel_pattern(channel, generated_rhythms[channel], length);
     }
   }
 }
@@ -893,7 +893,7 @@ static void draw_channels() {
   }
 }
 
-static void draw_channel(Channel channel, uint16_t pattern, uint8_t length) {
+static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
     uint8_t row = channel * 2;
     led_row_off(row);
     led_row_off(row + 1);
