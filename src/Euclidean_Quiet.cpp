@@ -257,7 +257,7 @@ typedef struct EuclideanState {
 static EuclideanState euclidean_state;
 
 Milliseconds time;
-Milliseconds last_clock;
+Milliseconds last_clock_or_reset;
 #if LOGGING_ENABLED
 Milliseconds last_logged;
 #endif
@@ -549,7 +549,7 @@ void loop() {
   /* INTERNAL EVENTS */
 
   // Internal Clock
-  if (internal_clock_enabled && (time - last_clock > INTERNAL_CLOCK_PERIOD)) {
+  if (internal_clock_enabled && (time - last_clock_or_reset > INTERNAL_CLOCK_PERIOD)) {
     events_in.internal_clock_tick = true;
   }
 
@@ -580,18 +580,18 @@ void loop() {
   }
 
   // Sleep the LED matrix if no clock has been received or generated since LED_SLEEP_TIME
-  if ((!led_sleep_mode_enabled) && (time - last_clock > LED_SLEEP_TIME)) {
+  if ((!led_sleep_mode_enabled) && (time - last_clock_or_reset > LED_SLEEP_TIME)) {
     led_sleep();
   }
   
   // TURN OFF ANY LIGHTS THAT ARE ON
-  if (lights_active && (time - last_clock > output_pulse_length)) {
+  if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
     led_row_off(7);
     lights_active = false;
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (output_any_active() && (time - last_clock > output_pulse_length)) {
+  if (output_any_active() && (time - last_clock_or_reset > output_pulse_length)) {
     output_clear_all();
   }
 
@@ -834,9 +834,9 @@ static void sequencer_position_updated() {
     }
   }
 
-  output_pulse_length = constrain(((time - last_clock) / 5), 2, 5);
+  output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
 
-  last_clock = time;
+  last_clock_or_reset = time;
 }
 
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length) {
