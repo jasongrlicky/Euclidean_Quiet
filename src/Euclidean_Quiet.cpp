@@ -320,7 +320,7 @@ enum EuclideanParamChange {
 /* INTERNAL */
 
 
-static void handle_clock();
+static void sequencer_advance();
 static void sequencer_position_updated();
 static void draw_channel(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
@@ -566,7 +566,7 @@ void loop() {
     }
   } else if (clock_tick) {
     // Advance sequencer and trigger current step if only clock is received
-    handle_clock();
+    sequencer_advance();
   } else if (events_in.reset_rise) {
     // Go to the first step without triggering it if only reset is received
     for (uint8_t a = 0; a < NUM_CHANNELS; a++) {
@@ -786,9 +786,7 @@ void loop() {
   #endif
 }
 
-// Triggered when clock pulses are received via the "Trig" input or generated 
-// internally
-static void handle_clock() {
+static void sequencer_advance() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
