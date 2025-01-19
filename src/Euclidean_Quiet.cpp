@@ -12,6 +12,7 @@ extern "C" {
 #include <euclidean.h>
 #include "hardware.h"
 #include "output.h"
+#include "timeout.h"
 #include "types.h"
 }
 
@@ -301,11 +302,11 @@ bool lights_active = false;
 int trig_in_value_previous = 0; 
 bool reset_active = false;
 unsigned long channelPressedCounter = 0;
-Milliseconds last_read;
-Milliseconds last_changed;
+static Timeout encoder_read_timeout = { .duration = READ_DELAY };
+static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
 bool led_sleep_mode_enabled = false;
-Milliseconds last_interaction;
+static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
 
 /// Represents the three encoders in the `InputEvents` struct.
 /// Indexes into its arrays.
@@ -447,6 +448,9 @@ void io_pins_init(void) {
 /* MAIN */
 
 void setup() {
+  time = millis();
+  timeout_reset(&led_sleep_timeout, time);
+
   led_init();
   eeprom_load(&euclidean_state);
   validate_euclidean_state(&euclidean_state);
@@ -510,11 +514,11 @@ void loop() {
   trig_in_value_previous = trig_in_value;
 
   // ENCODER MOVEMENT
-  if (time - last_read > READ_DELAY) {
+  if (timeout_fired(&encoder_read_timeout, time)) {
     // Encoder 1: LENGTH (CH1)
     int val_enc_1 = encoder_read(Enc1);
     if (val_enc_1 != 0) {
-      last_read = time;
+      timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_1] = val_enc_1;
 
       #if LOGGING_ENABLED && LOGGING_INPUT
@@ -526,7 +530,7 @@ void loop() {
     // Encoder 2: DENSITY (CH2)
     int val_enc_2 = encoder_read(Enc2);
     if (val_enc_2 != 0) {
-      last_read = time;
+      timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_2] = val_enc_2;
 
       #if LOGGING_ENABLED && LOGGING_INPUT
@@ -538,7 +542,7 @@ void loop() {
     // Encoder 3: OFFSET (CH3)
     int val_enc_3 = encoder_read(Enc3);
     if (val_enc_3 != 0) {
-      last_read = time;
+      timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_3] = val_enc_3;
 
       #if LOGGING_ENABLED && LOGGING_INPUT
@@ -726,7 +730,7 @@ void loop() {
 
   // Update Generated Rhythms Based On Parameter Changes
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
-    last_changed = time;
+    timeout_reset(&adjustment_display_timeout, time);
 
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
@@ -820,18 +824,19 @@ void loop() {
   /* UPDATE LED SLEEP */
 
   if (input_events_contains_any_external(&events_in)) {
-    last_interaction = time;
+    timeout_reset(&led_sleep_timeout, time);
   }
   if (led_sleep_mode_enabled) {
     // LED is sleeping:
-    // If a clock or reset is received, wake it.
-    if ((time - last_interaction) <= LED_SLEEP_TIME) {
+    // If it has been less than LED_SLEEP_TIME since an interaction event has
+    // been received, wake the LED
+    if (!timeout_fired(&led_sleep_timeout, time)) {
       led_wake();
     }
   } else {
     // LED is awake:
     // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
-    if (time - last_interaction > LED_SLEEP_TIME) {
+    if (timeout_fired(&led_sleep_timeout, time)) {
       led_sleep();
     }
   }
@@ -942,7 +947,7 @@ static void draw_channels() {
     uint16_t pattern = generated_rhythms[channel];
 
     // Only draw this channel if is not currently being adjusted
-    if ((channel != active_channel) || (time - last_changed > ADJUSTMENT_DISPLAY_TIME)) {
+    if ((channel != active_channel) || (timeout_fired(&adjustment_display_timeout, time))) {
       draw_channel_with_playhead((Channel)channel, pattern, length, position);
     }
   }
