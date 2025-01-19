@@ -255,7 +255,7 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
 /// State of the Euclidean rhythm generator and sequencer for a single channel
-typedef struct EuclideanChannel {
+typedef struct EuclideanChannelState {
   /// Number of steps in the Euclidean rhythm, 1-16
   uint8_t length;
   /// Number of active steps in the Euclidean rhythm, 1-16
@@ -264,7 +264,7 @@ typedef struct EuclideanChannel {
   uint8_t offset;
   /// Step index representing the playhead position for this channel's sequencer, 0-15
   uint8_t position; 
-} EuclideanChannel;
+} EuclideanChannelState;
 
 /// References one of the three channels
 typedef enum Channel {
@@ -276,7 +276,7 @@ typedef enum Channel {
 /// State of the entire Euclidean module
 typedef struct EuclideanState {
   /// State for each of this module's channels, indexed by `Channel` enum.
-  EuclideanChannel channels[NUM_CHANNELS];
+  EuclideanChannelState channels[NUM_CHANNELS];
   bool sequencer_running;
 } EuclideanState;
 
@@ -619,7 +619,7 @@ void loop() {
     param_changed = EUCLIDEAN_PARAM_LENGTH;
 
     Channel channel = active_channel;
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     int length = channel_state.length;
     uint8_t density = channel_state.density;
     uint8_t offset = channel_state.offset;
@@ -680,7 +680,7 @@ void loop() {
     param_changed = EUCLIDEAN_PARAM_DENSITY;
 
     Channel channel = active_channel;
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     int length = channel_state.length;
     int density = channel_state.density;
 
@@ -713,7 +713,7 @@ void loop() {
     param_changed = EUCLIDEAN_PARAM_OFFSET;
 
     Channel channel = active_channel;
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     int length = channel_state.length;
     int offset = channel_state.offset;
 
@@ -743,7 +743,7 @@ void loop() {
   // Update Generated Rhythms Based On Parameter Changes
   if (param_changed != EUCLIDEAN_PARAM_NONE) {
     Channel channel = active_channel;
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t density = channel_state.density;
     uint8_t offset = channel_state.offset;
@@ -892,7 +892,7 @@ static void sequencer_handle_clock() {
 
 static void sequencer_advance() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
 
@@ -920,7 +920,7 @@ static void sequencer_reset() {
 
 static void sequencer_send_output() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
@@ -959,7 +959,7 @@ static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_ch
     bool needs_redraw = needs_redraw_bitflags & (0x01 << channel);
     if (!needs_redraw) { continue; }
 
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
+    EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
