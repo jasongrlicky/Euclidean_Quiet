@@ -305,7 +305,7 @@ unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
-bool led_sleep_mode_enabled = false;
+bool led_sleep_mode_active = false;
 static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
 
 /// Represents the three encoders in the `InputEvents` struct.
@@ -826,7 +826,7 @@ void loop() {
   if (input_events_contains_any_external(&events_in)) {
     timeout_reset(&led_sleep_timeout, time);
   }
-  if (led_sleep_mode_enabled) {
+  if (led_sleep_mode_active) {
     // LED is sleeping:
     // If it has been less than LED_SLEEP_TIME since an interaction event has
     // been received, wake the LED
@@ -1103,14 +1103,14 @@ static inline void led_row_off(uint8_t y) {
 }
 
 void led_sleep() {
-  led_sleep_mode_enabled = true;
+  led_sleep_mode_active = true;
 
   led_anim_sleep();
   lc.shutdown(LED_ADDR, true);
 }
 
 void led_wake() {
-  led_sleep_mode_enabled = false;
+  led_sleep_mode_active = false;
 
   lc.shutdown(LED_ADDR, false);
   led_anim_wake();
