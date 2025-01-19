@@ -352,6 +352,9 @@ enum EuclideanParamChange {
   EUCLIDEAN_PARAM_CHANGE_OFFSET,
 };
 
+#define REDRAW_MASK_NONE  0b00000000
+#define REDRAW_MASK_ALL   0b00000111
+
 /* INTERNAL */
 
 /// Returns true if `events` contains any externally-generated events
@@ -361,7 +364,7 @@ static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
-static void draw_channels_playing();
+static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParamChange param_changed);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -802,6 +805,9 @@ void loop() {
 
   /* DRAWING */
 
+  // Tracks which channels need to be redrawn using bitflags
+  uint8_t needs_redraw_bitflags = (sequencers_updated) ? REDRAW_MASK_ALL : REDRAW_MASK_NONE;
+
   // Flash Trig Indicator LED if we received a clock tick
   if (clock_tick) {
     led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
@@ -814,26 +820,16 @@ void loop() {
     lights_active = false;
   }
 
-  // If parameters have changed, redraw the active channel's adjustment display
+  // If parameters have changed, restart the adjustment display timeout and set
+  // the active channel as needing a redraw
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
     adjustment_display_channel = active_channel;
     timeout_reset(&adjustment_display_timeout, time);
-
-    Channel channel = active_channel;
-    EuclideanChannel channel_state = euclidean_state.channels[channel];
-    uint8_t length = channel_state.length;
-
-    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
-      draw_channel_length(channel, length);  
-    } else {
-      draw_channel_pattern(channel, generated_rhythms[channel], length);
-    }
+    needs_redraw_bitflags |= 0x01 << adjustment_display_channel;
   }
 
-  // If the sequencer was updated, draw channels' playing display
-  if (sequencers_updated) {
-    draw_channels_playing();
-  }
+  // Draw any channels that need to be drawn
+  draw_channels(needs_redraw_bitflags, param_changed);
 
   /* UPDATE LED SLEEP */
 
@@ -953,18 +949,27 @@ static void sequencer_send_output() {
   }
 }
 
-static void draw_channels_playing() {
+static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParamChange param_changed) {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    // Do not draw this channel if is not currently showing its adjustment display
-    bool showing_adjustment_display = (channel == adjustment_display_channel) && (!timeout_fired(&adjustment_display_timeout, time));
-    if (showing_adjustment_display) { continue; }
+    // Do not draw draw this channel if it does not need it
+    bool needs_redraw = needs_redraw_bitflags & (0x01 << channel);
+    if (!needs_redraw) { continue; }
 
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
 
-    draw_channel_with_playhead((Channel)channel, pattern, length, position);
+    bool showing_adjustment_display = (channel == adjustment_display_channel) && (!timeout_fired(&adjustment_display_timeout, time));
+    if (showing_adjustment_display) { 
+      if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
+        draw_channel_length((Channel)channel, length);  
+      } else {
+        draw_channel_pattern((Channel)channel, generated_rhythms[channel], length);
+      }
+    } else {
+      draw_channel_with_playhead((Channel)channel, pattern, length, position);
+    }
   }
 }
 
