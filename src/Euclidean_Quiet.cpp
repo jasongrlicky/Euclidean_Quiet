@@ -833,15 +833,7 @@ void loop() {
     lights_active = false;
   }
 
-  if (param_changed != EUCLIDEAN_PARAM_NONE) {
-    // If parameters have changed, restart the adjustment display timeout and set
-    // the active channel as needing a redraw
-    adjustment_display_state.channel = active_channel;
-    adjustment_display_state.parameter = param_changed;
-    adjustment_display_state.visible = true;
-    timeout_reset(&adjustment_display_timeout, time);
-    needs_redraw_bitflags |= (0x01 << active_channel);
-  } else {
+  if (param_changed == EUCLIDEAN_PARAM_NONE) {
     // If no parameters have changed, check if the adjustment display still 
     // needs to be shown, and hide it if it doesn't
     if (adjustment_display_state.visible) {
@@ -851,6 +843,14 @@ void loop() {
         needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
       }
     }
+  } else {
+    // If parameters have changed, restart the adjustment display timeout and set
+    // the active channel as needing a redraw
+    adjustment_display_state.channel = active_channel;
+    adjustment_display_state.parameter = param_changed;
+    adjustment_display_state.visible = true;
+    timeout_reset(&adjustment_display_timeout, time);
+    needs_redraw_bitflags |= (0x01 << active_channel);
   }
 
   draw_channels(needs_redraw_bitflags);
