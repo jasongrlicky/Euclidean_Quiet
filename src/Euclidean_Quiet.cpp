@@ -344,12 +344,12 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
-/// A parameter was changed for the Euclidean rhythm generator
-enum EuclideanParamChange {
-  EUCLIDEAN_PARAM_CHANGE_NONE,
-  EUCLIDEAN_PARAM_CHANGE_LENGTH,
-  EUCLIDEAN_PARAM_CHANGE_DENSITY,
-  EUCLIDEAN_PARAM_CHANGE_OFFSET,
+/// A parameter of the Euclidean rhythm generator
+enum EuclideanParam {
+  EUCLIDEAN_PARAM_NONE,
+  EUCLIDEAN_PARAM_LENGTH,
+  EUCLIDEAN_PARAM_DENSITY,
+  EUCLIDEAN_PARAM_OFFSET,
 };
 
 #define REDRAW_MASK_NONE  0b00000000
@@ -364,7 +364,7 @@ static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
-static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParamChange param_changed);
+static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_changed);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -606,12 +606,12 @@ void loop() {
       break;
   }
 
-  EuclideanParamChange param_changed = EUCLIDEAN_PARAM_CHANGE_NONE;
+  EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
 
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
   if (nknob != 0) {
-    param_changed = EUCLIDEAN_PARAM_CHANGE_LENGTH;
+    param_changed = EUCLIDEAN_PARAM_LENGTH;
 
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
@@ -672,7 +672,7 @@ void loop() {
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
   if (kknob != 0) {
-    param_changed = EUCLIDEAN_PARAM_CHANGE_DENSITY;
+    param_changed = EUCLIDEAN_PARAM_DENSITY;
 
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
@@ -705,7 +705,7 @@ void loop() {
   // Handle Offset Knob Movement
   int oknob = events_in.enc_move[ENCODER_3];
   if (oknob != 0) {
-    param_changed = EUCLIDEAN_PARAM_CHANGE_OFFSET;
+    param_changed = EUCLIDEAN_PARAM_OFFSET;
 
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
@@ -736,7 +736,7 @@ void loop() {
   }
 
   // Update Generated Rhythms Based On Parameter Changes
-  if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
+  if (param_changed != EUCLIDEAN_PARAM_NONE) {
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
@@ -746,10 +746,10 @@ void loop() {
     generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
     #if LOGGING_ENABLED
-    if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
+    if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
       Serial.print("length: ");
       Serial.print(length);
-    } else if (param_changed == EUCLIDEAN_PARAM_CHANGE_DENSITY) {
+    } else if (param_changed == EUCLIDEAN_PARAM_DENSITY) {
       Serial.print(" density: ");
       Serial.print(density);
     } else {
@@ -822,7 +822,7 @@ void loop() {
 
   // If parameters have changed, restart the adjustment display timeout and set
   // the active channel as needing a redraw
-  if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
+  if (param_changed != EUCLIDEAN_PARAM_NONE) {
     adjustment_display_channel = active_channel;
     timeout_reset(&adjustment_display_timeout, time);
     needs_redraw_bitflags |= 0x01 << adjustment_display_channel;
@@ -948,7 +948,7 @@ static void sequencer_send_output() {
   }
 }
 
-static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParamChange param_changed) {
+static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_changed) {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     // Do not draw draw this channel if it does not need it
     bool needs_redraw = needs_redraw_bitflags & (0x01 << channel);
@@ -961,7 +961,7 @@ static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParamChange pa
 
     bool showing_adjustment_display = (channel == adjustment_display_channel) && (!timeout_fired(&adjustment_display_timeout, time));
     if (showing_adjustment_display) { 
-      if (param_changed == EUCLIDEAN_PARAM_CHANGE_LENGTH) {
+      if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
         draw_channel_length((Channel)channel, length);  
       } else {
         draw_channel_pattern((Channel)channel, generated_rhythms[channel], length);
