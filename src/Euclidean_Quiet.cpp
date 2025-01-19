@@ -828,7 +828,6 @@ void loop() {
     needs_redraw_bitflags |= 0x01 << adjustment_display_channel;
   }
 
-  // Draw any channels that need to be drawn
   draw_channels(needs_redraw_bitflags, param_changed);
 
   /* UPDATE LED SLEEP */
