@@ -23,6 +23,7 @@ extern "C" {
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
+    - LED sleep timeout now takes into account encoder manipulations
   - UI Polish:
     - Reset is now visible immediately
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
@@ -290,19 +291,21 @@ static EuclideanState euclidean_state = {
 Milliseconds time;
 Milliseconds last_clock_or_reset;
 
-// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
+/// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
-
 Channel active_channel; // Channel that is currently active
 Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
 bool lights_active = false;
-bool led_sleep_mode_enabled = false;
 
-int trig_in_value_previous = 0; // For recognizing trigger in rising edges
+/// For recognizing trigger in rising edges
+int trig_in_value_previous = 0; 
 bool reset_active = false;
 unsigned long channelPressedCounter = 0;
 Milliseconds last_read;
 Milliseconds last_changed;
+
+bool led_sleep_mode_enabled = false;
+Milliseconds last_interaction;
 
 /// Represents the three encoders in the `InputEvents` struct.
 /// Indexes into its arrays.
@@ -346,6 +349,8 @@ enum EuclideanParamChange {
 
 /* INTERNAL */
 
+/// Returns true if `events` contains any externally-generated events
+static bool input_events_contains_any_external(InputEvents *events);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
 static void sequencer_advance();
@@ -814,19 +819,34 @@ void loop() {
 
   /* UPDATE LED SLEEP */
 
+  if (input_events_contains_any_external(&events_in)) {
+    last_interaction = time;
+  }
   if (led_sleep_mode_enabled) {
     // LED is sleeping:
     // If a clock or reset is received, wake it.
-    if (clock_tick || events_in.reset) {
+    if ((time - last_interaction) <= LED_SLEEP_TIME) {
       led_wake();
     }
   } else {
     // LED is awake:
     // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
-    if (time - last_clock_or_reset > LED_SLEEP_TIME) {
+    if (time - last_interaction > LED_SLEEP_TIME) {
       led_sleep();
     }
   }
+}
+
+static bool input_events_contains_any_external(InputEvents *events) {
+  bool result = (
+    events->trig ||
+    events->reset ||
+    (events->enc_push != ENCODER_NONE) ||
+    (events->enc_move[CHANNEL_1] != 0) ||
+    (events->enc_move[CHANNEL_2] != 0) ||
+    (events->enc_move[CHANNEL_3] != 0)
+  );
+  return result;
 }
 
 static void sequencer_handle_reset() {
