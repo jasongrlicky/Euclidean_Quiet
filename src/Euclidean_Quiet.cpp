@@ -304,9 +304,14 @@ bool reset_active = false;
 unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 
-/// The channel currently showing its adjustment display. Only one adjustment 
-/// display can be visible at a time.
-static Channel adjustment_display_channel = CHANNEL_1;
+typedef struct AdjustmentDisplayState {
+  /// The channel currently showing its adjustment display. Only one adjustment 
+  /// display can be visible at a time.
+  Channel channel;
+} AdjustmentDisplayState;
+static AdjustmentDisplayState adjustment_display_state = {
+  .channel = CHANNEL_1,
+};
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
 bool led_sleep_mode_active = false;
@@ -823,9 +828,9 @@ void loop() {
   // If parameters have changed, restart the adjustment display timeout and set
   // the active channel as needing a redraw
   if (param_changed != EUCLIDEAN_PARAM_NONE) {
-    adjustment_display_channel = active_channel;
+    adjustment_display_state.channel = active_channel;
     timeout_reset(&adjustment_display_timeout, time);
-    needs_redraw_bitflags |= 0x01 << adjustment_display_channel;
+    needs_redraw_bitflags |= 0x01 << active_channel;
   }
 
   draw_channels(needs_redraw_bitflags, param_changed);
@@ -959,7 +964,7 @@ static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_ch
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
 
-    bool showing_adjustment_display = (channel == adjustment_display_channel) && (!timeout_fired(&adjustment_display_timeout, time));
+    bool showing_adjustment_display = (channel == adjustment_display_state.channel) && (!timeout_fired(&adjustment_display_timeout, time));
     if (showing_adjustment_display) { 
       if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
         draw_channel_length((Channel)channel, length);  
