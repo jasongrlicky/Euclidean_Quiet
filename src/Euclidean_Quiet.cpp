@@ -772,6 +772,9 @@ void loop() {
   // Clock ticks merge the internal and external clocks
   bool clock_tick = events_in.trig || events_in.internal_clock_tick;
 
+  // Tracks if any of the sequencers' states have been updated this cycle
+  bool sequencers_updated = (clock_tick || events_in.reset);
+
   if (events_in.reset) {
     sequencer_handle_reset();
   }
@@ -781,7 +784,7 @@ void loop() {
   }
 
   if (clock_tick || events_in.reset) {
-    // Update last_clock_or_reset and output pulse length
+    // Update output pulse length and timeout
     Milliseconds pulse_length = constrain(((time - output_pulse_timeout.start) / 5), 2, 5);
     output_pulse_timeout.duration = pulse_length;
 
@@ -828,7 +831,7 @@ void loop() {
   }
 
   // If the sequencer was updated, draw channels' playing display
-  if (clock_tick || events_in.reset) {
+  if (sequencers_updated) {
     draw_channels_playing();
   }
 
