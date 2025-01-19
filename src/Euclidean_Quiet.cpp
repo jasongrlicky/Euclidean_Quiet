@@ -318,10 +318,13 @@ typedef struct AdjustmentDisplayState {
   Channel channel;
   /// The parameter that is being displayed in the adjustment display.
   EuclideanParam parameter;
+  /// Is the adjustment display showing currently
+  bool visible;
 } AdjustmentDisplayState;
 static AdjustmentDisplayState adjustment_display_state = {
   .channel = CHANNEL_1,
   .parameter = EUCLIDEAN_PARAM_NONE,
+  .visible = false,
 };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
@@ -813,7 +816,8 @@ void loop() {
 
   /* DRAWING */
 
-  // Tracks which channels need to be redrawn using bitflags
+  // Tracks which channels need to be redrawn using bitflags.
+  // If the sequencer positions were updated, all channels need to be redrawn.
   uint8_t needs_redraw_bitflags = (sequencers_updated) ? REDRAW_MASK_ALL : REDRAW_MASK_NONE;
 
   // Flash Trig Indicator LED if we received a clock tick
@@ -828,13 +832,22 @@ void loop() {
     lights_active = false;
   }
 
-  // If parameters have changed, restart the adjustment display timeout and set
-  // the active channel as needing a redraw
   if (param_changed != EUCLIDEAN_PARAM_NONE) {
+    // If parameters have changed, restart the adjustment display timeout and set
+    // the active channel as needing a redraw
     adjustment_display_state.channel = active_channel;
     adjustment_display_state.parameter = param_changed;
+    adjustment_display_state.visible = true;
     timeout_reset(&adjustment_display_timeout, time);
-    needs_redraw_bitflags |= 0x01 << active_channel;
+    needs_redraw_bitflags |= (0x01 << active_channel);
+  } else {
+    // If no parameters have changed, check if the adjustment display still 
+    // needs to be shown, and hide it if it doesn't
+    bool is_visible = !timeout_fired(&adjustment_display_timeout, time);
+    if (!is_visible) {
+      adjustment_display_state.visible = false;
+      needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
+    }
   }
 
   draw_channels(needs_redraw_bitflags);
@@ -968,8 +981,7 @@ static void draw_channels(uint8_t needs_redraw_bitflags) {
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
 
-    bool showing_adjustment_display = (channel == adjustment_display_state.channel) && (!timeout_fired(&adjustment_display_timeout, time));
-    if (showing_adjustment_display) { 
+    if (adjustment_display_state.visible && (channel == adjustment_display_state.channel)) { 
       if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
         draw_channel_length((Channel)channel, length);  
       } else {
