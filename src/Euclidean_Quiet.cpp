@@ -784,6 +784,9 @@ void loop() {
     output_pulse_timeout.duration = pulse_length;
 
     timeout_reset(&output_pulse_timeout, time);
+  }
+
+  if (events_in.internal_clock_tick || events_in.reset) {
     timeout_reset(&internal_clock_timeout, time);
   }
 
