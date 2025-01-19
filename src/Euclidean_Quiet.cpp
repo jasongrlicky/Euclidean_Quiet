@@ -290,12 +290,12 @@ static EuclideanState euclidean_state = {
 };
 
 Milliseconds time;
-Milliseconds last_clock_or_reset;
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
 Channel active_channel; // Channel that is currently active
-Milliseconds output_pulse_length = 50; // Pulse length, set based on the time since last trigger
+static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
+static Timeout output_pulse_timeout = { .duration = 50 }; // Pulse length, set based on the time since last trigger
 bool lights_active = false;
 
 /// For recognizing trigger in rising edges
@@ -761,7 +761,7 @@ void loop() {
     internal_clock_enabled = false; 
   }
 
-  if (internal_clock_enabled && (time - last_clock_or_reset > INTERNAL_CLOCK_PERIOD)) {
+  if (internal_clock_enabled && (timeout_fired(&internal_clock_timeout, time))) {
     events_in.internal_clock_tick = true;
   }
 
@@ -779,13 +779,16 @@ void loop() {
   }
 
   if (clock_tick || events_in.reset) {
-    // Update last_clock_or_reset and output_pulse_length
-    output_pulse_length = constrain(((time - last_clock_or_reset) / 5), 2, 5);
-    last_clock_or_reset = time;
+    // Update last_clock_or_reset and output pulse length
+    Milliseconds pulse_length = constrain(((time - output_pulse_timeout.start) / 5), 2, 5);
+    output_pulse_timeout.duration = pulse_length;
+
+    timeout_reset(&output_pulse_timeout, time);
+    timeout_reset(&internal_clock_timeout, time);
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (output_any_active() && (time - last_clock_or_reset > output_pulse_length)) {
+  if (output_any_active() && (timeout_fired(&output_pulse_timeout, time))) {
     output_clear_all();
   }
 
@@ -798,7 +801,7 @@ void loop() {
   }
   
   // Turn off indicator LEDs that have been on long enough
-  if (lights_active && (time - last_clock_or_reset > output_pulse_length)) {
+  if (lights_active && (timeout_fired(&output_pulse_timeout, time))) {
     led_row_off(LED_OUT_Y);
     lights_active = false;
   }
