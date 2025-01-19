@@ -254,6 +254,21 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
+/// References one of the three channels
+typedef enum Channel {
+  CHANNEL_1,
+  CHANNEL_2,
+  CHANNEL_3,
+} Channel;
+
+/// A parameter of the Euclidean rhythm generator
+enum EuclideanParam {
+  EUCLIDEAN_PARAM_NONE,
+  EUCLIDEAN_PARAM_LENGTH,
+  EUCLIDEAN_PARAM_DENSITY,
+  EUCLIDEAN_PARAM_OFFSET,
+};
+
 /// State of the Euclidean rhythm generator and sequencer for a single channel
 typedef struct EuclideanChannelState {
   /// Number of steps in the Euclidean rhythm, 1-16
@@ -265,13 +280,6 @@ typedef struct EuclideanChannelState {
   /// Step index representing the playhead position for this channel's sequencer, 0-15
   uint8_t position; 
 } EuclideanChannelState;
-
-/// References one of the three channels
-typedef enum Channel {
-  CHANNEL_1,
-  CHANNEL_2,
-  CHANNEL_3,
-} Channel;
 
 /// State of the entire Euclidean module
 typedef struct EuclideanState {
@@ -305,12 +313,15 @@ unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 
 typedef struct AdjustmentDisplayState {
-  /// The channel currently showing its adjustment display. Only one adjustment 
-  /// display can be visible at a time.
+  /// Which channel is currently showing its adjustment display. Only one 
+  /// adjustment display can be visible at a time.
   Channel channel;
+  /// The parameter that is being displayed in the adjustment display.
+  EuclideanParam parameter;
 } AdjustmentDisplayState;
 static AdjustmentDisplayState adjustment_display_state = {
   .channel = CHANNEL_1,
+  .parameter = EUCLIDEAN_PARAM_NONE,
 };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
@@ -349,14 +360,6 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
-/// A parameter of the Euclidean rhythm generator
-enum EuclideanParam {
-  EUCLIDEAN_PARAM_NONE,
-  EUCLIDEAN_PARAM_LENGTH,
-  EUCLIDEAN_PARAM_DENSITY,
-  EUCLIDEAN_PARAM_OFFSET,
-};
-
 #define REDRAW_MASK_NONE  0b00000000
 #define REDRAW_MASK_ALL   0b00000111
 
@@ -369,7 +372,7 @@ static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
-static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_changed);
+static void draw_channels(uint8_t needs_redraw_bitflags);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -829,11 +832,12 @@ void loop() {
   // the active channel as needing a redraw
   if (param_changed != EUCLIDEAN_PARAM_NONE) {
     adjustment_display_state.channel = active_channel;
+    adjustment_display_state.parameter = param_changed;
     timeout_reset(&adjustment_display_timeout, time);
     needs_redraw_bitflags |= 0x01 << active_channel;
   }
 
-  draw_channels(needs_redraw_bitflags, param_changed);
+  draw_channels(needs_redraw_bitflags);
 
   /* UPDATE LED SLEEP */
 
@@ -953,7 +957,7 @@ static void sequencer_send_output() {
   }
 }
 
-static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_changed) {
+static void draw_channels(uint8_t needs_redraw_bitflags) {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     // Do not draw draw this channel if it does not need it
     bool needs_redraw = needs_redraw_bitflags & (0x01 << channel);
@@ -966,7 +970,7 @@ static void draw_channels(uint8_t needs_redraw_bitflags, EuclideanParam param_ch
 
     bool showing_adjustment_display = (channel == adjustment_display_state.channel) && (!timeout_fired(&adjustment_display_timeout, time));
     if (showing_adjustment_display) { 
-      if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
+      if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
         draw_channel_length((Channel)channel, length);  
       } else {
         draw_channel_pattern((Channel)channel, generated_rhythms[channel], length);
