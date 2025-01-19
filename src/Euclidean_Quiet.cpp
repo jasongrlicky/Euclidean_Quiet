@@ -357,7 +357,7 @@ static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
-static void draw_channels();
+static void draw_channels_playing();
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -811,7 +811,7 @@ void loop() {
 
   // If the sequencer was updated, draw channels' playing display
   if (clock_tick || events_in.reset) {
-    draw_channels();
+    draw_channels_playing();
   }
 
   // Redraw active channel's display if parameters have changed
@@ -945,7 +945,7 @@ static void sequencer_send_output() {
   }
 }
 
-static void draw_channels() {
+static void draw_channels_playing() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
