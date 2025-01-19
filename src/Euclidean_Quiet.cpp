@@ -303,6 +303,10 @@ int trig_in_value_previous = 0;
 bool reset_active = false;
 unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
+
+/// The channel currently showing its adjustment display. Only one adjustment 
+/// display can be visible at a time.
+static Channel adjustment_display_channel = CHANNEL_1;
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
 bool led_sleep_mode_active = false;
@@ -730,8 +734,6 @@ void loop() {
 
   // Update Generated Rhythms Based On Parameter Changes
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
-    timeout_reset(&adjustment_display_timeout, time);
-
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
@@ -809,13 +811,11 @@ void loop() {
     lights_active = false;
   }
 
-  // If the sequencer was updated, draw channels' playing display
-  if (clock_tick || events_in.reset) {
-    draw_channels_playing();
-  }
-
-  // Redraw active channel's display if parameters have changed
+  // If parameters have changed, redraw the active channel's adjustment display
   if (param_changed != EUCLIDEAN_PARAM_CHANGE_NONE) {
+    adjustment_display_channel = active_channel;
+    timeout_reset(&adjustment_display_timeout, time);
+
     Channel channel = active_channel;
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
@@ -825,6 +825,11 @@ void loop() {
     } else {
       draw_channel_pattern(channel, generated_rhythms[channel], length);
     }
+  }
+
+  // If the sequencer was updated, draw channels' playing display
+  if (clock_tick || events_in.reset) {
+    draw_channels_playing();
   }
 
   /* UPDATE LED SLEEP */
@@ -947,15 +952,16 @@ static void sequencer_send_output() {
 
 static void draw_channels_playing() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    // Do not draw this channel if is not currently showing its adjustment display
+    bool showing_adjustment_display = (channel == adjustment_display_channel) && (!timeout_fired(&adjustment_display_timeout, time));
+    if (showing_adjustment_display) { continue; }
+
     EuclideanChannel channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
     uint8_t position = channel_state.position;
     uint16_t pattern = generated_rhythms[channel];
 
-    // Only draw this channel if is not currently being adjusted
-    if ((channel != active_channel) || (timeout_fired(&adjustment_display_timeout, time))) {
-      draw_channel_with_playhead((Channel)channel, pattern, length, position);
-    }
+    draw_channel_with_playhead((Channel)channel, pattern, length, position);
   }
 }
 
