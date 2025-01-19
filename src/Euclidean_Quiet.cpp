@@ -844,10 +844,12 @@ void loop() {
   } else {
     // If no parameters have changed, check if the adjustment display still 
     // needs to be shown, and hide it if it doesn't
-    bool is_visible = !timeout_fired(&adjustment_display_timeout, time);
-    if (!is_visible) {
-      adjustment_display_state.visible = false;
-      needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
+    if (adjustment_display_state.visible) {
+      bool should_be_hidden = timeout_fired(&adjustment_display_timeout, time);
+      if (should_be_hidden) {
+        adjustment_display_state.visible = false;
+        needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
+      }
     }
   }
 
