@@ -376,6 +376,7 @@ static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
 static void draw_channels(uint8_t needs_redraw_bitflags);
+static void draw_channel(Channel channel);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
 static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
@@ -976,20 +977,24 @@ static void draw_channels(uint8_t needs_redraw_bitflags) {
     bool needs_redraw = needs_redraw_bitflags & (0x01 << channel);
     if (!needs_redraw) { continue; }
 
-    EuclideanChannelState channel_state = euclidean_state.channels[channel];
-    uint8_t length = channel_state.length;
-    uint8_t position = channel_state.position;
-    uint16_t pattern = generated_rhythms[channel];
+    draw_channel((Channel)channel);
+  }
+}
 
-    if (adjustment_display_state.visible && (channel == adjustment_display_state.channel)) { 
-      if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
-        draw_channel_length((Channel)channel, length);  
-      } else {
-        draw_channel_pattern((Channel)channel, generated_rhythms[channel], length);
-      }
+static void draw_channel(Channel channel) {
+  EuclideanChannelState channel_state = euclidean_state.channels[channel];
+  uint8_t length = channel_state.length;
+  uint8_t position = channel_state.position;
+  uint16_t pattern = generated_rhythms[channel];
+
+  if (adjustment_display_state.visible && (channel == adjustment_display_state.channel)) { 
+    if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
+      draw_channel_length(channel, length);  
     } else {
-      draw_channel_with_playhead((Channel)channel, pattern, length, position);
+      draw_channel_pattern(channel, generated_rhythms[channel], length);
     }
+  } else {
+    draw_channel_with_playhead(channel, pattern, length, position);
   }
 }
 
