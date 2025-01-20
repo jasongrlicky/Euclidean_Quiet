@@ -843,15 +843,13 @@ void loop() {
       }
     }
   } else {
-    // If parameters have changed, set the display as needing a redraw and reset
-    // the adjustment display timeout
-
-    needs_redraw = true;
-
+    // If parameters have changed, reset the adjustment display timeout and state
     adjustment_display_state.channel = active_channel;
     adjustment_display_state.parameter = param_changed;
     adjustment_display_state.visible = true;
     timeout_reset(&adjustment_display_timeout, time);
+
+    needs_redraw = true;
   }
 
   if (needs_redraw) {
