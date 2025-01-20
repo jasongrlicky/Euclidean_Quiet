@@ -31,6 +31,7 @@ extern "C" {
     - Made channel selection easier to see (two dots instead of 4 overlapping).
     - Shortened the time that LEDs stay lit when setting pattern length for a channel.
     - Before a clock trigger has been received, the full pattern is drawn for each channel.
+    - The adjustment display now hides itself after a certain amount of time, instead of waiting for the next clock signal.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
     - Sometimes ignored "Reset" input that happened simultaneously with "Trig" input
