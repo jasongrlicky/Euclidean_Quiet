@@ -797,7 +797,7 @@ void loop() {
 
   // Bitflags storing which output channels will fire this cycle, indexed by
   // `OutputChannel`.
-  uint8_t outputs_to_fire = 0;
+  uint8_t out_channels_firing = 0;
 
   if (events_in.reset) {
     sequencer_handle_reset();
@@ -806,13 +806,13 @@ void loop() {
   if (clock_tick) {
     sequencer_handle_clock();
 
-    outputs_to_fire = sequencer_read_current_step();
+    out_channels_firing = sequencer_read_current_step();
   }
 
   /* OUTPUT */
 
   for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-    bool should_fire = outputs_to_fire & (0x01 << out_channel);
+    bool should_fire = out_channels_firing & (0x01 << out_channel);
     if (should_fire) {
       output_set_high((OutputChannel)out_channel);
     }
@@ -840,7 +840,7 @@ void loop() {
   }
 
   for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-    bool should_light = outputs_to_fire & (0x01 << out_channel);
+    bool should_light = out_channels_firing & (0x01 << out_channel);
     if (should_light) {
       if (out_channel == OUTPUT_CHANNEL_1) {
         led_pixel_on(LED_OUT_CH1_X, LED_OUT_Y);
@@ -967,7 +967,7 @@ static void sequencer_advance() {
 }
 
 static uint8_t sequencer_read_current_step() {
-  uint8_t outputs_to_fire = 0;
+  uint8_t out_channels_firing = 0;
 
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -978,16 +978,16 @@ static uint8_t sequencer_read_current_step() {
     // Turn on LEDs on the bottom row for channels where the step is active
     bool step_is_active = pattern_read(pattern, length, position);
     if (step_is_active) {
-      outputs_to_fire |= (0x01 << channel);
+      out_channels_firing |= (0x01 << channel);
     } else {
       // Create output pulses for Offbeat Channel - inverse of Channel 1
       if (channel == CHANNEL_1) {
-        outputs_to_fire |= (0x01 << OUTPUT_CHANNEL_OFFBEAT);
+        out_channels_firing |= (0x01 << OUTPUT_CHANNEL_OFFBEAT);
       }
     }
   }
 
-  return outputs_to_fire;
+  return out_channels_firing;
 }
 
 static void draw_channels() {
