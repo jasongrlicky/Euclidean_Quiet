@@ -375,9 +375,9 @@ static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
+static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channels();
 static inline void draw_channel(Channel channel);
-static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static inline void draw_channel_length(Channel channel, uint8_t length);
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static inline void draw_channel_playhead(uint8_t y, uint8_t position);
@@ -976,6 +976,25 @@ static void sequencer_send_output() {
   }
 }
 
+static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
+    uint8_t row = channel * 2;
+    led_row_off(row);
+    led_row_off(row + 1);
+
+    for (uint8_t step = 0; step < length; step++) {
+      uint8_t x = step;
+      uint8_t y = row;
+      if (step > 7) {
+        x -= 8;
+        y += 1;
+      }
+
+      if (pattern_read(pattern, length, step)) {
+        led_pixel_set(x, y, true);
+      }
+    }
+}
+
 static void draw_channels() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     draw_channel((Channel)channel);
@@ -997,25 +1016,6 @@ static inline void draw_channel(Channel channel) {
   } else {
     draw_channel_with_playhead(channel, pattern, length, position);
   }
-}
-
-static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
-    uint8_t row = channel * 2;
-    led_row_off(row);
-    led_row_off(row + 1);
-
-    for (uint8_t step = 0; step < length; step++) {
-      uint8_t x = step;
-      uint8_t y = row;
-      if (step > 7) {
-        x -= 8;
-        y += 1;
-      }
-
-      if (pattern_read(pattern, length, step)) {
-        led_pixel_set(x, y, true);
-      }
-    }
 }
 
 static inline void draw_channel_length(Channel channel, uint8_t length) {
