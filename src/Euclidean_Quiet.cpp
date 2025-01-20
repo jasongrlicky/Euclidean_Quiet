@@ -373,7 +373,9 @@ static bool input_events_contains_any_external(InputEvents *events);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
 static void sequencer_advance();
-static void sequencer_send_output();
+/// What is the output that should be sent for each sequencer this cycle
+/// @return Bitflags, indexed using `OutputChannel`. 1 = begin an output pulse this cycle for this channel, 0 = do nothing for this channel 
+static uint8_t sequencer_read_current_step();
 static void draw_channels();
 static inline void draw_channel(Channel channel);
 static inline void draw_channel_length(Channel channel, uint8_t length);
@@ -793,12 +795,26 @@ void loop() {
   // Tracks if any of the sequencers' states have been updated this cycle
   bool sequencers_updated = (clock_tick || events_in.reset);
 
+  // Bitflags storing which output channels will fire this cycle, indexed by
+  // `OutputChannel`.
+  uint8_t outputs_to_fire = 0;
+
   if (events_in.reset) {
     sequencer_handle_reset();
   }
 
   if (clock_tick) {
     sequencer_handle_clock();
+
+    // Trigger current step
+    outputs_to_fire = sequencer_read_current_step();
+  }
+
+  for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
+    bool should_fire = outputs_to_fire & (0x01 << out_channel);
+    if (should_fire) {
+      output_set_high((OutputChannel)out_channel);
+    }
   }
 
   if (clock_tick || events_in.reset) {
@@ -907,9 +923,6 @@ static void sequencer_handle_clock() {
     // If sequencer is stopped, start it so that the next clock advances
     euclidean_state.sequencer_running = true;
   }
-
-  // Trigger current step
-  sequencer_send_output();
 }
 
 static void sequencer_advance() {
@@ -934,7 +947,9 @@ static void sequencer_advance() {
   }
 }
 
-static void sequencer_send_output() {
+static uint8_t sequencer_read_current_step() {
+  uint8_t outputs_to_fire = 0;
+
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
@@ -944,7 +959,7 @@ static void sequencer_send_output() {
     // Turn on LEDs on the bottom row for channels where the step is active
     bool step_is_active = pattern_read(pattern, length, position);
     if (step_is_active) {
-      output_set_high((OutputChannel)channel);
+      outputs_to_fire |= (0x01 << channel);
 
       if (channel == CHANNEL_1) {
         led_pixel_on(LED_OUT_CH1_X, LED_OUT_Y);
@@ -960,13 +975,15 @@ static void sequencer_send_output() {
     } else {
       // Create output pulses for Offbeat Channel - inverse of Channel 1
       if (channel == CHANNEL_1) {
-        output_set_high(OUTPUT_CHANNEL_OFFBEAT);
+        outputs_to_fire |= (0x01 << OUTPUT_CHANNEL_OFFBEAT);
         
         led_pixel_on(LED_OUT_OFFBEAT_X, LED_OUT_Y);
         lights_active = true;
       }
     }
   }
+
+  return outputs_to_fire;
 }
 
 static void draw_channels() {

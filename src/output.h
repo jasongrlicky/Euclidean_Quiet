@@ -11,6 +11,8 @@ typedef enum OutputChannel {
   OUTPUT_CHANNEL_OFFBEAT = 3
 } OutputChannel;
 
+#define OUTPUT_NUM_CHANNELS 4
+
 #define output_set_high(channel) (output_set(channel, true))
 #define output_set_low(channel) (output_set(channel, false))
 void output_set(OutputChannel channel, bool value);
