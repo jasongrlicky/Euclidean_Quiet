@@ -373,7 +373,6 @@ static bool input_events_contains_any_external(InputEvents *events);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
 static void sequencer_advance();
-static void sequencer_reset();
 static void sequencer_send_output();
 static void draw_channels();
 static inline void draw_channel(Channel channel);
@@ -890,8 +889,10 @@ static bool input_events_contains_any_external(InputEvents *events) {
 }
 
 static void sequencer_handle_reset() {
-  // Go to the first step
-  sequencer_reset();
+  // Go to the first step for each channel
+  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+    euclidean_state.channels[channel].position = 0;
+  }
 
   // Stop the sequencer
   euclidean_state.sequencer_running = false;
@@ -930,12 +931,6 @@ static void sequencer_advance() {
       Serial.println(position);
     }
     #endif
-  }
-}
-
-static void sequencer_reset() {
-  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    euclidean_state.channels[channel].position = 0;
   }
 }
 
