@@ -1009,7 +1009,7 @@ static inline void draw_channel(Channel channel) {
     if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
       draw_channel_length(channel, length);  
     } else {
-      draw_channel_pattern(channel, generated_rhythms[channel], length);
+      draw_channel_pattern(channel, pattern, length);
     }
   } else {
     draw_channel_with_playhead(channel, pattern, length, position);
