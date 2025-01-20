@@ -809,6 +809,8 @@ void loop() {
     outputs_to_fire = sequencer_read_current_step();
   }
 
+  /* OUTPUT */
+
   for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
     bool should_fire = outputs_to_fire & (0x01 << out_channel);
     if (should_fire) {
@@ -829,15 +831,28 @@ void loop() {
     output_clear_all();
   }
 
-  /* DRAWING */
-
-  // Tracks if the screen needs to be redrawn. 
-  bool needs_redraw = sequencers_updated;
+  /* DRAWING - INDICATORS */
 
   // Flash Trig Indicator LED if we received a clock tick
   if (clock_tick) {
     led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
     lights_active = true;
+  }
+
+  for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
+    bool should_light = outputs_to_fire & (0x01 << out_channel);
+    if (should_light) {
+      if (out_channel == OUTPUT_CHANNEL_1) {
+        led_pixel_on(LED_OUT_CH1_X, LED_OUT_Y);
+      } else if (out_channel == OUTPUT_CHANNEL_2) {
+        led_pixel_on(LED_OUT_CH2_X, LED_OUT_Y);
+      } else if (out_channel == OUTPUT_CHANNEL_3) {
+        led_pixel_on(LED_OUT_CH3_X, LED_OUT_Y);
+      } else {
+        led_pixel_on(LED_OUT_OFFBEAT_X, LED_OUT_Y);
+      }
+      lights_active = true;
+    }
   }
   
   // Turn off indicator LEDs that have been on long enough
@@ -845,6 +860,11 @@ void loop() {
     led_row_off(LED_OUT_Y);
     lights_active = false;
   }
+
+  /* DRAWING - CHANNELS */
+
+  // Tracks if the screen needs to be redrawn. 
+  bool needs_redraw = sequencers_updated;
 
   if (param_changed == EUCLIDEAN_PARAM_NONE) {
     // If no parameters have changed, check if the adjustment display still 
@@ -959,25 +979,10 @@ static uint8_t sequencer_read_current_step() {
     bool step_is_active = pattern_read(pattern, length, position);
     if (step_is_active) {
       outputs_to_fire |= (0x01 << channel);
-
-      if (channel == CHANNEL_1) {
-        led_pixel_on(LED_OUT_CH1_X, LED_OUT_Y);
-      }
-      if (channel == CHANNEL_2) {
-        led_pixel_on(LED_OUT_CH2_X, LED_OUT_Y);
-      }
-      if (channel == CHANNEL_3) {
-        led_pixel_on(LED_OUT_CH3_X, LED_OUT_Y);
-      }
-
-      lights_active = true;
     } else {
       // Create output pulses for Offbeat Channel - inverse of Channel 1
       if (channel == CHANNEL_1) {
         outputs_to_fire |= (0x01 << OUTPUT_CHANNEL_OFFBEAT);
-        
-        led_pixel_on(LED_OUT_OFFBEAT_X, LED_OUT_Y);
-        lights_active = true;
       }
     }
   }
