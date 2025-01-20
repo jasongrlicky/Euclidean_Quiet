@@ -376,11 +376,11 @@ static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
 static void draw_channels();
-static void draw_channel(Channel channel);
+static inline void draw_channel(Channel channel);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
-static void draw_channel_length(Channel channel, uint8_t length);
-static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
-static void draw_channel_playhead(uint8_t y, uint8_t position);
+static inline void draw_channel_length(Channel channel, uint8_t length);
+static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
+static inline void draw_channel_playhead(uint8_t y, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -982,7 +982,7 @@ static void draw_channels() {
   }
 }
 
-static void draw_channel(Channel channel) {
+static inline void draw_channel(Channel channel) {
   EuclideanChannelState channel_state = euclidean_state.channels[channel];
   uint8_t length = channel_state.length;
   uint8_t position = channel_state.position;
@@ -1018,7 +1018,7 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
     }
 }
 
-static void draw_channel_length(Channel channel, uint8_t length) {
+static inline void draw_channel_length(Channel channel, uint8_t length) {
     uint8_t row = channel * 2;
     led_row_off(row);
     led_row_off(row + 1);
@@ -1035,7 +1035,7 @@ static void draw_channel_length(Channel channel, uint8_t length) {
     }
 }
 
-static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
+static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t y = channel * 2;
   led_row_off(y);
 
@@ -1056,7 +1056,7 @@ static void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_
   draw_channel_playhead(y + 1, position);
 }
 
-static void draw_channel_playhead(uint8_t y, uint8_t position) {
+static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
   led_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
   led_pixel_on(x, y);
