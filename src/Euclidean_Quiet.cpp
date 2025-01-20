@@ -781,6 +781,10 @@ void loop() {
     events_in.internal_clock_tick = true;
   }
 
+  if (events_in.internal_clock_tick || events_in.reset) {
+    timeout_reset(&internal_clock_timeout, time);
+  }
+
   /* UPDATE SEQUENCER */
 
   // Clock ticks merge the internal and external clocks
@@ -803,10 +807,6 @@ void loop() {
     output_pulse_timeout.duration = pulse_length;
 
     timeout_reset(&output_pulse_timeout, time);
-  }
-
-  if (events_in.internal_clock_tick || events_in.reset) {
-    timeout_reset(&internal_clock_timeout, time);
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
