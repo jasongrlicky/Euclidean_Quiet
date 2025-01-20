@@ -375,7 +375,7 @@ static void sequencer_handle_clock();
 static void sequencer_advance();
 static void sequencer_reset();
 static void sequencer_send_output();
-static void draw_channels(uint8_t needs_redraw_bitflags);
+static void draw_channels();
 static void draw_channel(Channel channel);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_channel_length(Channel channel, uint8_t length);
@@ -817,9 +817,8 @@ void loop() {
 
   /* DRAWING */
 
-  // Tracks which channels need to be redrawn using bitflags.
-  // If the sequencer positions were updated, all channels need to be redrawn.
-  uint8_t needs_redraw_bitflags = (sequencers_updated) ? REDRAW_MASK_ALL : REDRAW_MASK_NONE;
+  // Tracks if the screen needs to be redrawn. 
+  bool needs_redraw = sequencers_updated;
 
   // Flash Trig Indicator LED if we received a clock tick
   if (clock_tick) {
@@ -840,19 +839,14 @@ void loop() {
       bool should_be_hidden = timeout_fired(&adjustment_display_timeout, time);
       if (should_be_hidden) {
         adjustment_display_state.visible = false;
-        needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
+        needs_redraw = true;
       }
     }
   } else {
-    // If parameters have changed, set channels as needing a redraw and reset
+    // If parameters have changed, set the display as needing a redraw and reset
     // the adjustment display timeout
 
-    // Mark the old adjustment display channel as needing a redraw, in case we
-    // switched active channels before the old one has been hidden
-    needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
-
-    // Mark the new adjustment display channel as needing a redraw
-    needs_redraw_bitflags |= (0x01 << active_channel);
+    needs_redraw = true;
 
     adjustment_display_state.channel = active_channel;
     adjustment_display_state.parameter = param_changed;
@@ -860,7 +854,9 @@ void loop() {
     timeout_reset(&adjustment_display_timeout, time);
   }
 
-  draw_channels(needs_redraw_bitflags);
+  if (needs_redraw) {
+    draw_channels();
+  }
 
   /* UPDATE LED SLEEP */
 
@@ -980,12 +976,8 @@ static void sequencer_send_output() {
   }
 }
 
-static void draw_channels(uint8_t needs_redraw_bitflags) {
+static void draw_channels() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    // Do not draw draw this channel if it does not need it
-    bool needs_redraw = needs_redraw_bitflags & (0x01 << channel);
-    if (!needs_redraw) { continue; }
-
     draw_channel((Channel)channel);
   }
 }
