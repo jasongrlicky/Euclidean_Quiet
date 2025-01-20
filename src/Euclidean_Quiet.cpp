@@ -902,6 +902,7 @@ void loop() {
     // been received, wake the LED
     if (!timeout_fired(&led_sleep_timeout, time)) {
       led_wake();
+      draw_channels();
     }
   } else {
     // LED is awake:
