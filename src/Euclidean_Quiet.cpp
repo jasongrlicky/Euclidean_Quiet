@@ -844,13 +844,20 @@ void loop() {
       }
     }
   } else {
-    // If parameters have changed, restart the adjustment display timeout and set
-    // the active channel as needing a redraw
+    // If parameters have changed, set channels as needing a redraw and reset
+    // the adjustment display timeout
+
+    // Mark the old adjustment display channel as needing a redraw, in case we
+    // switched active channels before the old one has been hidden
+    needs_redraw_bitflags |= (0x01 << adjustment_display_state.channel);
+
+    // Mark the new adjustment display channel as needing a redraw
+    needs_redraw_bitflags |= (0x01 << active_channel);
+
     adjustment_display_state.channel = active_channel;
     adjustment_display_state.parameter = param_changed;
     adjustment_display_state.visible = true;
     timeout_reset(&adjustment_display_timeout, time);
-    needs_redraw_bitflags |= (0x01 << active_channel);
   }
 
   draw_channels(needs_redraw_bitflags);
