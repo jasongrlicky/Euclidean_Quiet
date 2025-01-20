@@ -806,7 +806,6 @@ void loop() {
   if (clock_tick) {
     sequencer_handle_clock();
 
-    // Trigger current step
     outputs_to_fire = sequencer_read_current_step();
   }
 
