@@ -848,6 +848,17 @@ void loop() {
   // output indicators
   if (clock_tick | events_in.reset) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
+      uint8_t x;
+      if (out_channel == OUTPUT_CHANNEL_1) {
+        x = LED_OUT_CH1_X;
+      } else if (out_channel == OUTPUT_CHANNEL_2) {
+        x = LED_OUT_CH2_X;
+      } else if (out_channel == OUTPUT_CHANNEL_3) {
+        x = LED_OUT_CH3_X;
+      } else {
+        x = LED_OUT_OFFBEAT_X;
+      }
+
       uint8_t mask = 0x01 << out_channel;
       bool active_step_prev = output_channels_active_step_bitflags & mask;
       bool active_step = out_channels_firing & mask;
@@ -855,10 +866,11 @@ void loop() {
       if (active_step != active_step_prev) {
         // Toggle output channel as having an active step in the bitflags w/ XOR
         output_channels_active_step_bitflags ^= mask;
+      } else {
+        led_pixel_off(x, LED_OUT_Y);
       }
     }
 
-    led_row_off(LED_OUT_Y);
     timeout_reset(&output_indicator_blink_timeout, time);
   }
 
