@@ -621,9 +621,6 @@ void loop() {
     default:
       break;
   }
-  if (events_in.enc_push != ENCODER_NONE) {
-    draw_active_channel_display();  
-  }
 
   EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
 
@@ -865,6 +862,12 @@ void loop() {
   if (lights_active && (timeout_fired(&output_pulse_timeout, time))) {
     led_row_off(LED_OUT_Y);
     lights_active = false;
+  }
+
+  /* DRAWING - ACTIVE CHANNEL DISPLAY */
+
+  if (events_in.enc_push != ENCODER_NONE) {
+    draw_active_channel_display();  
   }
 
   /* DRAWING - CHANNELS */
