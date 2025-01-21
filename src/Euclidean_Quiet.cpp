@@ -313,6 +313,7 @@ bool trig_indicator_active = false;
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
 uint8_t output_channels_active_step_bitflags = 0;
+static Timeout output_indicator_blink_timeout = { .duration = 16 };
 
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
@@ -845,14 +846,26 @@ void loop() {
 
   /* DRAWING - INDICATORS */
 
-  // Flash Trig Indicator LED if we received a clock tick
-  if (clock_tick) {
-    led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
-    trig_indicator_active = true;
+  // If the sequencer has moved, note active output channels and blink 
+  // output indicators
+  if (clock_tick | events_in.reset) {
+    for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
+      uint8_t mask = 0x01 << out_channel;
+      bool active_step_prev = output_channels_active_step_bitflags & mask;
+      bool active_step = out_channels_firing & mask;
+
+      if (active_step != active_step_prev) {
+        // Toggle output channel as having an active step in the bitflags w/ XOR
+        output_channels_active_step_bitflags ^= mask;
+      }
+    }
+
+    led_row_off(LED_OUT_Y);
+    timeout_reset(&output_indicator_blink_timeout, time);
   }
 
-  // Update Output Indicator if the sequencer moved
-  if (clock_tick | events_in.reset) {
+  // Draw Output Indicators
+  if (timeout_fired(&output_indicator_blink_timeout, time)) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
       uint8_t x;
       if (out_channel == OUTPUT_CHANNEL_1) {
@@ -866,15 +879,16 @@ void loop() {
       }
 
       uint8_t mask = 0x01 << out_channel;
-      bool active_step_prev = output_channels_active_step_bitflags & mask;
-      bool active_step = out_channels_firing & mask;
+      bool active_step = output_channels_active_step_bitflags & mask;
 
-      if (active_step != active_step_prev) {
-        // Toggle output channel as having an active step in the bitflags w/ XOR
-        output_channels_active_step_bitflags ^= mask;
-        led_pixel_set(x, LED_OUT_Y, active_step);
-      }
+      led_pixel_set(x, LED_OUT_Y, active_step);
     }
+  }
+
+  // Flash Trig Indicator LED if we received a clock tick
+  if (clock_tick) {
+    led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
+    trig_indicator_active = true;
   }
   
   // Turn off indicator LEDs that have been on long enough
