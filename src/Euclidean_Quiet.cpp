@@ -428,6 +428,7 @@ static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
+static void framebuffer_draw_to_led();
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
 /// Set a single pixel on the LED Matrix to be on or off, using a coordinate 
@@ -1204,6 +1205,26 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
     result = LED_OUT_OFFBEAT_X;
   }
   return result;
+}
+
+static void framebuffer_draw_to_led() {
+  for (uint8_t row = 0; row < LED_ROWS; row++) {
+    bool needs_redraw = (framebuffer_row_needs_redraw >> row) & 0x01; 
+    if (!needs_redraw) { continue; }
+
+    uint16_t fb_row_bits = framebuffer[row];
+    uint8_t to_draw = 0;
+
+    for (uint8_t col = 0; col < LED_COLUMNS; col++) {
+      uint8_t palette_idx = (fb_row_bits >> (col * 2)) & 0b00000011;
+
+      if (palette[palette_idx]) {
+        to_draw |= (0x01 << col);
+      }
+    }
+
+    lc.setRow(LED_ADDR, row, to_draw);
+  }
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
