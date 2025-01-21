@@ -404,6 +404,7 @@ static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
+static uint8_t output_channel_led_x(OutputChannel channel);
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
 /// Set a single pixel on the LED Matrix to be on or off, using a coordinate 
@@ -848,16 +849,7 @@ void loop() {
   // output indicators
   if (clock_tick | events_in.reset) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-      uint8_t x;
-      if (out_channel == OUTPUT_CHANNEL_1) {
-        x = LED_OUT_CH1_X;
-      } else if (out_channel == OUTPUT_CHANNEL_2) {
-        x = LED_OUT_CH2_X;
-      } else if (out_channel == OUTPUT_CHANNEL_3) {
-        x = LED_OUT_CH3_X;
-      } else {
-        x = LED_OUT_OFFBEAT_X;
-      }
+      uint8_t x = output_channel_led_x((OutputChannel)out_channel);
 
       uint8_t mask = 0x01 << out_channel;
       bool active_step_prev = output_channels_active_step_bitflags & mask;
@@ -877,17 +869,8 @@ void loop() {
   // Draw Output Indicators
   if (timeout_fired(&output_indicator_blink_timeout, time)) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-      uint8_t x;
-      if (out_channel == OUTPUT_CHANNEL_1) {
-        x = LED_OUT_CH1_X;
-      } else if (out_channel == OUTPUT_CHANNEL_2) {
-        x = LED_OUT_CH2_X;
-      } else if (out_channel == OUTPUT_CHANNEL_3) {
-        x = LED_OUT_CH3_X;
-      } else {
-        x = LED_OUT_OFFBEAT_X;
-      }
-
+      uint8_t x = output_channel_led_x((OutputChannel)out_channel);
+      
       bool active_step = output_channels_active_step_bitflags & (0x01 << out_channel);
 
       led_pixel_set(x, LED_OUT_Y, active_step);
@@ -1175,6 +1158,20 @@ static void active_channel_set(Channel channel) {
   Serial.print("Active channel: ");
   Serial.println(active_channel);
   #endif
+}
+
+static uint8_t output_channel_led_x(OutputChannel channel) {
+  uint8_t result;
+  if (channel == OUTPUT_CHANNEL_1) {
+    result = LED_OUT_CH1_X;
+  } else if (channel == OUTPUT_CHANNEL_2) {
+    result = LED_OUT_CH2_X;
+  } else if (channel == OUTPUT_CHANNEL_3) {
+    result = LED_OUT_CH3_X;
+  } else {
+    result = LED_OUT_OFFBEAT_X;
+  }
+  return result;
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
