@@ -230,7 +230,7 @@ extern "C" {
 /// Row of LED Display marked "CH SEL" on panel
 #define LED_CH_SEL_Y 6
 /// Column of LED Display marked "TRIG" on panel
-#define LED_OUT_TRIG_X 0
+#define LED_IN_TRIG_X 0
 /// Column of LED Display marked "1" on panel
 #define LED_OUT_CH1_X 2
 /// Column of LED Display marked "OFF" on panel
@@ -880,13 +880,13 @@ void loop() {
 
   // Flash Trig indicator LED if we received a clock tick
   if (clock_tick) {
-    led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
+    led_pixel_on(LED_IN_TRIG_X, LED_OUT_Y);
     timeout_once_reset(&trig_indicator_timeout, time);
   }
   
   // Turn off indicator LEDs that have been on long enough
   if (timeout_once_fired(&trig_indicator_timeout, time)) {
-    led_pixel_off(LED_OUT_TRIG_X, LED_OUT_Y);
+    led_pixel_off(LED_IN_TRIG_X, LED_OUT_Y);
   }
 
   /* DRAWING - ACTIVE CHANNEL DISPLAY */
