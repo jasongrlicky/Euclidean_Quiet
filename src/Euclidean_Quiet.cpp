@@ -312,7 +312,7 @@ static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICA
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
 uint8_t output_channels_active_step_bitflags = 0;
-static Timeout output_indicator_blink_timeout = { .duration = OUTPUT_INDICATOR_BLINK_TIME };
+static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
 
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
@@ -862,11 +862,11 @@ void loop() {
       }
     }
 
-    timeout_reset(&output_indicator_blink_timeout, time);
+    timeout_once_reset(&output_indicator_blink_timeout, time);
   }
 
   // Draw Output Indicators
-  if (timeout_fired(&output_indicator_blink_timeout, time)) {
+  if (timeout_once_fired(&output_indicator_blink_timeout, time)) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
       uint8_t x = output_channel_led_x((OutputChannel)out_channel);
       
