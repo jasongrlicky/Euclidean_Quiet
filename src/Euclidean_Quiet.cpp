@@ -276,6 +276,10 @@ bool palette[4];
 /// an index into `palette`.
 uint16_t framebuffer[LED_ROWS];
 
+/// Bitflags, where each bit is true if that row of the LED (from top to bottom) 
+/// needs to be redrawn this frame.
+uint8_t framebuffer_row_needs_redraw;
+
 /// References one of the three channels
 typedef enum Channel {
   CHANNEL_1,
