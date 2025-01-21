@@ -888,14 +888,13 @@ void loop() {
         x = LED_OUT_OFFBEAT_X;
       }
 
-      uint8_t mask = 0x01 << out_channel;
-      bool active_step = output_channels_active_step_bitflags & mask;
+      bool active_step = output_channels_active_step_bitflags & (0x01 << out_channel);
 
       led_pixel_set(x, LED_OUT_Y, active_step);
     }
   }
 
-  // Flash Trig Indicator LED if we received a clock tick
+  // Flash Trig indicator LED if we received a clock tick
   if (clock_tick) {
     led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
     trig_indicator_active = true;
