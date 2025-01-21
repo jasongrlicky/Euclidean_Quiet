@@ -19,4 +19,19 @@ void timeout_reset(Timeout *timeout, Milliseconds now);
 /// Check if the timeout has fired, given the current time, `now`
 bool timeout_fired(Timeout const *timeout, Milliseconds now);
 
+
+/// Similar to `Timeout`, but only fires the first time after it fires, until it
+/// has been reset.
+typedef struct TimeoutOnce {
+  Timeout inner;
+  bool active;
+} TimeoutOnce;
+
+/// Make the timeout start again at `now`.
+void timeout_once_reset(TimeoutOnce *timeout_once, Milliseconds now);
+
+/// Check if the timeout has fired, given the current time, `now`. Only returns
+/// `true` if this is the first time after the timer has fired.
+bool timeout_once_fired(TimeoutOnce *timeout_once, Milliseconds now);
+
 #endif /* TIMEOUT_H_ */ 

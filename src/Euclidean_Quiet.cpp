@@ -308,8 +308,7 @@ Channel active_channel; // Channel that is currently active
 static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
 static Timeout output_pulse_timeout = { .duration = 50 }; // Pulse length, set based on the time since last trigger
 
-static Timeout trig_indicator_timeout = { .duration = INPUT_INDICATOR_FLASH_TIME }; // Set based on the time since last trigger
-bool trig_indicator_active = false;
+static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
 uint8_t output_channels_active_step_bitflags = 0;
@@ -880,14 +879,12 @@ void loop() {
   // Flash Trig indicator LED if we received a clock tick
   if (clock_tick) {
     led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
-    trig_indicator_active = true;
-    timeout_reset(&trig_indicator_timeout, time);
+    timeout_once_reset(&trig_indicator_timeout, time);
   }
   
   // Turn off indicator LEDs that have been on long enough
-  if (trig_indicator_active && (timeout_fired(&trig_indicator_timeout, time))) {
+  if (timeout_once_fired(&trig_indicator_timeout, time)) {
     led_pixel_off(LED_OUT_TRIG_X, LED_OUT_Y);
-    trig_indicator_active = false;
   }
 
   /* DRAWING - ACTIVE CHANNEL DISPLAY */
