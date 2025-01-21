@@ -36,6 +36,7 @@ extern "C" {
     - The internal clock started up again when the reset button was pressed.
     - Sometimes ignored "Reset" input that happened simultaneously with "Trig" input
     - Turning the density up if it was already at the maximum would cause it to toggle between the two highest values.
+    - When the LED matrix wakes from sleep mode, the channel selection would not be displayed
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
     - When reducing the length parameter for a channel, its adjusted density would not be saved.
@@ -911,6 +912,7 @@ void loop() {
     if (!timeout_fired(&led_sleep_timeout, time)) {
       led_wake();
       draw_channels();
+      draw_active_channel_display();
     }
   } else {
     // LED is awake:
