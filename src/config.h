@@ -4,7 +4,8 @@
 #define LED_BRIGHTNESS 5 // From 0 (low) to 15
 #define ADJUSTMENT_DISPLAY_TIME 450 // How long adjustments (such as to channel pattern length) are displayed for
 #define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
-#define OUTPUT_INDICATOR_BLINK_TIME 16 // Milliseconds active outputs blink for when being illuminated
+#define INPUT_INDICATOR_FLASH_TIME 16 // Milliseconds input indicators flash when being illuminated
+#define OUTPUT_INDICATOR_BLINK_TIME 16 // Milliseconds output indicators blink for when being illuminated
 #define READ_DELAY 50 // For debouncing
 #define INTERNAL_CLOCK_PERIOD 125 // Milliseconds between internal clock ticks
 
