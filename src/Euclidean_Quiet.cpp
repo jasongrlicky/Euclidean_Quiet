@@ -24,10 +24,11 @@ extern "C" {
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
-    - Output indicator LEDs now stay lit for the entire duration of the step.
     - LED sleep timeout now takes into account encoder manipulations
   - UI Polish:
-    - Reset is now visible immediately
+    - Reset is now visible immediately in the sequencers.
+    - There is now an indicator LED for Reset input, next to the one labeled "Trig".
+    - Output indicator LEDs now stay lit for the entire duration of the step.
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
     - Shortened the time that LEDs stay lit when setting pattern length for a channel.
@@ -231,6 +232,8 @@ extern "C" {
 #define LED_CH_SEL_Y 6
 /// Column of LED Display marked "TRIG" on panel
 #define LED_IN_TRIG_X 0
+/// Column of LED Display where Reset input is indicated
+#define LED_IN_RESET_X 1
 /// Column of LED Display marked "1" on panel
 #define LED_OUT_CH1_X 2
 /// Column of LED Display marked "OFF" on panel
@@ -309,6 +312,7 @@ static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
 static Timeout output_pulse_timeout = { .duration = 50 }; // Pulse length, set based on the time since last trigger
 
 static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
+static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
 uint8_t output_channels_active_step_bitflags = 0;
@@ -883,10 +887,19 @@ void loop() {
     led_pixel_on(LED_IN_TRIG_X, LED_OUT_Y);
     timeout_once_reset(&trig_indicator_timeout, time);
   }
+
+  // Flash Reset indicator LED if we received a reset input event
+  if (events_in.reset) {
+    led_pixel_on(LED_IN_RESET_X, LED_OUT_Y);
+    timeout_once_reset(&reset_indicator_timeout, time);
+  }
   
   // Turn off indicator LEDs that have been on long enough
   if (timeout_once_fired(&trig_indicator_timeout, time)) {
     led_pixel_off(LED_IN_TRIG_X, LED_OUT_Y);
+  }
+  if (timeout_once_fired(&reset_indicator_timeout, time)) {
+    led_pixel_off(LED_IN_RESET_X, LED_OUT_Y);
   }
 
   /* DRAWING - ACTIVE CHANNEL DISPLAY */
