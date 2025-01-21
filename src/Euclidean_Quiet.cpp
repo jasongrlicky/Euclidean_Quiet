@@ -383,6 +383,7 @@ static inline void draw_channel_length(Channel channel, uint8_t length);
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static inline void draw_channel_playhead(uint8_t y, uint8_t position);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
+static void draw_active_channel_display();
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -1078,6 +1079,18 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
     }
 }
 
+static void draw_active_channel_display() {
+    uint8_t row_bits = B00000000;
+    if (active_channel == CHANNEL_1) {
+      row_bits = B00000011;
+    } else if (active_channel == CHANNEL_2) {
+      row_bits = B00011000;
+    } else if (active_channel == CHANNEL_3) {
+      row_bits = B11000000;
+    } 
+    lc.setRow(LED_ADDR, LED_CH_SEL_Y, row_bits);
+}
+
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t idx = length - position - 1;
   return (pattern >> idx) & 0x01;
@@ -1104,24 +1117,15 @@ int encoder_read(Encoder& enc) {
 }
 
 static void active_channel_set(Channel channel) {
-    // Update state
-    active_channel = channel;
-    
-    #if LOGGING_ENABLED
-    Serial.print("Active channel: ");
-    Serial.println(active_channel);
-    #endif
-    
-    // Update LED Matrix
-    uint8_t row_bits = B00000000;
-    if (channel == CHANNEL_1) {
-      row_bits = B00000011;
-    } else if (channel == CHANNEL_2) {
-      row_bits = B00011000;
-    } else if (channel == CHANNEL_3) {
-      row_bits = B11000000;
-    } 
-    lc.setRow(LED_ADDR, LED_CH_SEL_Y, row_bits);
+  // Update state
+  active_channel = channel;
+  
+  #if LOGGING_ENABLED
+  Serial.print("Active channel: ");
+  Serial.println(active_channel);
+  #endif
+  
+  draw_active_channel_display();
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
