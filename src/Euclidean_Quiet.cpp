@@ -491,6 +491,7 @@ void setup() {
 
   // Select first channel on startup
   active_channel_set(CHANNEL_1);
+  draw_active_channel_display();
 
   // Draw all channel displays initially
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
@@ -619,6 +620,9 @@ void loop() {
       break;
     default:
       break;
+  }
+  if (events_in.enc_push != ENCODER_NONE) {
+    draw_active_channel_display();  
   }
 
   EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
@@ -1124,8 +1128,6 @@ static void active_channel_set(Channel channel) {
   Serial.print("Active channel: ");
   Serial.println(active_channel);
   #endif
-  
-  draw_active_channel_display();
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
