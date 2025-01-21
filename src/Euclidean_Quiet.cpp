@@ -24,6 +24,7 @@ extern "C" {
     - Channel 1 is now selected when the module starts up
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
+    - Output indicator LEDs now stay lit for the entire duration of the step.
     - LED sleep timeout now takes into account encoder manipulations
   - UI Polish:
     - Reset is now visible immediately
@@ -306,7 +307,12 @@ uint16_t generated_rhythms[NUM_CHANNELS];
 Channel active_channel; // Channel that is currently active
 static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
 static Timeout output_pulse_timeout = { .duration = 50 }; // Pulse length, set based on the time since last trigger
-bool lights_active = false;
+
+static Timeout trig_indicator_timeout = { .duration = 50 }; // Set based on the time since last trigger
+bool trig_indicator_active = false;
+/// Stores which output channels have active steps this step of their sequencer,
+/// as bitflags indexted by `OutputChannel`.
+uint8_t output_channels_active_step_bitflags = 0;
 
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
@@ -826,8 +832,10 @@ void loop() {
     // Update output pulse length and timeout
     Milliseconds pulse_length = constrain(((time - output_pulse_timeout.start) / 5), 2, 5);
     output_pulse_timeout.duration = pulse_length;
+    trig_indicator_timeout.duration = pulse_length;
 
     timeout_reset(&output_pulse_timeout, time);
+    timeout_reset(&trig_indicator_timeout, time);
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
@@ -840,29 +848,39 @@ void loop() {
   // Flash Trig Indicator LED if we received a clock tick
   if (clock_tick) {
     led_pixel_on(LED_OUT_TRIG_X, LED_OUT_Y);
-    lights_active = true;
+    trig_indicator_active = true;
   }
 
-  for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-    bool should_light = out_channels_firing & (0x01 << out_channel);
-    if (should_light) {
+  // Update Output Indicator if the sequencer moved
+  if (clock_tick | events_in.reset) {
+    for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
+      uint8_t x;
       if (out_channel == OUTPUT_CHANNEL_1) {
-        led_pixel_on(LED_OUT_CH1_X, LED_OUT_Y);
+        x = LED_OUT_CH1_X;
       } else if (out_channel == OUTPUT_CHANNEL_2) {
-        led_pixel_on(LED_OUT_CH2_X, LED_OUT_Y);
+        x = LED_OUT_CH2_X;
       } else if (out_channel == OUTPUT_CHANNEL_3) {
-        led_pixel_on(LED_OUT_CH3_X, LED_OUT_Y);
+        x = LED_OUT_CH3_X;
       } else {
-        led_pixel_on(LED_OUT_OFFBEAT_X, LED_OUT_Y);
+        x = LED_OUT_OFFBEAT_X;
       }
-      lights_active = true;
+
+      uint8_t mask = 0x01 << out_channel;
+      bool active_step_prev = output_channels_active_step_bitflags & mask;
+      bool active_step = out_channels_firing & mask;
+
+      if (active_step != active_step_prev) {
+        // Toggle output channel as having an active step in the bitflags w/ XOR
+        output_channels_active_step_bitflags ^= mask;
+        led_pixel_set(x, LED_OUT_Y, active_step);
+      }
     }
   }
   
   // Turn off indicator LEDs that have been on long enough
-  if (lights_active && (timeout_fired(&output_pulse_timeout, time))) {
-    led_row_off(LED_OUT_Y);
-    lights_active = false;
+  if (trig_indicator_active && (timeout_fired(&trig_indicator_timeout, time))) {
+    led_pixel_off(LED_OUT_TRIG_X, LED_OUT_Y);
+    trig_indicator_active = false;
   }
 
   /* DRAWING - ACTIVE CHANNEL DISPLAY */
