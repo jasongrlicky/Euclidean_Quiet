@@ -842,7 +842,7 @@ void loop() {
     output_clear_all();
   }
 
-  /* DRAWING - INDICATORS */
+  /* DRAWING - OUTPUT INDICATORS */
 
   // If the sequencer has moved, note active output channels and blink 
   // output indicators
@@ -875,6 +875,8 @@ void loop() {
       led_pixel_set(x, LED_OUT_Y, active_step);
     }
   }
+
+  /* DRAWING - INPUT INDICATORS */
 
   // Flash Trig indicator LED if we received a clock tick
   if (clock_tick) {
