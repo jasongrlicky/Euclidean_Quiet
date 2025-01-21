@@ -428,7 +428,7 @@ static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
-static void framebuffer_draw_to_led();
+static void framebuffer_draw_to_display();
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
 /// Set a single pixel on the LED Matrix to be on or off, using a coordinate 
@@ -958,6 +958,10 @@ void loop() {
     draw_channels();
   }
 
+  /* DRAW FRAMEBUFFER TO DISPLAY IF NEEDED */
+
+  framebuffer_draw_to_display();
+
   /* UPDATE LED SLEEP */
 
   if (input_events_contains_any_external(&events_in)) {
@@ -1207,7 +1211,7 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
   return result;
 }
 
-static void framebuffer_draw_to_led() {
+static void framebuffer_draw_to_display() {
   for (uint8_t row = 0; row < LED_ROWS; row++) {
     bool needs_redraw = (framebuffer_row_needs_redraw >> row) & 0x01; 
     if (!needs_redraw) { continue; }
