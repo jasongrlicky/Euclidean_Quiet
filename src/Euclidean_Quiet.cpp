@@ -794,12 +794,12 @@ void loop() {
     internal_clock_enabled = false; 
   }
 
-  if (internal_clock_enabled && (timeout_fired(&internal_clock_timeout, time))) {
-    events_in.internal_clock_tick = true;
+  if (events_in.reset) {
+    timeout_reset(&internal_clock_timeout, time);
   }
 
-  if (events_in.internal_clock_tick || events_in.reset) {
-    timeout_reset(&internal_clock_timeout, time);
+  if (internal_clock_enabled && (timeout_fired_loop(&internal_clock_timeout, time))) {
+    events_in.internal_clock_tick = true;
   }
 
   /* UPDATE SEQUENCER */
