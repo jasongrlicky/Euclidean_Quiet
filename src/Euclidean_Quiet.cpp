@@ -268,6 +268,8 @@ typedef enum PaletteColor {
   PALETTE_ON = 1,
   /// Blink this LED
   PALETTE_BLINK = 2,
+  // NOTE: Palette index 3 is not used yet - it could be used for special 
+  // effects or a second blink speed.
 } PaletteColor;
 
 /// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
