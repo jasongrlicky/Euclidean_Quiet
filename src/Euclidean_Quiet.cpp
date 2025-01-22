@@ -405,9 +405,6 @@ Microseconds cycle_time_max;
 static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVAL };
 #endif
 
-#define REDRAW_MASK_NONE  0b00000000
-#define REDRAW_MASK_ALL   0b00000111
-
 /* INTERNAL */
 
 /// Returns true if `events` contains any externally-generated events
