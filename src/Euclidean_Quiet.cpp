@@ -400,6 +400,11 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
+#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+Microseconds cycle_time_max;
+static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVAL };
+#endif
+
 #define REDRAW_MASK_NONE  0b00000000
 #define REDRAW_MASK_ALL   0b00000111
 
@@ -547,6 +552,10 @@ void setup() {
 
 void loop() {
   time = millis();
+
+  #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+  Microseconds cycle_time_start = micros();
+  #endif
 
   /* INPUT EVENTS */
 
@@ -994,6 +1003,21 @@ void loop() {
       led_sleep();
     }
   }
+
+
+  #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+  Microseconds cycle_time = micros() - cycle_time_start;
+  if (cycle_time > cycle_time_max) {
+    cycle_time_max = cycle_time;
+  }
+
+  if (timeout_fired_loop(&log_cycle_time_timeout, time)) {
+    Serial.print("Max Cycle Time: ");
+    Serial.println(cycle_time_max);
+    cycle_time_max = 0;
+  }
+
+  #endif
 }
 
 static bool input_events_contains_any_external(InputEvents *events) {
