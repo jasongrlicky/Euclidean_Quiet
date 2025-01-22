@@ -575,7 +575,7 @@ void loop() {
   InputEvents events_in = INPUT_EVENTS_EMPTY;
 
   // READ TRIG AND RESET INPUTS
-  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
+  int trig_in_value = digitalRead(PIN_IN_TRIG);
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
