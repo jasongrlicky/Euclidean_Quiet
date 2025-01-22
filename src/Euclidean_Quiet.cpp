@@ -228,13 +228,6 @@ extern "C" {
 #define BEAT_POSITION_MAX 15
 #define BEAT_POSITION_DEFAULT 0
 
-/// Index into color palette representing not lighting up an LED
-#define PALETTE_OFF 0;
-/// Index into color palette representing lighting up an LED
-#define PALETTE_ON 1;
-/// Index into color palette representing a blinking LED
-#define PALETTE_BLINK 2;
-
 /// Row of LED Display marked "CH SEL" on panel
 #define LED_CH_SEL_Y 6
 /// Column of LED Display marked "TRIG" on panel
@@ -266,6 +259,16 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // (from LedControl.h library)
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
+
+/// Index into color palette representing the illumination state of an LED
+typedef enum PaletteColor {
+  /// Do not light up this LED
+  PALETTE_OFF = 0,
+  /// Light up this LED
+  PALETTE_ON = 1,
+  /// Blink this LED
+  PALETTE_BLINK = 2,
+} PaletteColor;
 
 /// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
 /// which corresponds to one of the `PALLETTE_` constants.
