@@ -442,15 +442,25 @@ static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
 #define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
+#define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
 #define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))
 #define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, COLOR_BLINK))
 /// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate 
-/// system that is not mirrored left-to-right.
+/// system that is not mirrored left-to-right. Overwrites existing color.
 /// @param x Zero-indexed position, from left to right.
 /// @param y Zero-indexed position, from top to bottom.
 /// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
 /// or `1` turns it on.
 static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
+/// Like `framebuffer_pixel_set()`, but does not overwrite the existing color - it 
+/// is assumed to be `COLOR_OFF`. It also does not mark the row as needing a 
+/// redraw. You can mark the row as needing a redraw by calling
+/// `framebuffer_row_off()` before calling this function.
+/// @param x Zero-indexed position, from left to right.
+/// @param y Zero-indexed position, from top to bottom.
+/// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
+/// or `1` turns it on.
+static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color);
 /// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
 #define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
@@ -1138,7 +1148,7 @@ static inline void draw_channel_length(Channel channel, uint8_t length) {
         y += 1;
       }
 
-      framebuffer_pixel_on(x, y);
+      framebuffer_pixel_on_fast(x, y);
     }
 }
 
@@ -1149,13 +1159,13 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
   if (position < 8) {
     for (uint8_t step = 0; step < 8; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        framebuffer_pixel_on(step, y);
+        framebuffer_pixel_on_fast(step, y);
       }
     }
   } else {
     for (uint8_t step = 8; step < 16; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        framebuffer_pixel_on(step - 8, y);
+        framebuffer_pixel_on_fast(step - 8, y);
       }
     }
   }
@@ -1166,7 +1176,7 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
   framebuffer_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
-  framebuffer_pixel_on(x, y);
+  framebuffer_pixel_on_fast(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
@@ -1183,7 +1193,7 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
       }
 
       if (pattern_read(pattern, length, step)) {
-        framebuffer_pixel_on(x, y);
+        framebuffer_pixel_on_fast(x, y);
       }
     }
 }
@@ -1285,6 +1295,15 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
   framebuffer_row_needs_redraw |= (0x01 << y);
   #else
   lc.setRow(LED_ADDR, y, pixels);
+  #endif
+}
+
+static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
+  #if FRAMEBUFFER_ENABLED
+  // Set new color
+  framebuffer[y] |= (color << (x * 2));
+  #else
+  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
   #endif
 }
 
