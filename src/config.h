@@ -14,10 +14,14 @@
 #define INTERNAL_CLOCK_DEFAULT 0 // 0 = Internal clock begins disabled, 1 = begins enabled
 #define EEPROM_READ 1 // 0 = Reading from EEPROM disabled, 1 = enabled
 #define EEPROM_WRITE 1 // 0 = Writing to EEPROM disabled, 1 = enabled
+#define FRAMEBUFFER_ENABLED 1 // 0 = Framebuffer disabled, 1 = write directly to LED
+
+/* DEBUG FEATURES */
+
 #define LOGGING_ENABLED 0 // 0 = Logging over serial disabled, 1 = enabled
 #define LOGGING_INPUT 0 // 0 = Don't log Input events, 1 = Log input events
 #define LOGGING_CH1_POSITION 0 // 0 = Don't log Channel 1 position updates, 1 = Log position updates
-#define LOGGING_CYCLE_TIME 0 // 0 = Don't log max cycle time in the last interval, 1 = Do log max cycle time
-#define LOGGING_CYCLE_TIME_INTERVAL 1000 // Milliseconds to capture the max cycle time during
+#define LOGGING_CYCLE_TIME 1 // 0 = Don't log max cycle time in the last interval, 1 = Do log max cycle time
+#define LOGGING_CYCLE_TIME_INTERVAL 2000 // Milliseconds to capture the max cycle time during
 
 #endif /* CONFIG_H_ */ 

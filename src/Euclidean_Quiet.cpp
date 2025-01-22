@@ -447,14 +447,14 @@ static uint8_t output_channel_led_x(OutputChannel channel);
 /// @param y Zero-indexed position, from top to bottom.
 /// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
 /// or `1` turns it on.
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
+static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
 /// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
 #define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
 /// Set the color values directly for a row of pixels on the LED Matrix.
 /// Colors are 2-bit.
 /// @param y Zero-indexed position, from top to bottom.
-static void framebuffer_row_set(uint8_t y, uint16_t pixels);
+static inline void framebuffer_row_set(uint8_t y, uint16_t pixels);
 static void framebuffer_draw_to_display();
 void led_sleep();
 void led_wake();
@@ -1186,15 +1186,27 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
 }
 
 static void draw_active_channel_display() {
+    #if FRAMEBUFFER_ENABLED
     uint16_t row_bits = 0;
     if (active_channel == CHANNEL_1) {
-      row_bits = 0x5000; // Two left dots
+      row_bits = 0x0005; // Two left dots
     } else if (active_channel == CHANNEL_2) {
       row_bits = 0x0140; // Two middle dots
     } else if (active_channel == CHANNEL_3) {
-      row_bits = 0x0005; // Two right dots
+      row_bits = 0x5000; // Two right dots
     } 
     framebuffer_row_set(LED_CH_SEL_Y, row_bits);
+    #else
+    uint8_t row_bits = 0;
+    if (active_channel == CHANNEL_1) {
+      row_bits = B00000011; // Two left dots
+    } else if (active_channel == CHANNEL_2) {
+      row_bits = B00011000; // Two middle dots
+    } else if (active_channel == CHANNEL_3) {
+      row_bits = B11000000; // Two right dots
+    } 
+    framebuffer_row_set(LED_CH_SEL_Y, row_bits);
+    #endif
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
@@ -1246,7 +1258,8 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
   return result;
 }
 
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
+static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
+  #if FRAMEBUFFER_ENABLED
   // Clear existing color
   uint16_t mask = 0x0003; // Must be 16 bits because it gets inverted
   framebuffer[y] &= ~(mask << (x * 2));
@@ -1256,16 +1269,24 @@ static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
 
   // Mark as needing redraw
   framebuffer_row_needs_redraw |= (0x01 << y);
+  #else
+  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
+  #endif
 }
 
-static void framebuffer_row_set(uint8_t y, uint16_t pixels) {
+static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
+  #if FRAMEBUFFER_ENABLED
   framebuffer[y] = pixels;
 
   // Mark as needing redraw
   framebuffer_row_needs_redraw |= (0x01 << y);
+  #else
+  lc.setRow(LED_ADDR, y, pixels);
+  #endif
 }
 
 static void framebuffer_draw_to_display() {
+  #if FRAMEBUFFER_ENABLED
   for (uint8_t row = 0; row < LED_ROWS; row++) {
     bool needs_redraw = (framebuffer_row_needs_redraw >> row) & 0x01; 
     if (!needs_redraw) { continue; }
@@ -1283,6 +1304,7 @@ static void framebuffer_draw_to_display() {
 
     lc.setRow(LED_ADDR, row, to_draw);
   }
+  #endif
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
