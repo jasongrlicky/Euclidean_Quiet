@@ -261,16 +261,16 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
 /// Index into color palette representing the illumination state of an LED
-typedef enum PaletteColor {
+typedef enum Color {
   /// Do not light up this LED
-  PALETTE_OFF = 0,
+  COLOR_OFF = 0,
   /// Light up this LED
-  PALETTE_ON = 1,
+  COLOR_ON = 1,
   /// Blink this LED
-  PALETTE_BLINK = 2,
-  // NOTE: Palette index 3 is not used yet - it could be used for special 
+  COLOR_BLINK = 2,
+  // NOTE: Color index 3 is not used yet - it could be used for special 
   // effects or a second blink speed.
-} PaletteColor;
+} Color;
 
 /// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
 /// which corresponds to one of the `PALLETTE_` constants.
@@ -433,16 +433,16 @@ static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
-#define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, PALETTE_ON))
-#define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, PALETTE_OFF))
-#define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, PALETTE_BLINK))
+#define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
+#define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))
+#define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, COLOR_BLINK))
 /// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate 
 /// system that is not mirrored left-to-right.
 /// @param x Zero-indexed position, from left to right.
 /// @param y Zero-indexed position, from top to bottom.
-/// @param color 2-bit color. `PALETTE_OFF` or `0` turns off pixel, `PALETTE_ON` 
+/// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
 /// or `1` turns it on.
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, PaletteColor color);
+static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
 /// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
 #define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
@@ -908,7 +908,7 @@ void loop() {
       
       uint8_t active_step = (output_channels_active_step_bitflags >> out_channel) & 0x01;
 
-      framebuffer_pixel_set(x, LED_OUT_Y, (PaletteColor)active_step);
+      framebuffer_pixel_set(x, LED_OUT_Y, (Color)active_step);
     }
   }
 
@@ -1222,7 +1222,7 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
   return result;
 }
 
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, PaletteColor color) {
+static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
   // Clear existing color
   uint16_t mask = 0x0003; // Must be 16 bits because it gets inverted
   framebuffer[y] &= ~(mask << (x * 2));
