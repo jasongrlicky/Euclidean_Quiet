@@ -1160,15 +1160,15 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
 }
 
 static void draw_active_channel_display() {
-    uint8_t row_bits = B00000000;
+    uint16_t row_bits = 0;
     if (active_channel == CHANNEL_1) {
-      row_bits = B00000011;
+      row_bits = 0x5000; // Two left dots
     } else if (active_channel == CHANNEL_2) {
-      row_bits = B00011000;
+      row_bits = 0x0140; // Two middle dots
     } else if (active_channel == CHANNEL_3) {
-      row_bits = B11000000;
+      row_bits = 0x0005; // Two right dots
     } 
-    lc.setRow(LED_ADDR, LED_CH_SEL_Y, row_bits);
+    framebuffer_row_set(LED_CH_SEL_Y, row_bits);
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
