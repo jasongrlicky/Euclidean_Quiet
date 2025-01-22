@@ -282,8 +282,14 @@ bool palette[4] = { false, true, false, false };
 uint16_t framebuffer[LED_ROWS];
 
 /// Bitflags, where each bit is true if that row of the LED (from top to bottom) 
-/// needs to be redrawn this frame.
+/// needs to be redrawn this frame. We skip rows that don't need to be redrawn 
+/// to reduce visual latency further if only some rows are being redrawn.
 uint8_t framebuffer_row_needs_redraw;
+
+/// To keep latency from spiking, we only draw one row of the framebuffer to the
+/// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
+/// the framebuffer to keep visual latency equal for all rows. 
+uint8_t framebuffer_out_row;
 
 /// References one of the three channels
 typedef enum Channel {
@@ -1284,7 +1290,12 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
 
 static void framebuffer_draw_to_display() {
   #if FRAMEBUFFER_ENABLED
-  for (uint8_t row = 0; row < LED_ROWS; row++) {
+  for (uint8_t i = 0; i < LED_ROWS; i++) {
+    // Begin checking at the framebuffer draw row, and continue through all rows
+    // until we find one that needs to be drawn
+    uint8_t row = (i + framebuffer_out_row) % LED_ROWS;
+
+    // Skip this row if it doesn't need to be drawn
     bool needs_redraw = (framebuffer_row_needs_redraw >> row) & 0x01; 
     if (!needs_redraw) { continue; }
 
@@ -1300,10 +1311,17 @@ static void framebuffer_draw_to_display() {
     }
 
     lc.setRow(LED_ADDR, row, to_draw);
+
+    // Mark the row we drew as having been drawn
+    framebuffer_row_needs_redraw &= ~(0x01 << row);
+
+    // We only draw one row per cycle, so break
+    break;
   }
 
-  // Mark every row as having been drawn
-  framebuffer_row_needs_redraw = 0;
+  // Next cycle, begin checking at the next draw row
+  framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
+
   #endif
 }
 
