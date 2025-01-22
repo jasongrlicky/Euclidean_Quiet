@@ -1301,6 +1301,9 @@ static void framebuffer_draw_to_display() {
 
     lc.setRow(LED_ADDR, row, to_draw);
   }
+
+  // Mark every row as having been drawn
+  framebuffer_row_needs_redraw = 0;
   #endif
 }
 
