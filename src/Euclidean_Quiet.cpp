@@ -814,13 +814,13 @@ void loop() {
     #if LOGGING_ENABLED
     if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
       Serial.print("length: ");
-      Serial.print(length);
+      Serial.println(length);
     } else if (param_changed == EUCLIDEAN_PARAM_DENSITY) {
-      Serial.print(" density: ");
-      Serial.print(density);
+      Serial.print("density: ");
+      Serial.println(density);
     } else {
-      Serial.print(" offset: ");
-      Serial.print(offset);
+      Serial.print("offset: ");
+      Serial.println(offset);
     }
     #endif
   }
