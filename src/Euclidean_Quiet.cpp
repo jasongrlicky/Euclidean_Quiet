@@ -435,6 +435,7 @@ static uint8_t output_channel_led_x(OutputChannel channel);
 #define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, PALETTE_OFF))
 #define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, PALETTE_BLINK))
 static void framebuffer_pixel_set(uint8_t x, uint8_t y, PaletteColor color);
+static void framebuffer_row_off(uint8_t y);
 static void framebuffer_draw_to_display();
 #define led_pixel_on(x, y) (led_pixel_set(x, y, true))
 #define led_pixel_off(x, y) (led_pixel_set(x, y, false))
@@ -1225,6 +1226,14 @@ static void framebuffer_pixel_set(uint8_t x, uint8_t y, PaletteColor color) {
 
   // Set new color
   framebuffer[y] |= (color << (x * 2));
+
+  // Mark as needing redraw
+  framebuffer_row_needs_redraw |= (0x01 << y);
+}
+
+static void framebuffer_row_off(uint8_t y) {
+  // Clear existing colors
+  framebuffer[y] = 0;
 
   // Mark as needing redraw
   framebuffer_row_needs_redraw |= (0x01 << y);
