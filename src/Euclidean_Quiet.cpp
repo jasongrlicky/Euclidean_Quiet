@@ -1287,6 +1287,15 @@ static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
   #endif
 }
 
+static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
+  #if FRAMEBUFFER_ENABLED
+  // Set new color
+  framebuffer[y] |= (color << (x * 2));
+  #else
+  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
+  #endif
+}
+
 static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
   #if FRAMEBUFFER_ENABLED
   framebuffer[y] = pixels;
@@ -1295,15 +1304,6 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
   framebuffer_row_needs_redraw |= (0x01 << y);
   #else
   lc.setRow(LED_ADDR, y, pixels);
-  #endif
-}
-
-static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
-  #if FRAMEBUFFER_ENABLED
-  // Set new color
-  framebuffer[y] |= (color << (x * 2));
-  #else
-  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
   #endif
 }
 
