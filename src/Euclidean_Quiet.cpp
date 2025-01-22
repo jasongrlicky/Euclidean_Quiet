@@ -269,7 +269,7 @@ LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELE
 
 /// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
 /// which corresponds to one of the `PALLETTE_` constants.
-bool palette[4];
+bool palette[4] = { false, true, false, false };
 
 /// Buffer that can be drawn into and manipulated before being drawn to the
 /// hardware display. 2 bits per pixel, so it supports 4 colors. Each color is
