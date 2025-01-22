@@ -281,10 +281,11 @@ bool palette[4] = { false, true, false, false };
 /// an index into `palette`.
 uint16_t framebuffer[LED_ROWS];
 
-/// Bitflags, where each bit is true if that row of the LED (from top to bottom) 
-/// needs to be redrawn this frame. We skip rows that don't need to be redrawn 
-/// to reduce visual latency further if only some rows are being redrawn.
-uint8_t framebuffer_row_needs_redraw;
+/// Each boolean is true if that row of the framebuffer (from top to bottom) has
+/// been modified since it has been drawn to the LED matrix. We skip rows that
+/// don't need to be redrawn to reduce visual latency further if only some rows 
+/// are being redrawn.
+bool framebuffer_row_needs_redraw[LED_ROWS];
 
 /// To keep latency from spiking, we only draw one row of the framebuffer to the
 /// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
@@ -1280,8 +1281,7 @@ static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
   // Set new color
   framebuffer[y] |= (color << (x * 2));
 
-  // Mark as needing redraw
-  framebuffer_row_needs_redraw |= (0x01 << y);
+  framebuffer_row_needs_redraw[y] = true;
   #else
   lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
   #endif
@@ -1300,8 +1300,7 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
   #if FRAMEBUFFER_ENABLED
   framebuffer[y] = pixels;
 
-  // Mark as needing redraw
-  framebuffer_row_needs_redraw |= (0x01 << y);
+  framebuffer_row_needs_redraw[y] = true;
   #else
   lc.setRow(LED_ADDR, y, pixels);
   #endif
@@ -1315,7 +1314,7 @@ static void framebuffer_draw_to_display() {
     uint8_t row = (i + framebuffer_out_row) % LED_ROWS;
 
     // Skip this row if it doesn't need to be drawn
-    bool needs_redraw = (framebuffer_row_needs_redraw >> row) & 0x01; 
+    bool needs_redraw = framebuffer_row_needs_redraw[row]; 
     if (!needs_redraw) { continue; }
 
     uint16_t fb_row_bits = framebuffer[row];
@@ -1332,9 +1331,10 @@ static void framebuffer_draw_to_display() {
     lc.setRow(LED_ADDR, row, to_draw);
 
     // Mark the row we drew as having been drawn
-    framebuffer_row_needs_redraw &= ~(0x01 << row);
+    framebuffer_row_needs_redraw[row] = 0;
 
-    // We only draw one row per cycle, so break
+    // We only draw one row per cycle, so no need to look for another row that
+    // needs drawing
     break;
   }
 
