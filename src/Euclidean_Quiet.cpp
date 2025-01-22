@@ -434,21 +434,21 @@ static uint8_t output_channel_led_x(OutputChannel channel);
 #define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, PALETTE_ON))
 #define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, PALETTE_OFF))
 #define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, PALETTE_BLINK))
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, PaletteColor color);
-#define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
-static void framebuffer_row_set(uint8_t y, uint16_t pixels);
-static void framebuffer_draw_to_display();
-#define led_pixel_on(x, y) (led_pixel_set(x, y, true))
-#define led_pixel_off(x, y) (led_pixel_set(x, y, false))
-/// Set a single pixel on the LED Matrix to be on or off, using a coordinate 
+/// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate 
 /// system that is not mirrored left-to-right.
 /// @param x Zero-indexed position, from left to right.
 /// @param y Zero-indexed position, from top to bottom.
-/// @param val If `true`, lights pixel. If `false`, turns off pixel.
-static inline void led_pixel_set(uint8_t x, uint8_t y, bool val);
-/// Clear a row of pixels on the LED Matrix.
+/// @param color 2-bit color. `PALETTE_OFF` or `0` turns off pixel, `PALETTE_ON` 
+/// or `1` turns it on.
+static void framebuffer_pixel_set(uint8_t x, uint8_t y, PaletteColor color);
+/// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
-static inline void led_row_off(uint8_t y);
+#define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
+/// Set the color values directly for a row of pixels on the LED Matrix.
+/// Colors are 2-bit.
+/// @param y Zero-indexed position, from top to bottom.
+static void framebuffer_row_set(uint8_t y, uint16_t pixels);
+static void framebuffer_draw_to_display();
 void led_sleep();
 void led_wake();
 void led_anim_wake();
@@ -892,7 +892,7 @@ void loop() {
         // Toggle output channel as having an active step in the bitflags w/ XOR
         output_channels_active_step_bitflags ^= mask;
       } else {
-        led_pixel_off(x, LED_OUT_Y);
+        framebuffer_pixel_off(x, LED_OUT_Y);
       }
     }
 
@@ -904,9 +904,9 @@ void loop() {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
       uint8_t x = output_channel_led_x((OutputChannel)out_channel);
       
-      bool active_step = output_channels_active_step_bitflags & (0x01 << out_channel);
+      uint8_t active_step = (output_channels_active_step_bitflags >> out_channel) & 0x01;
 
-      led_pixel_set(x, LED_OUT_Y, active_step);
+      framebuffer_pixel_set(x, LED_OUT_Y, (PaletteColor)active_step);
     }
   }
 
@@ -914,22 +914,22 @@ void loop() {
 
   // Flash Trig indicator LED if we received a clock tick
   if (clock_tick) {
-    led_pixel_on(LED_IN_TRIG_X, LED_OUT_Y);
+    framebuffer_pixel_on(LED_IN_TRIG_X, LED_OUT_Y);
     timeout_once_reset(&trig_indicator_timeout, time);
   }
 
   // Flash Reset indicator LED if we received a reset input event
   if (events_in.reset) {
-    led_pixel_on(LED_IN_RESET_X, LED_OUT_Y);
+    framebuffer_pixel_on(LED_IN_RESET_X, LED_OUT_Y);
     timeout_once_reset(&reset_indicator_timeout, time);
   }
   
   // Turn off indicator LEDs that have been on long enough
   if (timeout_once_fired(&trig_indicator_timeout, time)) {
-    led_pixel_off(LED_IN_TRIG_X, LED_OUT_Y);
+    framebuffer_pixel_off(LED_IN_TRIG_X, LED_OUT_Y);
   }
   if (timeout_once_fired(&reset_indicator_timeout, time)) {
-    led_pixel_off(LED_IN_RESET_X, LED_OUT_Y);
+    framebuffer_pixel_off(LED_IN_RESET_X, LED_OUT_Y);
   }
 
   /* DRAWING - ACTIVE CHANNEL DISPLAY */
@@ -1098,8 +1098,8 @@ static inline void draw_channel(Channel channel) {
 
 static inline void draw_channel_length(Channel channel, uint8_t length) {
     uint8_t row = channel * 2;
-    led_row_off(row);
-    led_row_off(row + 1);
+    framebuffer_row_off(row);
+    framebuffer_row_off(row + 1);
 
     for (uint8_t step = 0; step < length; step++) {
       uint8_t x = step;
@@ -1109,24 +1109,24 @@ static inline void draw_channel_length(Channel channel, uint8_t length) {
         y += 1;
       }
 
-      led_pixel_set(x, y, true);
+      framebuffer_pixel_on(x, y);
     }
 }
 
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t y = channel * 2;
-  led_row_off(y);
+  framebuffer_row_off(y);
 
   if (position < 8) {
     for (uint8_t step = 0; step < 8; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        led_pixel_on(step, y);
+        framebuffer_pixel_on(step, y);
       }
     }
   } else {
     for (uint8_t step = 8; step < 16; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        led_pixel_on(step - 8, y);
+        framebuffer_pixel_on(step - 8, y);
       }
     }
   }
@@ -1135,15 +1135,15 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 }
 
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
-  led_row_off(y);
+  framebuffer_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
-  led_pixel_on(x, y);
+  framebuffer_pixel_on(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
     uint8_t row = channel * 2;
-    led_row_off(row);
-    led_row_off(row + 1);
+    framebuffer_row_off(row);
+    framebuffer_row_off(row + 1);
 
     for (uint8_t step = 0; step < length; step++) {
       uint8_t x = step;
@@ -1154,7 +1154,7 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
       }
 
       if (pattern_read(pattern, length, step)) {
-        led_pixel_set(x, y, true);
+        framebuffer_pixel_on(x, y);
       }
     }
 }
@@ -1289,14 +1289,6 @@ static inline int eeprom_addr_density(Channel channel) {
 
 static inline int eeprom_addr_offset(Channel channel) {
   return channel + 7;
-}
-
-static inline void led_pixel_set(uint8_t x, uint8_t y, bool val) {
-  lc.setLed(LED_ADDR, y, 7 - x, val);
-}
-
-static inline void led_row_off(uint8_t y) {
-  lc.setRow(LED_ADDR, y, 0);
 }
 
 void led_sleep() {
