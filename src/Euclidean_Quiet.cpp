@@ -341,7 +341,7 @@ Milliseconds time;
 uint16_t generated_rhythms[NUM_CHANNELS];
 Channel active_channel; // Channel that is currently active
 static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
-static Timeout output_pulse_timeout = { .duration = 50 }; // Pulse length, set based on the time since last trigger
+static Timeout output_pulse_timeout = { .duration = 5 }; // Pulse length, set based on the time since last trigger
 
 static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
 static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
