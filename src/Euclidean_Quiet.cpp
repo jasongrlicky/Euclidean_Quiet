@@ -1146,7 +1146,7 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
   framebuffer_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
-  framebuffer_pixel_on(x, y);
+  framebuffer_pixel_blink(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
