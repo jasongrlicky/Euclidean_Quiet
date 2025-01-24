@@ -276,6 +276,8 @@ typedef enum Color {
 /// which corresponds to one of the `PALLETTE_` constants.
 bool palette[4] = { false, true, false, false };
 
+Timeout palette_blink_timeout = { .duration = PALETTE_BLINK_INTERVAL };
+
 /// Buffer that can be drawn into and manipulated before being drawn to the
 /// hardware display. 2 bits per pixel, so it supports 4 colors. Each color is
 /// an index into `palette`.
@@ -876,6 +878,11 @@ void loop() {
   // FINISH ANY PULSES THAT ARE ACTIVE
   if (output_any_active() && (timeout_fired(&output_pulse_timeout, time))) {
     output_clear_all();
+  }
+
+  /* DRAWING - UPDATE BLINK COLOR */
+  if(timeout_fired_loop(&palette_blink_timeout, time)) {
+    palette[COLOR_BLINK] = ~palette[COLOR_BLINK];
   }
 
   /* DRAWING - OUTPUT INDICATORS */
