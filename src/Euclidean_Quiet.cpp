@@ -1118,7 +1118,7 @@ static inline void draw_channel_length(Channel channel, uint8_t length) {
         y += 1;
       }
 
-      framebuffer_pixel_on(x, y);
+      framebuffer_pixel_blink(x, y);
     }
 }
 
