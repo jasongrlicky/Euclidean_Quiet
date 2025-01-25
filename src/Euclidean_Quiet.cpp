@@ -26,7 +26,8 @@ extern "C" {
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
     - LED sleep timeout now takes into account encoder manipulations
   - UI Polish:
-    - Reset is now visible immediately in the sequencers.
+    - The generated pattern for a channel is now visible while adjusting its length.
+    - The effects of resetting the sequencers is now immediately visible.
     - There is now an indicator LED for Reset input, next to the one labeled "Trig".
     - Output indicator LEDs now stay lit for the entire duration of the step.
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
@@ -420,7 +421,7 @@ static void sequencer_advance();
 static uint8_t sequencer_read_current_step();
 static void draw_channels();
 static inline void draw_channel(Channel channel);
-static inline void draw_channel_length(Channel channel, uint8_t length);
+static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static inline void draw_channel_playhead(uint8_t y, uint8_t position);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
@@ -1135,7 +1136,7 @@ static inline void draw_channel(Channel channel) {
 
   if (adjustment_display_state.visible && (channel == adjustment_display_state.channel)) { 
     if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
-      draw_channel_length(channel, length);  
+      draw_channel_length(channel, pattern, length);  
     } else {
       draw_channel_pattern(channel, pattern, length);
     }
@@ -1144,19 +1145,21 @@ static inline void draw_channel(Channel channel) {
   }
 }
 
-static inline void draw_channel_length(Channel channel, uint8_t length) {
-    uint8_t row = channel * 2;
+static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length) {
+  draw_channel_pattern(channel, pattern, length);
 
-    for (uint8_t step = 0; step < length; step++) {
-      uint8_t x = step;
-      uint8_t y = row;
-      if (step > 7) {
-        x -= 8;
-        y += 1;
-      }
+  uint8_t row = channel * 2;
 
-      framebuffer_pixel_blink_fast(x, y);
+  for (uint8_t step = length; step < 16; step++) {
+    uint8_t x = step;
+    uint8_t y = row;
+    if (step > 7) {
+      x -= 8;
+      y += 1;
     }
+
+    framebuffer_pixel_blink_fast(x, y);
+  }
 }
 
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
