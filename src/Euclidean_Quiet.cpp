@@ -269,8 +269,8 @@ typedef enum Color {
   COLOR_ON = 1,
   /// Blink this LED
   COLOR_BLINK = 2,
-  // NOTE: Color index 3 is not used yet - it could be used for special 
-  // effects or a second blink speed.
+  /// Show a fast marching ants pattern for this LED
+  COLOR_DAZZLE = 3
 } Color;
 
 /// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
@@ -278,6 +278,7 @@ typedef enum Color {
 bool palette[4] = { false, true, false, false };
 
 Timeout palette_blink_timeout = { .duration = PALETTE_BLINK_INTERVAL };
+Timeout palette_dazzle_timeout = { .duration = PALETTE_DAZZLE_INTERVAL };
 
 /// Buffer that can be drawn into and manipulated before being drawn to the
 /// hardware display. 2 bits per pixel, so it supports 4 colors. Each color is
@@ -426,6 +427,7 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 static inline void draw_channel_playhead(uint8_t y, uint8_t position);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_active_channel_display();
+static inline uint8_t marching_ants(uint8_t x, uint8_t y);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -900,9 +902,13 @@ void loop() {
     output_clear_all();
   }
 
-  /* DRAWING - UPDATE BLINK COLOR */
+  /* DRAWING - UPDATE PALETTE COLORS */
   if(timeout_fired_loop(&palette_blink_timeout, time)) {
     palette[COLOR_BLINK] = !palette[COLOR_BLINK];
+  }
+
+  if(timeout_fired_loop(&palette_dazzle_timeout, time)) {
+    palette[COLOR_DAZZLE] = !palette[COLOR_DAZZLE];
   }
 
   /* DRAWING - OUTPUT INDICATORS */
@@ -1158,7 +1164,8 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
       y += 1;
     }
 
-    framebuffer_pixel_blink_fast(x, y);
+    // framebuffer_pixel_blink_fast(x, y);
+    framebuffer_pixel_set_fast(x, y, COLOR_DAZZLE);
   }
 }
 
@@ -1226,6 +1233,12 @@ static void draw_active_channel_display() {
     } 
     framebuffer_row_set(LED_CH_SEL_Y, row_bits);
     #endif
+}
+
+static inline uint8_t marching_ants(uint8_t x, uint8_t y) {
+  uint8_t val = x + y;
+  val += (palette[COLOR_DAZZLE]) ? 1 : 0;
+  return (val % 2);
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
@@ -1318,8 +1331,12 @@ static void framebuffer_draw_to_display() {
   for (uint8_t col = 0; col < LED_COLUMNS; col++) {
     uint8_t palette_idx = (fb_row_bits >> (col * 2)) & 0b00000011;
 
-    if (palette[palette_idx]) {
-      to_draw |= (0x01 << col);
+    if (palette_idx != COLOR_DAZZLE) {
+      if (palette[palette_idx]) {
+        to_draw |= (0x01 << col);
+      }
+    } else {
+      to_draw |= (marching_ants(col, row) << col);
     }
   }
 
