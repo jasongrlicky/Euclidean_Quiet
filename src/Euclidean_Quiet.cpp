@@ -283,9 +283,16 @@ Timeout palette_blink_timeout = { .duration = PALETTE_BLINK_INTERVAL };
 /// an index into `palette`.
 uint16_t framebuffer[LED_ROWS];
 
-/// Bitflags, where each bit is true if that row of the LED (from top to bottom) 
-/// needs to be redrawn this frame.
-uint8_t framebuffer_row_needs_redraw;
+/// Each boolean is true if that row of the framebuffer (from top to bottom) has
+/// been modified since it has been drawn to the LED matrix. We skip rows that
+/// don't need to be redrawn to reduce visual latency further if only some rows 
+/// are being redrawn.
+bool framebuffer_row_needs_redraw[LED_ROWS];
+
+/// To keep latency from spiking, we only draw one row of the framebuffer to the
+/// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
+/// the framebuffer to keep visual latency equal for all rows. 
+uint8_t framebuffer_out_row;
 
 /// References one of the three channels
 typedef enum Channel {
@@ -336,7 +343,7 @@ Milliseconds time;
 uint16_t generated_rhythms[NUM_CHANNELS];
 Channel active_channel; // Channel that is currently active
 static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
-static Timeout output_pulse_timeout = { .duration = 50 }; // Pulse length, set based on the time since last trigger
+static Timeout output_pulse_timeout = { .duration = 5 }; // Pulse length, set based on the time since last trigger
 
 static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
 static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} }; // Set based on the time since last trigger
@@ -402,8 +409,10 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
-#define REDRAW_MASK_NONE  0b00000000
-#define REDRAW_MASK_ALL   0b00000111
+#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+Microseconds cycle_time_max;
+static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVAL };
+#endif
 
 /* INTERNAL */
 
@@ -436,22 +445,34 @@ static inline int eeprom_addr_offset(Channel channel);
 static void active_channel_set(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
 #define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
+#define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
 #define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))
+#define framebuffer_pixel_off_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_OFF))
 #define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, COLOR_BLINK))
+#define framebuffer_pixel_blink_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_BLINK))
 /// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate 
-/// system that is not mirrored left-to-right.
+/// system that is not mirrored left-to-right. Overwrites existing color.
 /// @param x Zero-indexed position, from left to right.
 /// @param y Zero-indexed position, from top to bottom.
 /// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
 /// or `1` turns it on.
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
+static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
+/// Like `framebuffer_pixel_set()`, but does not overwrite the existing color - it 
+/// is assumed to be `COLOR_OFF`. It also does not mark the row as needing a 
+/// redraw. You can mark the row as needing a redraw by calling
+/// `framebuffer_row_off()` before calling this function.
+/// @param x Zero-indexed position, from left to right.
+/// @param y Zero-indexed position, from top to bottom.
+/// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
+/// or `1` turns it on.
+static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color);
 /// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
 #define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
 /// Set the color values directly for a row of pixels on the LED Matrix.
 /// Colors are 2-bit.
 /// @param y Zero-indexed position, from top to bottom.
-static void framebuffer_row_set(uint8_t y, uint16_t pixels);
+static inline void framebuffer_row_set(uint8_t y, uint16_t pixels);
 static void framebuffer_draw_to_display();
 void led_sleep();
 void led_wake();
@@ -550,12 +571,16 @@ void setup() {
 void loop() {
   time = millis();
 
+  #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+  Microseconds cycle_time_start = micros();
+  #endif
+
   /* INPUT EVENTS */
 
   InputEvents events_in = INPUT_EVENTS_EMPTY;
 
   // READ TRIG AND RESET INPUTS
-  int trig_in_value = digitalRead(PIN_IN_TRIG); // Pulse input
+  int trig_in_value = digitalRead(PIN_IN_TRIG);
   int reset_button = analogRead(A1);
 
   // RESET INPUT & BUTTON
@@ -810,13 +835,13 @@ void loop() {
     #if LOGGING_ENABLED
     if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
       Serial.print("length: ");
-      Serial.print(length);
+      Serial.println(length);
     } else if (param_changed == EUCLIDEAN_PARAM_DENSITY) {
-      Serial.print(" density: ");
-      Serial.print(density);
+      Serial.print("density: ");
+      Serial.println(density);
     } else {
-      Serial.print(" offset: ");
-      Serial.print(offset);
+      Serial.print("offset: ");
+      Serial.println(offset);
     }
     #endif
   }
@@ -1001,6 +1026,21 @@ void loop() {
       led_sleep();
     }
   }
+
+
+  #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+  Microseconds cycle_time = micros() - cycle_time_start;
+  if (cycle_time > cycle_time_max) {
+    cycle_time_max = cycle_time;
+  }
+
+  if (timeout_fired_loop(&log_cycle_time_timeout, time)) {
+    Serial.print("Max Cycle Time: ");
+    Serial.println(cycle_time_max);
+    cycle_time_max = 0;
+  }
+
+  #endif
 }
 
 static bool input_events_contains_any_external(InputEvents *events) {
@@ -1118,7 +1158,7 @@ static inline void draw_channel_length(Channel channel, uint8_t length) {
         y += 1;
       }
 
-      framebuffer_pixel_blink(x, y);
+      framebuffer_pixel_blink_fast(x, y);
     }
 }
 
@@ -1129,13 +1169,13 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
   if (position < 8) {
     for (uint8_t step = 0; step < 8; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        framebuffer_pixel_on(step, y);
+        framebuffer_pixel_on_fast(step, y);
       }
     }
   } else {
     for (uint8_t step = 8; step < 16; step++) {
       if (pattern_read(pattern, length, step) && (step < length)) {
-        framebuffer_pixel_on(step - 8, y);
+        framebuffer_pixel_on_fast(step - 8, y);
       }
     }
   }
@@ -1146,7 +1186,7 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
   framebuffer_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
-  framebuffer_pixel_blink(x, y);
+  framebuffer_pixel_blink_fast(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
@@ -1163,21 +1203,33 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
       }
 
       if (pattern_read(pattern, length, step)) {
-        framebuffer_pixel_on(x, y);
+        framebuffer_pixel_on_fast(x, y);
       }
     }
 }
 
 static void draw_active_channel_display() {
+    #if FRAMEBUFFER_ENABLED
     uint16_t row_bits = 0;
     if (active_channel == CHANNEL_1) {
-      row_bits = 0x5000; // Two left dots
+      row_bits = 0x0005; // Two left dots
     } else if (active_channel == CHANNEL_2) {
       row_bits = 0x0140; // Two middle dots
     } else if (active_channel == CHANNEL_3) {
-      row_bits = 0x0005; // Two right dots
+      row_bits = 0x5000; // Two right dots
     } 
     framebuffer_row_set(LED_CH_SEL_Y, row_bits);
+    #else
+    uint8_t row_bits = 0;
+    if (active_channel == CHANNEL_1) {
+      row_bits = B00000011; // Two left dots
+    } else if (active_channel == CHANNEL_2) {
+      row_bits = B00011000; // Two middle dots
+    } else if (active_channel == CHANNEL_3) {
+      row_bits = B11000000; // Two right dots
+    } 
+    framebuffer_row_set(LED_CH_SEL_Y, row_bits);
+    #endif
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
@@ -1229,7 +1281,8 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
   return result;
 }
 
-static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
+static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
+  #if FRAMEBUFFER_ENABLED
   // Clear existing color
   uint16_t mask = 0x0003; // Must be 16 bits because it gets inverted
   framebuffer[y] &= ~(mask << (x * 2));
@@ -1237,20 +1290,40 @@ static void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
   // Set new color
   framebuffer[y] |= (color << (x * 2));
 
-  // Mark as needing redraw
-  framebuffer_row_needs_redraw |= (0x01 << y);
+  framebuffer_row_needs_redraw[y] = true;
+  #else
+  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
+  #endif
 }
 
-static void framebuffer_row_set(uint8_t y, uint16_t pixels) {
+static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
+  #if FRAMEBUFFER_ENABLED
+  // Set new color
+  framebuffer[y] |= (color << (x * 2));
+  #else
+  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
+  #endif
+}
+
+static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
+  #if FRAMEBUFFER_ENABLED
   framebuffer[y] = pixels;
 
-  // Mark as needing redraw
-  framebuffer_row_needs_redraw |= (0x01 << y);
+  framebuffer_row_needs_redraw[y] = true;
+  #else
+  lc.setRow(LED_ADDR, y, pixels);
+  #endif
 }
 
 static void framebuffer_draw_to_display() {
-  for (uint8_t row = 0; row < LED_ROWS; row++) {
-    bool needs_redraw = (framebuffer_row_needs_redraw >> row) & 0x01; 
+  #if FRAMEBUFFER_ENABLED
+  for (uint8_t i = 0; i < LED_ROWS; i++) {
+    // Begin checking at the framebuffer draw row, and continue through all rows
+    // until we find one that needs to be drawn
+    uint8_t row = (i + framebuffer_out_row) % LED_ROWS;
+
+    // Skip this row if it doesn't need to be drawn
+    bool needs_redraw = framebuffer_row_needs_redraw[row]; 
     if (!needs_redraw) { continue; }
 
     uint16_t fb_row_bits = framebuffer[row];
@@ -1265,7 +1338,19 @@ static void framebuffer_draw_to_display() {
     }
 
     lc.setRow(LED_ADDR, row, to_draw);
+
+    // Mark the row we drew as having been drawn
+    framebuffer_row_needs_redraw[row] = 0;
+
+    // We only draw one row per cycle, so no need to look for another row that
+    // needs drawing
+    break;
   }
+
+  // Next cycle, begin checking at the next draw row
+  framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
+
+  #endif
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
