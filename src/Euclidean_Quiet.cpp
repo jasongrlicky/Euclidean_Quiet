@@ -262,8 +262,8 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
-/// Index into color palette representing the illumination state of a pixel on
-/// the LED matrix display.
+/// Color representing the illumination state of a pixel on the LED matrix 
+/// display.
 typedef enum Color {
   /// Do not light up this pixel
   COLOR_OFF = 0,
@@ -275,10 +275,6 @@ typedef enum Color {
   COLOR_ANTS = 3
 } Color;
 
-/// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
-/// which corresponds to one of the `PALLETTE_` constants.
-bool palette[4] = { false, true, false, false };
-
 #define ANIM_DAZZLE_NUM_FRAMES 2
 Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
 uint8_t anim_dazzle_frame = 0;
@@ -288,8 +284,7 @@ Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
 uint8_t anim_ants_frame = 0;
 
 /// Buffer that can be drawn into and manipulated before being drawn to the
-/// hardware display. 2 bits per pixel, so it supports 4 colors. Each color is
-/// an index into `palette`.
+/// hardware display. 2 bits per pixel, so it supports 4 colors.
 uint16_t framebuffer[LED_ROWS];
 
 /// To keep latency from spiking, we only draw one row of the framebuffer to the
@@ -910,7 +905,7 @@ void loop() {
     output_clear_all();
   }
 
-  /* DRAWING - UPDATE PALETTE COLORS */
+  /* DRAWING - UPDATE ANIMATIONS */
   if(timeout_fired_loop(&anim_dazzle_timeout, time)) {
     anim_dazzle_frame = (anim_dazzle_frame + 1) % ANIM_DAZZLE_NUM_FRAMES;
   }
