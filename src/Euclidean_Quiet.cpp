@@ -431,7 +431,6 @@ static void draw_channels();
 static inline void draw_channel(Channel channel);
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
-static inline void draw_channel_playhead(uint8_t y, uint8_t position);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_active_channel_display();
 static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y);
@@ -1195,11 +1194,6 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
     }
     framebuffer_pixel_set_fast(x, y, color);
   }
-}
-
-static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
-  uint8_t x = (position < 8) ? position : position - 8;
-  framebuffer_pixel_on_fast(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
