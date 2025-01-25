@@ -475,7 +475,10 @@ static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color)
 /// Colors are 2-bit.
 /// @param y Zero-indexed position, from top to bottom.
 static inline void framebuffer_row_set(uint8_t y, uint16_t pixels);
-static void framebuffer_draw_to_display();
+/// Copy one row of the framebuffer to the LED matrix. We only copy one row of 
+/// the framebuffer to the LED matrix per cycle to avoid having to wait on the 
+/// display driver chip.
+static void framebuffer_copy_row_to_display();
 void led_sleep();
 void led_wake();
 void led_anim_wake();
@@ -1007,9 +1010,9 @@ void loop() {
     draw_channels();
   }
 
-  /* DRAW FRAMEBUFFER TO DISPLAY IF NEEDED */
+  /* UPDATE LED DISPLAY */
 
-  framebuffer_draw_to_display();
+  framebuffer_copy_row_to_display();
 
   /* UPDATE LED SLEEP */
 
@@ -1325,10 +1328,8 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
   #endif
 }
 
-static void framebuffer_draw_to_display() {
+static void framebuffer_copy_row_to_display() {
   #if FRAMEBUFFER_ENABLED
-  // We only copy one row of the framebuffer to the LED matrix per cycle to 
-  // avoid having to wait on the display driver chip
   uint8_t row = (framebuffer_out_row) % LED_ROWS;
   uint16_t fb_row_bits = framebuffer[row];
 
