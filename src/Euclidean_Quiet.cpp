@@ -1330,14 +1330,14 @@ static void framebuffer_copy_row_to_display() {
 
   uint8_t to_draw = 0;
   for (uint8_t col = 0; col < LED_COLUMNS; col++) {
-    uint8_t palette_idx = (fb_row_bits >> (col * 2)) & 0b00000011;
+    Color color = (Color)((fb_row_bits >> (col * 2)) & 0b00000011);
 
-    if (palette_idx == COLOR_ANTS) {
+    if (color == COLOR_ANTS) {
       to_draw |= (anim_marching_ants(anim_ants_frame, col, row) << col);
-    } else if (palette_idx == COLOR_DAZZLE) {
+    } else if (color == COLOR_DAZZLE) {
       to_draw |= (anim_dazzle(anim_dazzle_frame, col, row) << col);
     } else {
-      to_draw |= (palette_idx << col);
+      to_draw |= (color << col);
     }
   }
 
