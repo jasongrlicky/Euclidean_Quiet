@@ -262,7 +262,7 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
-/// Color representing the illumination state of a pixel on the LED matrix 
+/// Represents a method of deciding on illumination of a pixel on the LED matrix
 /// display.
 typedef enum Color {
   /// Do not light up this pixel
