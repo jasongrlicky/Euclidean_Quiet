@@ -1317,37 +1317,23 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
 
 static void framebuffer_draw_to_display() {
   #if FRAMEBUFFER_ENABLED
-  for (uint8_t i = 0; i < LED_ROWS; i++) {
-    // Begin checking at the framebuffer draw row, and continue through all rows
-    // until we find one that needs to be drawn
-    uint8_t row = (i + framebuffer_out_row) % LED_ROWS;
+  // We only copy one row of the framebuffer to the LED matrix per cycle to 
+  // avoid having to wait on the display driver chip
+  uint8_t row = (framebuffer_out_row) % LED_ROWS;
+  uint16_t fb_row_bits = framebuffer[row];
 
-    // Skip this row if it doesn't need to be drawn
-    bool needs_redraw = framebuffer_row_needs_redraw[row]; 
-    if (!needs_redraw) { continue; }
+  uint8_t to_draw = 0;
+  for (uint8_t col = 0; col < LED_COLUMNS; col++) {
+    uint8_t palette_idx = (fb_row_bits >> (col * 2)) & 0b00000011;
 
-    uint16_t fb_row_bits = framebuffer[row];
-    uint8_t to_draw = 0;
-
-    for (uint8_t col = 0; col < LED_COLUMNS; col++) {
-      uint8_t palette_idx = (fb_row_bits >> (col * 2)) & 0b00000011;
-
-      if (palette[palette_idx]) {
-        to_draw |= (0x01 << col);
-      }
+    if (palette[palette_idx]) {
+      to_draw |= (0x01 << col);
     }
-
-    lc.setRow(LED_ADDR, row, to_draw);
-
-    // Mark the row we drew as having been drawn
-    framebuffer_row_needs_redraw[row] = 0;
-
-    // We only draw one row per cycle, so no need to look for another row that
-    // needs drawing
-    break;
   }
 
-  // Next cycle, begin checking at the next draw row
+  lc.setRow(LED_ADDR, row, to_draw);
+
+  // Next cycle, copy the next row of the framebuffer to the LED matrix
   framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
 
   #endif
