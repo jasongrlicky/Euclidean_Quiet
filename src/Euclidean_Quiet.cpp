@@ -1134,6 +1134,11 @@ static inline void draw_channel(Channel channel) {
   uint8_t position = channel_state.position;
   uint16_t pattern = generated_rhythms[channel];
 
+  // Clear rows
+  uint8_t row = channel * 2;
+  framebuffer_row_off(row);
+  framebuffer_row_off(row + 1);
+
   if (adjustment_display_state.visible && (channel == adjustment_display_state.channel)) { 
     if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
       draw_channel_length(channel, length);  
@@ -1147,8 +1152,6 @@ static inline void draw_channel(Channel channel) {
 
 static inline void draw_channel_length(Channel channel, uint8_t length) {
     uint8_t row = channel * 2;
-    framebuffer_row_off(row);
-    framebuffer_row_off(row + 1);
 
     for (uint8_t step = 0; step < length; step++) {
       uint8_t x = step;
@@ -1164,7 +1167,6 @@ static inline void draw_channel_length(Channel channel, uint8_t length) {
 
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t y = channel * 2;
-  framebuffer_row_off(y);
 
   if (position < 8) {
     for (uint8_t step = 0; step < 8; step++) {
@@ -1184,15 +1186,12 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 }
 
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
-  framebuffer_row_off(y);
   uint8_t x = (position < 8) ? position : position - 8;
   framebuffer_pixel_blink_fast(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
     uint8_t row = channel * 2;
-    framebuffer_row_off(row);
-    framebuffer_row_off(row + 1);
 
     for (uint8_t step = 0; step < length; step++) {
       uint8_t x = step;
