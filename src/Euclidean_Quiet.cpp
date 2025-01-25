@@ -261,24 +261,30 @@ Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 // 1 is maximum number of devices that can be controlled
 LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
-/// Index into color palette representing the illumination state of an LED
+/// Index into color palette representing the illumination state of a pixel on
+/// the LED matrix display.
 typedef enum Color {
-  /// Do not light up this LED
+  /// Do not light up this pixel
   COLOR_OFF = 0,
-  /// Light up this LED
+  /// Light up this pixel
   COLOR_ON = 1,
-  /// Blink this LED
-  COLOR_BLINK = 2,
-  /// Show a fast marching ants pattern for this LED
-  COLOR_DAZZLE = 3
+  /// Blink every other LED rapidly for this pixel
+  COLOR_DAZZLE = 2,
+  /// Show a fast marching ants pattern for this pixel
+  COLOR_ANTS = 3
 } Color;
 
 /// Each pixel in the framebuffer indexes into this palette with a 2-bit number, 
 /// which corresponds to one of the `PALLETTE_` constants.
 bool palette[4] = { false, true, false, false };
 
-Timeout palette_blink_timeout = { .duration = PALETTE_BLINK_INTERVAL };
-Timeout palette_dazzle_timeout = { .duration = PALETTE_DAZZLE_INTERVAL };
+#define ANIM_DAZZLE_NUM_FRAMES 2
+Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
+uint8_t anim_dazzle_frame = 0;
+
+#define ANIM_ANTS_NUM_FRAMES 4
+Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
+uint8_t anim_ants_frame = 0;
 
 /// Buffer that can be drawn into and manipulated before being drawn to the
 /// hardware display. 2 bits per pixel, so it supports 4 colors. Each color is
@@ -427,7 +433,8 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 static inline void draw_channel_playhead(uint8_t y, uint8_t position);
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_active_channel_display();
-static inline uint8_t marching_ants(uint8_t x, uint8_t y);
+static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y);
+static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -445,8 +452,6 @@ static uint8_t output_channel_led_x(OutputChannel channel);
 #define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
 #define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))
 #define framebuffer_pixel_off_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_OFF))
-#define framebuffer_pixel_blink(x, y) (framebuffer_pixel_set(x, y, COLOR_BLINK))
-#define framebuffer_pixel_blink_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_BLINK))
 /// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate 
 /// system that is not mirrored left-to-right. Overwrites existing color.
 /// @param x Zero-indexed position, from left to right.
@@ -903,12 +908,12 @@ void loop() {
   }
 
   /* DRAWING - UPDATE PALETTE COLORS */
-  if(timeout_fired_loop(&palette_blink_timeout, time)) {
-    palette[COLOR_BLINK] = !palette[COLOR_BLINK];
+  if(timeout_fired_loop(&anim_dazzle_timeout, time)) {
+    anim_dazzle_frame = (anim_dazzle_frame + 1) % ANIM_DAZZLE_NUM_FRAMES;
   }
 
-  if(timeout_fired_loop(&palette_dazzle_timeout, time)) {
-    palette[COLOR_DAZZLE] = !palette[COLOR_DAZZLE];
+  if(timeout_fired_loop(&anim_ants_timeout, time)) {
+    anim_ants_frame = (anim_ants_frame + 1) % ANIM_ANTS_NUM_FRAMES;
   }
 
   /* DRAWING - OUTPUT INDICATORS */
@@ -1164,8 +1169,7 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
       y += 1;
     }
 
-    // framebuffer_pixel_blink_fast(x, y);
-    framebuffer_pixel_set_fast(x, y, COLOR_DAZZLE);
+    framebuffer_pixel_set_fast(x, y, COLOR_ANTS);
   }
 }
 
@@ -1191,7 +1195,7 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
   uint8_t x = (position < 8) ? position : position - 8;
-  framebuffer_pixel_blink_fast(x, y);
+  framebuffer_pixel_on_fast(x, y);
 }
 
 static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
@@ -1235,9 +1239,12 @@ static void draw_active_channel_display() {
     #endif
 }
 
-static inline uint8_t marching_ants(uint8_t x, uint8_t y) {
-  uint8_t val = x + y;
-  val += (palette[COLOR_DAZZLE]) ? 1 : 0;
+static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y) {
+  return ((x + y + frame) % ANIM_DAZZLE_NUM_FRAMES);
+}
+
+static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y) {
+  uint8_t val = (x + y + (ANIM_ANTS_NUM_FRAMES - frame)) / 2;
   return (val % 2);
 }
 
@@ -1331,12 +1338,12 @@ static void framebuffer_draw_to_display() {
   for (uint8_t col = 0; col < LED_COLUMNS; col++) {
     uint8_t palette_idx = (fb_row_bits >> (col * 2)) & 0b00000011;
 
-    if (palette_idx != COLOR_DAZZLE) {
-      if (palette[palette_idx]) {
-        to_draw |= (0x01 << col);
-      }
+    if (palette_idx == COLOR_ANTS) {
+      to_draw |= (anim_marching_ants(anim_ants_frame, col, row) << col);
+    } else if (palette_idx == COLOR_DAZZLE) {
+      to_draw |= (anim_dazzle(anim_dazzle_frame, col, row) << col);
     } else {
-      to_draw |= (marching_ants(col, row) << col);
+      to_draw |= (palette_idx << col);
     }
   }
 
