@@ -26,6 +26,7 @@ extern "C" {
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
     - LED sleep timeout now takes into account encoder manipulations
   - UI Polish:
+    - All steps of the generated pattern are now visible at all times.
     - The generated pattern for a channel is now visible while adjusting its length.
     - The effects of resetting the sequencers is now immediately visible.
     - There is now an indicator LED for Reset input, next to the one labeled "Trig".
@@ -1174,23 +1175,26 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
 }
 
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
-  uint8_t y = channel * 2;
+  uint8_t row = channel * 2;
 
-  if (position < 8) {
-    for (uint8_t step = 0; step < 8; step++) {
-      if (pattern_read(pattern, length, step) && (step < length)) {
-        framebuffer_pixel_on_fast(step, y);
-      }
+  for (uint8_t step = 0; step < length; step++) {
+    uint8_t x = step;
+    uint8_t y = row;
+    if (step > 7) {
+      x -= 8;
+      y += 1;
     }
-  } else {
-    for (uint8_t step = 8; step < 16; step++) {
-      if (pattern_read(pattern, length, step) && (step < length)) {
-        framebuffer_pixel_on_fast(step - 8, y);
-      }
+
+    bool active_step = pattern_read(pattern, length, step);
+    bool playhead_here = (step == position);
+    Color color = COLOR_OFF;
+    if (playhead_here) {
+      color = COLOR_DAZZLE;
+    } else if (active_step) {
+      color = COLOR_ON;
     }
+    framebuffer_pixel_set_fast(x, y, color);
   }
-
-  draw_channel_playhead(y + 1, position);
 }
 
 static inline void draw_channel_playhead(uint8_t y, uint8_t position) {
