@@ -907,7 +907,7 @@ void loop() {
 
   /* DRAWING - UPDATE BLINK COLOR */
   if(timeout_fired_loop(&palette_blink_timeout, time)) {
-    palette[COLOR_BLINK] = ~palette[COLOR_BLINK];
+    palette[COLOR_BLINK] = !palette[COLOR_BLINK];
   }
 
   /* DRAWING - OUTPUT INDICATORS */
