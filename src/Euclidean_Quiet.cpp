@@ -283,12 +283,6 @@ Timeout palette_blink_timeout = { .duration = PALETTE_BLINK_INTERVAL };
 /// an index into `palette`.
 uint16_t framebuffer[LED_ROWS];
 
-/// Each boolean is true if that row of the framebuffer (from top to bottom) has
-/// been modified since it has been drawn to the LED matrix. We skip rows that
-/// don't need to be redrawn to reduce visual latency further if only some rows 
-/// are being redrawn.
-bool framebuffer_row_needs_redraw[LED_ROWS];
-
 /// To keep latency from spiking, we only draw one row of the framebuffer to the
 /// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
 /// the framebuffer to keep visual latency equal for all rows. 
@@ -1288,8 +1282,6 @@ static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
 
   // Set new color
   framebuffer[y] |= (color << (x * 2));
-
-  framebuffer_row_needs_redraw[y] = true;
   #else
   lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
   #endif
@@ -1307,8 +1299,6 @@ static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color)
 static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
   #if FRAMEBUFFER_ENABLED
   framebuffer[y] = pixels;
-
-  framebuffer_row_needs_redraw[y] = true;
   #else
   lc.setRow(LED_ADDR, y, pixels);
   #endif
