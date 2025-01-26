@@ -1212,7 +1212,6 @@ static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t leng
 }
 
 static void draw_active_channel_display() {
-    #if FRAMEBUFFER_ENABLED
     uint16_t row_bits = 0;
     if (active_channel == CHANNEL_1) {
       row_bits = 0x0005; // Two left dots
@@ -1222,17 +1221,6 @@ static void draw_active_channel_display() {
       row_bits = 0x5000; // Two right dots
     } 
     framebuffer_row_set(LED_CH_SEL_Y, row_bits);
-    #else
-    uint8_t row_bits = 0;
-    if (active_channel == CHANNEL_1) {
-      row_bits = B00000011; // Two left dots
-    } else if (active_channel == CHANNEL_2) {
-      row_bits = B00011000; // Two middle dots
-    } else if (active_channel == CHANNEL_3) {
-      row_bits = B11000000; // Two right dots
-    } 
-    framebuffer_row_set(LED_CH_SEL_Y, row_bits);
-    #endif
 }
 
 static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y) {
@@ -1294,37 +1282,24 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
 }
 
 static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
-  #if FRAMEBUFFER_ENABLED
   // Clear existing color
   uint16_t mask = 0x0003; // Must be 16 bits because it gets inverted
   framebuffer[y] &= ~(mask << (x * 2));
 
   // Set new color
   framebuffer[y] |= (color << (x * 2));
-  #else
-  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
-  #endif
 }
 
 static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
-  #if FRAMEBUFFER_ENABLED
   // Set new color
   framebuffer[y] |= (color << (x * 2));
-  #else
-  lc.setLed(LED_ADDR, y, 7 - x, (bool)color);
-  #endif
 }
 
 static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
-  #if FRAMEBUFFER_ENABLED
   framebuffer[y] = pixels;
-  #else
-  lc.setRow(LED_ADDR, y, pixels);
-  #endif
 }
 
 static void framebuffer_copy_row_to_display() {
-  #if FRAMEBUFFER_ENABLED
   uint8_t row = (framebuffer_out_row) % LED_ROWS;
   uint16_t fb_row_bits = framebuffer[row];
 
@@ -1345,8 +1320,6 @@ static void framebuffer_copy_row_to_display() {
 
   // Next cycle, copy the next row of the framebuffer to the LED matrix
   framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
-
-  #endif
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
