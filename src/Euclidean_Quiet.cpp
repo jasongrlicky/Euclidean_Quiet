@@ -355,9 +355,9 @@ static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUT
 static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME_DEFAULT } };
 #if PLAYHEAD_IDLE
 // Track the time since the playhead has moved so we can make it blink in its idle loop
-static Timeout playhead_idle = { .duration = PLAYHEAD_IDLE_TIME };
+static Timeout playhead_idle_timeout = { .duration = PLAYHEAD_IDLE_TIME };
 // Loop for making the playhead blink periodically after it is idle
-static Timeout playhead_idle_loop = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
+static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
 #endif
 
 /// For recognizing trigger in rising edges
@@ -1001,7 +1001,7 @@ void loop() {
 
     #if PLAYHEAD_IDLE
     // Reset playhead idle
-    timeout_reset(&playhead_idle, time);
+    timeout_reset(&playhead_idle_timeout, time);
     #endif
   }
 
@@ -1009,8 +1009,8 @@ void loop() {
   // moved in a certain amount of time
   bool playhead_blink_updated = false;
   #if PLAYHEAD_IDLE
-  if (timeout_fired(&playhead_idle, time)) {
-    if (timeout_loop(&playhead_idle_loop, time)) {
+  if (timeout_fired(&playhead_idle_timeout, time)) {
+    if (timeout_loop(&playhead_idle_loop_timeout, time)) {
       playhead_blink_timeout.inner.duration = PLAYHEAD_BLINK_TIME_DEFAULT;
       timeout_once_reset(&playhead_blink_timeout, time);
       playhead_blink_updated = true;
