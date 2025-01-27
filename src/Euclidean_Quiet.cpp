@@ -351,8 +351,14 @@ static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDIC
 uint8_t output_channels_active_step_bitflags = 0;
 static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
 
-// Tracks the playhead blink
+// Tracks the playhead blink itself
 static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME_DEFAULT } };
+#if PLAYHEAD_IDLE
+// Track the time since the playhead has moved so we can make it blink in its idle loop
+static Timeout playhead_idle = { .duration = PLAYHEAD_IDLE_TIME };
+// Loop for making the playhead blink periodically after it is idle
+static Timeout playhead_idle_loop = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
+#endif
 
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
@@ -984,20 +990,41 @@ void loop() {
   /* DRAWING - CHANNELS */
 
   if (sequencers_updated) {
+    // Update playhead blink duration based on the last interval between two
+    // clock or reset signals received.
     Milliseconds previous_period = time - last_clock_or_reset;
     playhead_blink_timeout.inner.duration = calc_playhead_blink_time(previous_period);
     last_clock_or_reset = time;
 
+    // Reset playhead blink
     timeout_once_reset(&playhead_blink_timeout, time);
+
+    #if PLAYHEAD_IDLE
+    // Reset playhead idle
+    timeout_reset(&playhead_idle, time);
+    #endif
   }
 
-  bool playhead_anim_updated = false;
+  // Update playhead idle - Make playhead blink periodically when it hasn't 
+  // moved in a certain amount of time
+  bool playhead_blink_updated = false;
+  #if PLAYHEAD_IDLE
+  if (timeout_fired(&playhead_idle, time)) {
+    if (timeout_loop(&playhead_idle_loop, time)) {
+      playhead_blink_timeout.inner.duration = PLAYHEAD_BLINK_TIME_DEFAULT;
+      timeout_once_reset(&playhead_blink_timeout, time);
+      playhead_blink_updated = true;
+    }
+  }
+  #endif
+
+  // Update playhead blink
   if (timeout_once_fired(&playhead_blink_timeout, time)) {
-      playhead_anim_updated = true;
+      playhead_blink_updated = true;
   }
 
   // Tracks if the screen needs to be redrawn. 
-  bool needs_redraw = sequencers_updated || playhead_anim_updated;
+  bool needs_redraw = sequencers_updated || playhead_blink_updated;
 
   if (param_changed == EUCLIDEAN_PARAM_NONE) {
     // If no parameters have changed, check if the adjustment display still 

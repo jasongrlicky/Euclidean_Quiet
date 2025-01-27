@@ -7,6 +7,8 @@
 #define INPUT_INDICATOR_FLASH_TIME 16 // Milliseconds input indicators flash when being illuminated
 #define OUTPUT_INDICATOR_BLINK_TIME 16 // Milliseconds output indicators blink for when being illuminated
 #define PLAYHEAD_BLINK_TIME_DEFAULT 64 // Milliseconds playhead is visible for when it changes
+#define PLAYHEAD_IDLE_TIME 5000 // Milliseconds after moving that playhead begins to blink automatically
+#define PLAYHEAD_IDLE_LOOP_PERIOD 5000 // Milliseconds for period of playhead idle blinking loop
 #define ANIM_DAZZLE_INTERVAL 32 // Default animation frame interval for the `COLOR_DAZZLE` palette color, in milliseconds
 #define ANIM_ANTS_INTERVAL 24 // Default animation frame interval for the `COLOR_ANTS` palette color, in milliseconds
 #define READ_DELAY 50 // For debouncing
@@ -17,6 +19,7 @@
 #define INTERNAL_CLOCK_DEFAULT 0 // 0 = Internal clock begins disabled, 1 = begins enabled
 #define EEPROM_READ 1 // 0 = Reading from EEPROM disabled, 1 = enabled
 #define EEPROM_WRITE 1 // 0 = Writing to EEPROM disabled, 1 = enabled
+#define PLAYHEAD_IDLE 0 // 0 = Playhead has no idle animation, 1 = playhead blinks periodically with no clock
 
 /* DEBUG FEATURES */
 
