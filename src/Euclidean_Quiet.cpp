@@ -26,8 +26,8 @@ extern "C" {
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
     - LED sleep timeout now takes into account encoder manipulations
   - UI Polish:
-    - All steps of the generated pattern are now visible at all times.
-    - The generated pattern for a channel is now visible while adjusting its length.
+    - All steps of a generated pattern are now visible at all times - no more sequencer pages.
+    - The steps of a pattern are visible while adjusting its length.
     - The effects of resetting the sequencers is now immediately visible.
     - There is now an indicator LED for Reset input, next to the one labeled "Trig".
     - Output indicator LEDs now stay lit for the entire duration of the step.
@@ -1174,20 +1174,16 @@ static inline void draw_channel(Channel channel) {
   framebuffer_row_off(row);
   framebuffer_row_off(row + 1);
 
-  if (adjustment_display_state.visible && (channel == adjustment_display_state.channel)) { 
-    if (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH) {
-      draw_channel_length(channel, pattern, length);  
-    } else {
-      draw_channel_pattern(channel, pattern, length);
-    }
-  } else {
-    draw_channel_with_playhead(channel, pattern, length, position);
+  bool showing_length_display = (adjustment_display_state.visible) && 
+                                (channel == adjustment_display_state.channel) &&
+                                (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH);
+  if (showing_length_display) { 
+    draw_channel_length(channel, pattern, length);  
   }
+  draw_channel_with_playhead(channel, pattern, length, position);
 }
 
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length) {
-  draw_channel_pattern(channel, pattern, length);
-
   uint8_t row = channel * 2;
 
   for (uint8_t step = length; step < 16; step++) {
