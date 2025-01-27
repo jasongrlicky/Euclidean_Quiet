@@ -25,8 +25,7 @@ bool timeout_fired(Timeout const *timeout, Milliseconds now);
 bool timeout_loop(Timeout *timeout, Milliseconds now);
 
 
-/// Similar to `Timeout`, but only fires the first time after it fires, until it
-/// has been reset.
+/// Similar to `Timeout`, but only fires once until it has been reset.
 typedef struct TimeoutOnce {
   Timeout inner;
   /// Is `true` until the timeout has fired once, then is `false` until the 
