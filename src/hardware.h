@@ -27,6 +27,11 @@
 // LED Matrix address
 #define LED_ADDR 0
 
+// Number of rows in LED Matrix
+#define LED_ROWS 8
+// Number of columns in LED Matrix
+#define LED_COLUMNS 8
+
 #define RESET_PIN_THRESHOLD 100
 
 #endif /* HARDWARE_H_ */ 
