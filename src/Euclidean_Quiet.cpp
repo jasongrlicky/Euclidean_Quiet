@@ -336,6 +336,7 @@ static EuclideanState euclidean_state = {
 };
 
 Milliseconds time;
+static Milliseconds last_clock_or_reset;
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
@@ -351,7 +352,7 @@ uint8_t output_channels_active_step_bitflags = 0;
 static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
 
 // Tracks the playhead blink
-static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME } };
+static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME_DEFAULT } };
 
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
@@ -419,6 +420,7 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /// Returns true if `events` contains any externally-generated events
 static bool input_events_contains_any_external(InputEvents *events);
+static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
 static void sequencer_advance();
@@ -982,6 +984,10 @@ void loop() {
   /* DRAWING - CHANNELS */
 
   if (sequencers_updated) {
+    Milliseconds previous_period = time - last_clock_or_reset;
+    playhead_blink_timeout.inner.duration = calc_playhead_blink_time(previous_period);
+    last_clock_or_reset = time;
+
     timeout_once_reset(&playhead_blink_timeout, time);
   }
 
@@ -1068,6 +1074,19 @@ static bool input_events_contains_any_external(InputEvents *events) {
     (events->enc_move[CHANNEL_2] != 0) ||
     (events->enc_move[CHANNEL_3] != 0)
   );
+  return result;
+}
+
+static Milliseconds calc_playhead_blink_time(Milliseconds clock_period) {
+  // 256ms period = ~234bpm
+  // 1280ms period = ~47bpm
+  clock_period = constrain(clock_period, 256, 1280);
+  // Subtract input min
+  Milliseconds delta = clock_period - 256;
+  // (delta / input range) * output range. Input range is 2^10, output range is 2^7, so just divide by 2^3.
+  Milliseconds result = delta >> 3; // 3
+  // Add output min
+  result += 64; // 64
   return result;
 }
 

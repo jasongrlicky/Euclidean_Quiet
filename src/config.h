@@ -6,7 +6,7 @@
 #define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
 #define INPUT_INDICATOR_FLASH_TIME 16 // Milliseconds input indicators flash when being illuminated
 #define OUTPUT_INDICATOR_BLINK_TIME 16 // Milliseconds output indicators blink for when being illuminated
-#define PLAYHEAD_BLINK_TIME 64 // Milliseconds playhead is visible for when it changes
+#define PLAYHEAD_BLINK_TIME_DEFAULT 64 // Milliseconds playhead is visible for when it changes
 #define ANIM_DAZZLE_INTERVAL 32 // Default animation frame interval for the `COLOR_DAZZLE` palette color, in milliseconds
 #define ANIM_ANTS_INTERVAL 24 // Default animation frame interval for the `COLOR_ANTS` palette color, in milliseconds
 #define READ_DELAY 50 // For debouncing
