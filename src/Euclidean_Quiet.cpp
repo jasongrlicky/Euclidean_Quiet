@@ -350,6 +350,9 @@ static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDIC
 uint8_t output_channels_active_step_bitflags = 0;
 static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
 
+// Tracks the playhead blink
+static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = INPUT_INDICATOR_FLASH_TIME } };
+
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
 bool reset_active = false;
@@ -978,8 +981,17 @@ void loop() {
 
   /* DRAWING - CHANNELS */
 
+  if (sequencers_updated) {
+    timeout_once_reset(&playhead_blink_timeout, time);
+  }
+
+  bool playhead_anim_updated = false;
+  if (timeout_once_fired(&playhead_blink_timeout, time)) {
+      playhead_anim_updated = true;
+  }
+
   // Tracks if the screen needs to be redrawn. 
-  bool needs_redraw = sequencers_updated;
+  bool needs_redraw = sequencers_updated || playhead_anim_updated;
 
   if (param_changed == EUCLIDEAN_PARAM_NONE) {
     // If no parameters have changed, check if the adjustment display still 
@@ -1184,12 +1196,9 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 
     bool active_step = pattern_read(pattern, length, step);
     bool playhead_here = (step == position);
-    Color color = COLOR_OFF;
-    if (playhead_here) {
-      color = COLOR_DAZZLE;
-    } else if (active_step) {
-      color = COLOR_ON;
-    }
+    bool playhead_blink_active = playhead_blink_timeout.active;
+    Color color = (active_step ^ (playhead_here && playhead_blink_active)) ? COLOR_ON : COLOR_OFF;
+
     framebuffer_pixel_set_fast(x, y, color);
   }
 }

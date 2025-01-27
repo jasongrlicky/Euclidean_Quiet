@@ -28,6 +28,8 @@ bool timeout_fired_loop(Timeout *timeout, Milliseconds now);
 /// has been reset.
 typedef struct TimeoutOnce {
   Timeout inner;
+  /// Is `true` until the timeout has fired once, then is `false` until the 
+  /// timeout has been reset.
   bool active;
 } TimeoutOnce;
 
