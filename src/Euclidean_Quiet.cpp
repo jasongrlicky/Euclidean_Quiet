@@ -1083,10 +1083,11 @@ static Milliseconds calc_playhead_blink_time(Milliseconds clock_period) {
   clock_period = constrain(clock_period, 256, 1280);
   // Subtract input min
   Milliseconds delta = clock_period - 256;
-  // (delta / input range) * output range. Input range is 2^10, output range is 2^7, so just divide by 2^3.
-  Milliseconds result = delta >> 3; // 3
+  // (delta / input range) * output range. Input range is 2^10, output range is 
+  // 2^7, so just divide by 2^3.
+  Milliseconds result = delta >> 3;
   // Add output min
-  result += 64; // 64
+  result += 64;
   return result;
 }
 
