@@ -351,7 +351,7 @@ uint8_t output_channels_active_step_bitflags = 0;
 static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
 
 // Tracks the playhead blink
-static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = INPUT_INDICATOR_FLASH_TIME } };
+static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME } };
 
 /// For recognizing trigger in rising edges
 int trig_in_value_previous = 0; 
