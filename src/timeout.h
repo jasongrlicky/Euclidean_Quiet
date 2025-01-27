@@ -5,7 +5,8 @@
 
 #include "types.h"
 
-/// Manually checked simple non-repeating timeout that operates in milliseconds
+/// Manually checked simple timeout that operates in milliseconds. Can repeat if
+/// checked using `timeout_loop`, or not repeat if checked using `timeout_fired`.
 typedef struct Timeout {
   /// How long after `start` the timeout will be considered fired
   Milliseconds duration;
