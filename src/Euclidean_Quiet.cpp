@@ -862,7 +862,7 @@ void loop() {
     timeout_reset(&internal_clock_timeout, time);
   }
 
-  if (internal_clock_enabled && (timeout_fired_loop(&internal_clock_timeout, time))) {
+  if (internal_clock_enabled && (timeout_loop(&internal_clock_timeout, time))) {
     events_in.internal_clock_tick = true;
   }
 
@@ -911,11 +911,11 @@ void loop() {
   }
 
   /* DRAWING - UPDATE ANIMATIONS */
-  if(timeout_fired_loop(&anim_dazzle_timeout, time)) {
+  if(timeout_loop(&anim_dazzle_timeout, time)) {
     anim_dazzle_frame = (anim_dazzle_frame + 1) % ANIM_DAZZLE_NUM_FRAMES;
   }
 
-  if(timeout_fired_loop(&anim_ants_timeout, time)) {
+  if(timeout_loop(&anim_ants_timeout, time)) {
     anim_ants_frame = (anim_ants_frame + 1) % ANIM_ANTS_NUM_FRAMES;
   }
 
@@ -1056,7 +1056,7 @@ void loop() {
     cycle_time_max = cycle_time;
   }
 
-  if (timeout_fired_loop(&log_cycle_time_timeout, time)) {
+  if (timeout_loop(&log_cycle_time_timeout, time)) {
     Serial.print("Max Cycle Time: ");
     Serial.println(cycle_time_max);
     cycle_time_max = 0;

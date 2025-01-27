@@ -8,7 +8,7 @@ bool timeout_fired(Timeout const *timeout, Milliseconds now) {
   return ((now - timeout->start) >= timeout->duration);
 }
 
-bool timeout_fired_loop(Timeout *timeout, Milliseconds now) {
+bool timeout_loop(Timeout *timeout, Milliseconds now) {
   bool has_fired = timeout_fired(timeout, now);
   if (has_fired) {
     timeout_reset(timeout, now);

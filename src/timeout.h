@@ -21,7 +21,7 @@ bool timeout_fired(Timeout const *timeout, Milliseconds now);
 
 /// Check if the timeout has fired, given the current time, `now`. If it has 
 /// fired, resets the timeout, so it becomes periodic.
-bool timeout_fired_loop(Timeout *timeout, Milliseconds now);
+bool timeout_loop(Timeout *timeout, Milliseconds now);
 
 
 /// Similar to `Timeout`, but only fires the first time after it fires, until it
