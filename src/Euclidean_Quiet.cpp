@@ -426,6 +426,15 @@ typedef struct EuclideanChannelUpdate {
   bool length_changed;
   bool density_changed;
   bool offset_changed;
+} EuclideanChannelUpdate;
+
+static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
+  .length = 0,
+  .density = 0,
+  .offset = 0,
+  .length_changed = false,
+  .density_changed = false,
+  .offset_changed = false,
 };
 
 #endif
@@ -718,6 +727,7 @@ void loop() {
   }
 
   EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
+  EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
 
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
@@ -747,6 +757,11 @@ void loop() {
       density += nknob;
       euclidean_state.channels[channel].density = density;
 
+      #if EEPROM_DEFER
+      params_update.density = density;
+      params_update.density_changed = true;
+      #endif
+
       #if EEPROM_WRITE && !EEPROM_DEFER
       EEPROM.update(eeprom_addr_density(channel), density);
       #endif
@@ -754,6 +769,11 @@ void loop() {
     if ((offset >= (length + nknob)) && (offset < 16)) {
       offset += nknob;
       euclidean_state.channels[channel].offset = offset;
+
+      #if EEPROM_DEFER
+      params_update.offset = offset;
+      params_update.offset_changed = true;
+      #endif
 
       #if EEPROM_WRITE && !EEPROM_DEFER
       EEPROM.update(eeprom_addr_offset(channel), offset);
@@ -767,6 +787,11 @@ void loop() {
     if (position >= length) {
       euclidean_state.channels[channel].position = 0;
     }
+
+    #if EEPROM_DEFER
+    params_update.length = length;
+    params_update.length_changed = true;
+    #endif
     
     #if EEPROM_WRITE && !EEPROM_DEFER
     EEPROM.update(eeprom_addr_length(channel), length);
@@ -801,7 +826,12 @@ void loop() {
     density += kknob;
     euclidean_state.channels[channel].density = density;
 
-    #if EEPROM_WRITE
+    #if EEPROM_DEFER
+    params_update.density = density;
+    params_update.density_changed = true;
+    #endif
+
+    #if EEPROM_WRITE && !EEPROM_DEFER
     EEPROM.update(eeprom_addr_density(channel), density);
     #endif
 
@@ -833,6 +863,11 @@ void loop() {
 
     offset += oknob;
     euclidean_state.channels[channel].offset = offset;
+
+    #if EEPROM_DEFER
+    params_update.offset = offset;
+    params_update.offset_changed = true;
+    #endif
 
     #if EEPROM_WRITE && !EEPROM_DEFER
     EEPROM.update(eeprom_addr_offset(channel), offset);
@@ -1089,6 +1124,46 @@ void loop() {
     }
   }
 
+  /* EEPROM WRITES */
+
+  if (params_update.length_changed) {
+    #if EEPROM_WRITE
+    EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
+    #endif
+      
+    #if LOGGING_ENABLED
+    Serial.print("EEPROM Write: Length= ");
+    Serial.print(eeprom_addr_length(active_channel));
+    Serial.print(" ");
+    Serial.println(params_update.length);
+    #endif
+  }
+
+  if (params_update.density_changed) {
+    #if EEPROM_WRITE
+    EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
+    #endif
+      
+    #if LOGGING_ENABLED
+    Serial.print("EEPROM Write: Density= ");
+    Serial.print(eeprom_addr_density(active_channel));
+    Serial.print(" ");
+    Serial.println(params_update.density);
+    #endif
+  }
+  
+  if (params_update.offset_changed) {
+    #if EEPROM_WRITE
+    EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
+    #endif
+
+    #if LOGGING_ENABLED
+    Serial.print("EEPROM Write: Offset= ");
+    Serial.print(eeprom_addr_offset(active_channel));
+    Serial.print(" ");
+    Serial.println(params_update.offset);
+    #endif
+  }
 
   #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
   Microseconds cycle_time = micros() - cycle_time_start;
