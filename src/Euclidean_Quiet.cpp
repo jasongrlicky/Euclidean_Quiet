@@ -249,18 +249,18 @@ extern "C" {
 
 /* GLOBALS */
 
-bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
+static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
-Encoder Enc1(PIN_ENC_2B, PIN_ENC_2A); // Length  / N
-Encoder Enc2(PIN_ENC_1B, PIN_ENC_1A); // Density / K
-Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
+static Encoder Enc1(PIN_ENC_2B, PIN_ENC_2A); // Length  / N
+static Encoder Enc2(PIN_ENC_1B, PIN_ENC_1A); // Density / K
+static Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
 
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
 // 1 is maximum number of devices that can be controlled
-LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
+static LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
 /// Represents a method of deciding on illumination of a pixel on the LED matrix
 /// display.
@@ -276,21 +276,21 @@ typedef enum Color {
 } Color;
 
 #define ANIM_DAZZLE_NUM_FRAMES 2
-Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
-uint8_t anim_dazzle_frame = 0;
+static Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
+static uint8_t anim_dazzle_frame = 0;
 
 #define ANIM_ANTS_NUM_FRAMES 4
-Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
-uint8_t anim_ants_frame = 0;
+static Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
+static uint8_t anim_ants_frame = 0;
 
 /// Buffer that can be drawn into and manipulated before being drawn to the
 /// hardware display. 2 bits per pixel, so it supports 4 colors.
-uint16_t framebuffer[LED_ROWS];
+static uint16_t framebuffer[LED_ROWS];
 
 /// To keep latency from spiking, we only draw one row of the framebuffer to the
 /// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
 /// the framebuffer to keep visual latency equal for all rows. 
-uint8_t framebuffer_out_row;
+static uint8_t framebuffer_out_row;
 
 /// References one of the three channels
 typedef enum Channel {
@@ -335,12 +335,12 @@ static EuclideanState euclidean_state = {
   .sequencer_running = false,
 };
 
-Milliseconds time;
+static Milliseconds time;
 static Milliseconds last_clock_or_reset;
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
-uint16_t generated_rhythms[NUM_CHANNELS];
-Channel active_channel; // Channel that is currently active
+static uint16_t generated_rhythms[NUM_CHANNELS];
+static Channel active_channel; // Channel that is currently active
 static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
 static Timeout output_pulse_timeout = { .duration = 5 }; // Pulse length, set based on the time since last trigger
 
@@ -348,7 +348,7 @@ static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICA
 static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} };
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
-uint8_t output_channels_active_step_bitflags = 0;
+static uint8_t output_channels_active_step_bitflags = 0;
 static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
 
 // Tracks the playhead blink itself
@@ -361,9 +361,9 @@ static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PER
 #endif
 
 /// For recognizing trigger in rising edges
-int trig_in_value_previous = 0; 
-bool reset_active = false;
-unsigned long channelPressedCounter = 0;
+static int trig_in_value_previous = 0; 
+static bool reset_active = false;
+static unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 
 typedef struct AdjustmentDisplayState {
@@ -382,7 +382,7 @@ static AdjustmentDisplayState adjustment_display_state = {
 };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
-bool led_sleep_mode_active = false;
+static bool led_sleep_mode_active = false;
 static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
 
 /// Represents the three encoders in the `InputEvents` struct.
