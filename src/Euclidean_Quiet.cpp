@@ -575,7 +575,7 @@ void setup() {
   serial_init();
   io_pins_init();
 
-  // Initialise beat holders
+  // Initialise generated rhythms
   for (int a = 0; a < NUM_CHANNELS; a++) {
     generated_rhythms[a] = euclidean_pattern_rotate(euclidean_state.channels[a].length, euclidean_state.channels[a].density, euclidean_state.channels[a].offset);
   }
