@@ -417,6 +417,19 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
+#if EEPROM_DEFER
+
+typedef struct EuclideanChannelUpdate {
+  uint8_t length;
+  uint8_t density;
+  uint8_t offset;
+  bool length_changed;
+  bool density_changed;
+  bool offset_changed;
+};
+
+#endif
+
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;
 static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVAL };
@@ -734,7 +747,7 @@ void loop() {
       density += nknob;
       euclidean_state.channels[channel].density = density;
 
-      #if EEPROM_WRITE
+      #if EEPROM_WRITE && !EEPROM_DEFER
       EEPROM.update(eeprom_addr_density(channel), density);
       #endif
     }
@@ -742,7 +755,7 @@ void loop() {
       offset += nknob;
       euclidean_state.channels[channel].offset = offset;
 
-      #if EEPROM_WRITE
+      #if EEPROM_WRITE && !EEPROM_DEFER
       EEPROM.update(eeprom_addr_offset(channel), offset);
       #endif
     }
@@ -755,11 +768,11 @@ void loop() {
       euclidean_state.channels[channel].position = 0;
     }
     
-    #if EEPROM_WRITE
+    #if EEPROM_WRITE && !EEPROM_DEFER
     EEPROM.update(eeprom_addr_length(channel), length);
     #endif
       
-    #if LOGGING_ENABLED && EEPROM_WRITE
+    #if LOGGING_ENABLED && EEPROM_WRITE && !EEPROM_DEFER
     Serial.print("eeprom write N= ");
     Serial.print((channel * 2) + 1);
     Serial.print(" ");
@@ -792,7 +805,7 @@ void loop() {
     EEPROM.update(eeprom_addr_density(channel), density);
     #endif
 
-    #if LOGGING_ENABLED && EEPROM_WRITE
+    #if LOGGING_ENABLED && EEPROM_WRITE && !EEPROM_DEFER
     Serial.print("eeprom write K= ");
     Serial.print((channel * 2) + 2);
     Serial.print(" ");
@@ -821,11 +834,11 @@ void loop() {
     offset += oknob;
     euclidean_state.channels[channel].offset = offset;
 
-    #if EEPROM_WRITE
+    #if EEPROM_WRITE && !EEPROM_DEFER
     EEPROM.update(eeprom_addr_offset(channel), offset);
     #endif
 
-    #if LOGGING_ENABLED && EEPROM_WRITE
+    #if LOGGING_ENABLED && EEPROM_WRITE && !EEPROM_DEFER
     Serial.print("eeprom write O= ");
     Serial.print((channel) + 7);
     Serial.print(" ");

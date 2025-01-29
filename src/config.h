@@ -20,6 +20,7 @@
 #define EEPROM_READ 1 // 0 = Reading from EEPROM disabled, 1 = enabled
 #define EEPROM_WRITE 1 // 0 = Writing to EEPROM disabled, 1 = enabled
 #define PLAYHEAD_IDLE 0 // 0 = Playhead has no idle animation, 1 = playhead blinks periodically with no clock
+#define EEPROM_DEFER 0 // 0 = EEPROM writes happen immediately, 1 = they are throttled and batch-processed
 
 /* DEBUG FEATURES */
 
