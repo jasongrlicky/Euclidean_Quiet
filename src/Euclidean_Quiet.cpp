@@ -437,7 +437,6 @@ static void draw_channels();
 static inline void draw_channel(Channel channel);
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
 static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
-static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length);
 static void draw_active_channel_display();
 static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y);
 static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
@@ -575,7 +574,8 @@ void setup() {
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
     uint8_t length = euclidean_state.channels[channel].length;
     uint16_t pattern = generated_rhythms[channel];
-    draw_channel_pattern((Channel) channel, pattern, length);
+    uint8_t position = euclidean_state.channels[channel].position;
+    draw_channel_with_playhead((Channel) channel, pattern, length, position);
   }
 }
 
@@ -1244,23 +1244,6 @@ static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern,
 
     framebuffer_pixel_set_fast(x, y, color);
   }
-}
-
-static void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length) {
-    uint8_t row = channel * 2;
-
-    for (uint8_t step = 0; step < length; step++) {
-      uint8_t x = step;
-      uint8_t y = row;
-      if (step > 7) {
-        x -= 8;
-        y += 1;
-      }
-
-      if (pattern_read(pattern, length, step)) {
-        framebuffer_pixel_on_fast(x, y);
-      }
-    }
 }
 
 static void draw_active_channel_display() {
