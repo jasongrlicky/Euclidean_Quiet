@@ -586,15 +586,10 @@ void setup() {
 
   // Select first channel on startup
   active_channel_set(CHANNEL_1);
-  draw_active_channel_display();
 
-  // Draw all channel displays initially
-  for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-    uint8_t length = euclidean_state.channels[channel].length;
-    uint16_t pattern = generated_rhythms[channel];
-    uint8_t position = euclidean_state.channels[channel].position;
-    draw_channel_pattern((Channel) channel, pattern, length, position);
-  }
+  // Draw initial UI
+  draw_channels();
+  draw_active_channel_display();
 }
 
 void loop() {
