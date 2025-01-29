@@ -605,10 +605,10 @@ void loop() {
 
   // READ TRIG AND RESET INPUTS
   int trig_in_value = digitalRead(PIN_IN_TRIG);
-  int reset_button = analogRead(A1);
+  int reset_in_value = analogRead(A1);
 
   // RESET INPUT & BUTTON
-  if ((!reset_active) && (reset_button >= RESET_PIN_THRESHOLD)) {
+  if ((!reset_active) && (reset_in_value >= RESET_PIN_THRESHOLD)) {
     reset_active = true;
 
     events_in.reset = true;
@@ -617,7 +617,7 @@ void loop() {
     Serial.println("INPUT: Reset");
     #endif
   }
-  if (reset_active && (reset_button < RESET_PIN_THRESHOLD)) {
+  if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
     reset_active = false;
   }
 
