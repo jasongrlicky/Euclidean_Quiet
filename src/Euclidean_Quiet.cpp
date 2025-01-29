@@ -1127,7 +1127,7 @@ void loop() {
   /* EEPROM WRITES */
 
   if (params_update.length_changed) {
-    #if EEPROM_WRITE
+    #if EEPROM_WRITE && EEPROM_DEFER
     EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
     #endif
       
@@ -1140,7 +1140,7 @@ void loop() {
   }
 
   if (params_update.density_changed) {
-    #if EEPROM_WRITE
+    #if EEPROM_WRITE && EEPROM_DEFER
     EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
     #endif
       
@@ -1153,7 +1153,7 @@ void loop() {
   }
   
   if (params_update.offset_changed) {
-    #if EEPROM_WRITE
+    #if EEPROM_WRITE && EEPROM_DEFER
     EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
     #endif
 
