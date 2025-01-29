@@ -417,8 +417,6 @@ static const InputEvents INPUT_EVENTS_EMPTY = {
   .internal_clock_tick = false,
 };
 
-#if EEPROM_DEFER
-
 typedef struct EuclideanChannelUpdate {
   uint8_t length;
   uint8_t density;
@@ -436,8 +434,6 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
   .density_changed = false,
   .offset_changed = false,
 };
-
-#endif
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;
