@@ -1131,7 +1131,7 @@ void loop() {
     EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
     #endif
       
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && LOGGING_EEPROM
     Serial.print("EEPROM Write: Length= ");
     Serial.print(eeprom_addr_length(active_channel));
     Serial.print(" ");
@@ -1144,7 +1144,7 @@ void loop() {
     EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
     #endif
       
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLED && LOGGING_EEPROM
     Serial.print("EEPROM Write: Density= ");
     Serial.print(eeprom_addr_density(active_channel));
     Serial.print(" ");
@@ -1157,7 +1157,7 @@ void loop() {
     EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
     #endif
 
-    #if LOGGING_ENABLED
+    #if LOGGING_ENABLE && LOGGING_EEPROM
     Serial.print("EEPROM Write: Offset= ");
     Serial.print(eeprom_addr_offset(active_channel));
     Serial.print(" ");
