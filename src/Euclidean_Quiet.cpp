@@ -436,7 +436,7 @@ static uint8_t sequencer_read_current_step();
 static void draw_channels();
 static inline void draw_channel(Channel channel);
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
-static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
+static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static void draw_active_channel_display();
 static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y);
 static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
@@ -575,7 +575,7 @@ void setup() {
     uint8_t length = euclidean_state.channels[channel].length;
     uint16_t pattern = generated_rhythms[channel];
     uint8_t position = euclidean_state.channels[channel].position;
-    draw_channel_with_playhead((Channel) channel, pattern, length, position);
+    draw_channel_pattern((Channel) channel, pattern, length, position);
   }
 }
 
@@ -1208,7 +1208,7 @@ static inline void draw_channel(Channel channel) {
   if (showing_length_display) { 
     draw_channel_length(channel, pattern, length);  
   }
-  draw_channel_with_playhead(channel, pattern, length, position);
+  draw_channel_pattern(channel, pattern, length, position);
 }
 
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length) {
@@ -1226,7 +1226,7 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
   }
 }
 
-static inline void draw_channel_with_playhead(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
+static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t row = channel * 2;
 
   for (uint8_t step = 0; step < length; step++) {
