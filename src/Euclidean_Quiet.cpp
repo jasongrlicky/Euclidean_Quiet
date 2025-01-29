@@ -446,7 +446,7 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 /// @param position The step at which to read. Must be < `length`.
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
-int encoder_read(Encoder& enc);
+static int encoder_read(Encoder& enc);
 static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
@@ -484,11 +484,11 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels);
 /// the framebuffer to the LED matrix per cycle to avoid having to wait on the 
 /// display driver chip.
 static void framebuffer_copy_row_to_display();
-void led_sleep();
-void led_wake();
-void led_anim_wake();
-void led_anim_sleep();
-void startUpOK();
+static void led_sleep();
+static void led_wake();
+static void led_anim_wake();
+static void led_anim_sleep();
+static void startUpOK();
 
 /// Initialize the MAX72XX LED Matrix
 void led_init(void) {
@@ -1276,7 +1276,7 @@ static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
   returns +1, 0 or -1 dependent on direction
   Contains no internal debounce, so calls should be delayed
 */
-int encoder_read(Encoder& enc) {
+static int encoder_read(Encoder& enc) {
   int result = 0;
   int32_t value_read = enc.read();
   if (value_read == 0) {
@@ -1389,21 +1389,21 @@ static inline int eeprom_addr_offset(Channel channel) {
   return channel + 7;
 }
 
-void led_sleep() {
+static void led_sleep() {
   led_sleep_mode_active = true;
 
   led_anim_sleep();
   lc.shutdown(LED_ADDR, true);
 }
 
-void led_wake() {
+static void led_wake() {
   led_sleep_mode_active = false;
 
   lc.shutdown(LED_ADDR, false);
   led_anim_wake();
 }
 
-void led_anim_wake() { 
+static void led_anim_wake() { 
   for (uint8_t step = 0; step < 4; step++) {
     uint8_t a = 3 - step;
     lc.setRow(LED_ADDR, a, 255);
@@ -1414,7 +1414,7 @@ void led_anim_wake() {
   }
 }
 
-void led_anim_sleep() {
+static void led_anim_sleep() {
   for (uint8_t a = 0; a < 4; a++) {
     lc.setRow(LED_ADDR, a, 255);
     lc.setRow(LED_ADDR, 7 - a, 255);
@@ -1424,7 +1424,7 @@ void led_anim_sleep() {
   }
 }
 
-void startUpOK() {
+static void startUpOK() {
   digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
   delay(50);
   digitalWrite(PIN_OUT_CHANNEL_3, LOW);
