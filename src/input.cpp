@@ -8,6 +8,18 @@ static int trig_in_value_previous = 0;
 
 static bool encoder_pushed = false;
 
+bool input_events_contains_any_external(InputEvents *events) {
+  bool result = (
+    events->trig ||
+    events->reset ||
+    (events->enc_push != ENCODER_NONE) ||
+    (events->enc_move[ENCODER_1] != 0) ||
+    (events->enc_move[ENCODER_2] != 0) ||
+    (events->enc_move[ENCODER_3] != 0)
+  );
+  return result;
+}
+
 bool input_detect_rise_reset(int reset_in_value) {
   bool above_threshold = (reset_in_value >= RESET_PIN_THRESHOLD);
   bool should_toggle = reset_active ^ above_threshold;

@@ -396,29 +396,6 @@ static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIM
 static bool led_sleep_mode_active = false;
 static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
 
-/// Record of any input events that were received this cycle
-typedef struct InputEvents {
-  /// Some encoders were rotated, indexed by `EncoderIdx`
-  int16_t enc_move[NUM_CHANNELS];
-  /// An encoder was pushed
-  EncoderIdx enc_push;
-  /// "Trig" input detected a rising edge
-  bool trig;
-  /// "Reset" input or button detected a rising edge
-  bool reset;
-  /// The internal clock generated a tick
-  bool internal_clock_tick;
-} InputEvents;
-
-/// An instance of `InputEvents` which represents no events happening
-static const InputEvents INPUT_EVENTS_EMPTY = {
-  .enc_move = { 0, 0, 0 },
-  .enc_push = ENCODER_NONE,
-  .trig = false,
-  .reset = false,
-  .internal_clock_tick = false,
-};
-
 typedef struct EuclideanChannelUpdate {
   uint8_t length;
   uint8_t density;
@@ -443,9 +420,6 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 #endif
 
 /* INTERNAL */
-
-/// Returns true if `events` contains any externally-generated events
-static bool input_events_contains_any_external(InputEvents *events);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
@@ -1097,18 +1071,6 @@ void loop() {
   }
 
   #endif
-}
-
-static bool input_events_contains_any_external(InputEvents *events) {
-  bool result = (
-    events->trig ||
-    events->reset ||
-    (events->enc_push != ENCODER_NONE) ||
-    (events->enc_move[CHANNEL_1] != 0) ||
-    (events->enc_move[CHANNEL_2] != 0) ||
-    (events->enc_move[CHANNEL_3] != 0)
-  );
-  return result;
 }
 
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
