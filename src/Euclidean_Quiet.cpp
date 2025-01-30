@@ -251,11 +251,24 @@ extern "C" {
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
+/// Represents, optionally, one of the three encoders
+enum EncoderIdx {
+  ENCODER_1 = 0,
+  ENCODER_2 = 1,
+  ENCODER_3 = 2,
+  ENCODER_NONE = 4,
+};
+
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
-static Encoder Enc1(PIN_ENC_2B, PIN_ENC_2A); // Length  / N
-static Encoder Enc2(PIN_ENC_1B, PIN_ENC_1A); // Density / K
-static Encoder Enc3(PIN_ENC_3B, PIN_ENC_3A); // Offset  / O
+static Encoder encoders[NUM_ENCODERS] = {
+  // Length  (Ch1) / N
+  Encoder(PIN_ENC_2B, PIN_ENC_2A), 
+  // Density (Ch2) / K
+  Encoder(PIN_ENC_1B, PIN_ENC_1A), 
+  // Offset  (Ch3) / O
+  Encoder(PIN_ENC_3B, PIN_ENC_3A), 
+};
 
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
@@ -384,15 +397,6 @@ static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIM
 
 static bool led_sleep_mode_active = false;
 static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
-
-/// Represents the three encoders in the `InputEvents` struct.
-/// Indexes into its arrays.
-enum EncoderIdx {
-  ENCODER_1 = 0,
-  ENCODER_2 = 1,
-  ENCODER_3 = 2,
-  ENCODER_NONE = 4,
-};
 
 /// Record of any input events that were received this cycle
 typedef struct InputEvents {
@@ -616,17 +620,17 @@ void loop() {
 
   // ENCODER MOVEMENT
   if (timeout_fired(&encoder_read_timeout, time)) {
-    int val_enc_1 = encoder_read(Enc1); // LENGTH (CH1)
+    int val_enc_1 = encoder_read(encoders[ENCODER_1]); // LENGTH (CH1)
     if (val_enc_1 != 0) {
       events_in.enc_move[ENCODER_1] = val_enc_1;
     }
 
-    int val_enc_2 = encoder_read(Enc2); // DENSITY (CH2)
+    int val_enc_2 = encoder_read(encoders[ENCODER_2]); // DENSITY (CH2)
     if (val_enc_2 != 0) {
       events_in.enc_move[ENCODER_2] = val_enc_2;
     }
 
-    int val_enc_3 = encoder_read(Enc3); // OFFSET (CH3)
+    int val_enc_3 = encoder_read(encoders[ENCODER_3]); // OFFSET (CH3)
     if (val_enc_3 != 0) {
       events_in.enc_move[ENCODER_3] = val_enc_3;
     }

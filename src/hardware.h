@@ -24,6 +24,9 @@
 #define PIN_ENC_3A 6
 #define PIN_ENC_3B 5
 
+// Number of encoders on the module
+#define NUM_ENCODERS 3
+
 // LED Matrix address
 #define LED_ADDR 0
 
