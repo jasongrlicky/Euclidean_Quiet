@@ -6,7 +6,7 @@ static bool reset_active = false;
 
 static int trig_in_value_previous = 0; 
 
-static unsigned long channelPressedCounter = 0;
+static unsigned long channel_pressed_counter = 0;
 
 bool input_detect_rise_analog(int reset_in_value) {
   bool result = false;
@@ -36,26 +36,26 @@ EncoderIdx input_detect_enc_push(int channel_switch_val) {
     // Nothing pushed
     enc_pushed = false;
     enc_idx = ENCODER_NONE;
-    channelPressedCounter = 0;
+    channel_pressed_counter = 0;
   } else if (channel_switch_val < 200) {
     // Density pushed
     enc_pushed = true;
     enc_idx = ENCODER_2;
-    channelPressedCounter++;
+    channel_pressed_counter++;
   } else if (channel_switch_val < 400) {
     // Length pushed
     enc_pushed = true;
     enc_idx = ENCODER_1;
-    channelPressedCounter++;
+    channel_pressed_counter++;
   } else {
     // Offset pushed
     enc_pushed = true;
     enc_idx = ENCODER_3;
-    channelPressedCounter++;
+    channel_pressed_counter++;
   }
 
   EncoderIdx result = ENCODER_NONE;
-  if (enc_pushed && (channelPressedCounter <= 1)) {
+  if (enc_pushed && (channel_pressed_counter <= 1)) {
     result = enc_idx;
   }
 
