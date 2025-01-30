@@ -6,7 +6,7 @@ static bool reset_active = false;
 
 static int trig_in_value_previous = 0; 
 
-static bool channel_pressed = false;
+static bool encoder_pushed = false;
 
 bool input_detect_rise_analog(int reset_in_value) {
   bool result = false;
@@ -32,9 +32,16 @@ bool input_detect_rise_digital(int trig_in_value) {
 EncoderIdx input_detect_enc_push(int channel_switch_val) {
   // Early return: No encoder is pushed
   if (channel_switch_val < 100) {
-    channel_pressed = false;
+    encoder_pushed = false;
     return ENCODER_NONE;
   }
+
+  // Early return: Encoder already registered as pushed
+  if (encoder_pushed) {
+    return ENCODER_NONE;
+  }
+
+  encoder_pushed = true;
 
   EncoderIdx enc_idx;
   if (channel_switch_val < 200) {
@@ -44,13 +51,5 @@ EncoderIdx input_detect_enc_push(int channel_switch_val) {
   } else {
     enc_idx = ENCODER_3;
   }
-
-  // Early return: Encoder already registered as pushed
-  if (channel_pressed) {
-    return ENCODER_NONE;
-  }
-  
-  channel_pressed = true;
-
   return enc_idx;
 }
