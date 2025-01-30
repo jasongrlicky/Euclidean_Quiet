@@ -13,9 +13,9 @@ bool input_detect_rise_analog(int reset_in_value);
 /// @return `true` if a rising edge was detected, `false` otherwise
 bool input_detect_rise_digital(int trig_in_value);
 
-/// @brief Detects an encoder being pushed
+/// @brief Detects initial event of an encoder being pushed
 /// @param channel_switch_val Raw reading from channel switch pin
-/// @return `true` if an encoder was pushed, `false` otherwise
+/// @return `true` if an encoder was pushed this cycle, `false` otherwise
 EncoderIdx input_detect_enc_push(int channel_switch_val);
 
 #endif /* INPUT_H_ */
