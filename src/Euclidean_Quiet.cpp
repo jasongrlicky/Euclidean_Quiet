@@ -446,6 +446,7 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 static bool input_events_contains_any_external(InputEvents *events);
 static bool input_detect_reset(int reset_in_value);
 static bool input_detect_trig(int trig_in_value);
+static EncoderIdx input_detect_enc_push(int channel_switch_val);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
@@ -654,33 +655,7 @@ void loop() {
 
   // ENCODER PUSHES
   int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
-  bool enc_pushed;
-  EncoderIdx enc_idx;
-  if (channel_switch_val < 100) {
-    // Nothing pushed
-    enc_pushed = false;
-    enc_idx = ENCODER_NONE;
-    channelPressedCounter = 0;
-  } else if (channel_switch_val < 200) {
-    // Density pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_2;
-    channelPressedCounter++;
-  } else if (channel_switch_val < 400) {
-    // Length pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_1;
-    channelPressedCounter++;
-  } else {
-    // Offset pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_3;
-    channelPressedCounter++;
-  }
-
-  if (enc_pushed && (channelPressedCounter <= 1)) {
-    events_in.enc_push = enc_idx;
-  }
+  events_in.enc_push = input_detect_enc_push(channel_switch_val);
 
   /* INPUT LOGGING */
 
@@ -1194,6 +1169,39 @@ static bool input_detect_trig(int trig_in_value) {
 
   trig_in_value_previous = trig_in_value;
   
+  return result;
+}
+
+static EncoderIdx input_detect_enc_push(int channel_switch_val) {
+  bool enc_pushed;
+  EncoderIdx enc_idx;
+  if (channel_switch_val < 100) {
+    // Nothing pushed
+    enc_pushed = false;
+    enc_idx = ENCODER_NONE;
+    channelPressedCounter = 0;
+  } else if (channel_switch_val < 200) {
+    // Density pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_2;
+    channelPressedCounter++;
+  } else if (channel_switch_val < 400) {
+    // Length pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_1;
+    channelPressedCounter++;
+  } else {
+    // Offset pushed
+    enc_pushed = true;
+    enc_idx = ENCODER_3;
+    channelPressedCounter++;
+  }
+
+  EncoderIdx result = ENCODER_NONE;
+  if (enc_pushed && (channelPressedCounter <= 1)) {
+    result = enc_idx;
+  }
+
   return result;
 }
 
