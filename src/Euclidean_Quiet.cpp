@@ -609,7 +609,7 @@ void loop() {
   InputEvents events_in = INPUT_EVENTS_EMPTY;
 
   // Reset Input & Button
-  int reset_in_value = analogRead(A1);
+  int reset_in_value = analogRead(PIN_IN_RESET);
   events_in.reset = input_detect_reset(reset_in_value);
 
   // Trig Input 

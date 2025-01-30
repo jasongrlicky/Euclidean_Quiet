@@ -5,6 +5,7 @@
 
 // Input pin definitions
 #define PIN_IN_TRIG A0
+#define PIN_IN_RESET A1
 #define PIN_IN_CHANNEL_SWITCH A2
 
 // Output pin definitions
