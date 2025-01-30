@@ -1370,11 +1370,6 @@ static int encoder_read(Encoder& enc) {
 static void active_channel_set(Channel channel) {
   // Update state
   active_channel = channel;
-  
-  #if LOGGING_ENABLED
-  Serial.print("Active channel: ");
-  Serial.println(active_channel);
-  #endif
 }
 
 static uint8_t output_channel_led_x(OutputChannel channel) {
