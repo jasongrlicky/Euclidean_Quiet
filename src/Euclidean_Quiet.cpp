@@ -610,29 +610,21 @@ void loop() {
 
   InputEvents events_in = INPUT_EVENTS_EMPTY;
 
-  // READ RESET INPUT & BUTTON
+  // Reset Input & Button
   int reset_in_value = analogRead(A1);
   events_in.reset = input_detect_reset(reset_in_value);
 
-  // READ TRIG INPUT 
+  // Trig Input 
   int trig_in_value = digitalRead(PIN_IN_TRIG);
   events_in.trig = input_detect_trig(trig_in_value);
 
-  // ENCODER MOVEMENT
+  // Encoder Movement
   if (timeout_fired(&encoder_read_timeout, time)) {
-    int val_enc_1 = encoder_read(encoders[ENCODER_1]); // LENGTH (CH1)
-    if (val_enc_1 != 0) {
-      events_in.enc_move[ENCODER_1] = val_enc_1;
-    }
-
-    int val_enc_2 = encoder_read(encoders[ENCODER_2]); // DENSITY (CH2)
-    if (val_enc_2 != 0) {
-      events_in.enc_move[ENCODER_2] = val_enc_2;
-    }
-
-    int val_enc_3 = encoder_read(encoders[ENCODER_3]); // OFFSET (CH3)
-    if (val_enc_3 != 0) {
-      events_in.enc_move[ENCODER_3] = val_enc_3;
+    for (uint8_t enc_idx = 0; enc_idx < NUM_ENCODERS; enc_idx++) {
+      int val = encoder_read(encoders[enc_idx]);
+      if (val != 0) {
+        events_in.enc_move[enc_idx] = val;
+      }
     }
   }
   bool move_detected = (events_in.enc_move[ENCODER_1] != 0) ||
@@ -642,7 +634,7 @@ void loop() {
     timeout_reset(&encoder_read_timeout, time);
   }
 
-  // ENCODER PUSHES
+  // Encoder Pushes
   int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
   events_in.enc_push = input_detect_enc_push(channel_switch_val);
 
