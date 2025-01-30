@@ -445,6 +445,7 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 /// Returns true if `events` contains any externally-generated events
 static bool input_events_contains_any_external(InputEvents *events);
 static bool input_detect_reset(int reset_in_value);
+static bool input_detect_trig(int trig_in_value);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
@@ -610,14 +611,7 @@ void loop() {
 
   // READ TRIG INPUT 
   int trig_in_value = digitalRead(PIN_IN_TRIG);
-  if (trig_in_value > trig_in_value_previous) { 
-    events_in.trig = true;
-
-    #if LOGGING_ENABLED && LOGGING_INPUT
-    Serial.println("INPUT: Trigger");
-    #endif
-  }
-  trig_in_value_previous = trig_in_value;
+  events_in.trig = input_detect_trig(trig_in_value);
 
   // ENCODER MOVEMENT
   if (timeout_fired(&encoder_read_timeout, time)) {
@@ -693,6 +687,9 @@ void loop() {
   #if LOGGING_ENABLED && LOGGING_INPUT
   if (events_in.reset) {
     Serial.println("INPUT: Reset");
+  }
+  if (events_in.trig) {
+    Serial.println("INPUT: Trigger");
   }
   #endif
 
@@ -1165,6 +1162,14 @@ void loop() {
   }
 
   #endif
+}
+
+static bool input_detect_trig(int trig_in_value) {
+  bool result = (trig_in_value > trig_in_value_previous);
+
+  trig_in_value_previous = trig_in_value;
+  
+  return result;
 }
 
 static bool input_events_contains_any_external(InputEvents *events) {
