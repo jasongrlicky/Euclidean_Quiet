@@ -30,28 +30,27 @@ bool input_detect_rise_digital(int trig_in_value) {
 }
 
 EncoderIdx input_detect_enc_push(int channel_switch_val) {
-  bool enc_pushed = false;
-  EncoderIdx enc_idx = ENCODER_NONE;
+  // Early return: No encoder is pushed
   if (channel_switch_val < 100) {
-    // Nothing pushed
     channel_pressed_counter = 0;
+    return ENCODER_NONE;
+  }
+
+  EncoderIdx enc_idx;
+  if (channel_switch_val < 200) {
+    enc_idx = ENCODER_2;
+  } else if (channel_switch_val < 400) {
+    enc_idx = ENCODER_1;
   } else {
-    enc_pushed = true;
-    channel_pressed_counter++;
+    enc_idx = ENCODER_3;
+  }
+  
+  channel_pressed_counter++;
 
-    if (channel_switch_val < 200) {
-     enc_idx = ENCODER_2;
-    } else if (channel_switch_val < 400) {
-      enc_idx = ENCODER_1;
-    } else {
-      enc_idx = ENCODER_3;
-    }
+  // Early return: Encoder already registered as pushed
+  if (channel_pressed_counter > 1) {
+    return ENCODER_NONE;
   }
 
-  EncoderIdx result = ENCODER_NONE;
-  if (enc_pushed && (channel_pressed_counter <= 1)) {
-    result = enc_idx;
-  }
-
-  return result;
+  return enc_idx;
 }
