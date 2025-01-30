@@ -30,28 +30,22 @@ bool input_detect_rise_digital(int trig_in_value) {
 }
 
 EncoderIdx input_detect_enc_push(int channel_switch_val) {
-  bool enc_pushed;
-  EncoderIdx enc_idx;
+  bool enc_pushed = false;
+  EncoderIdx enc_idx = ENCODER_NONE;
   if (channel_switch_val < 100) {
     // Nothing pushed
-    enc_pushed = false;
-    enc_idx = ENCODER_NONE;
     channel_pressed_counter = 0;
-  } else if (channel_switch_val < 200) {
-    // Density pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_2;
-    channel_pressed_counter++;
-  } else if (channel_switch_val < 400) {
-    // Length pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_1;
-    channel_pressed_counter++;
   } else {
-    // Offset pushed
     enc_pushed = true;
-    enc_idx = ENCODER_3;
     channel_pressed_counter++;
+
+    if (channel_switch_val < 200) {
+     enc_idx = ENCODER_2;
+    } else if (channel_switch_val < 400) {
+      enc_idx = ENCODER_1;
+    } else {
+      enc_idx = ENCODER_3;
+    }
   }
 
   EncoderIdx result = ENCODER_NONE;
