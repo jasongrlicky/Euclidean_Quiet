@@ -616,26 +616,26 @@ void loop() {
 
   // ENCODER MOVEMENT
   if (timeout_fired(&encoder_read_timeout, time)) {
-    // Encoder 1: LENGTH (CH1)
-    int val_enc_1 = encoder_read(Enc1);
+    int val_enc_1 = encoder_read(Enc1); // LENGTH (CH1)
     if (val_enc_1 != 0) {
-      timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_1] = val_enc_1;
     }
 
-    // Encoder 2: DENSITY (CH2)
-    int val_enc_2 = encoder_read(Enc2);
+    int val_enc_2 = encoder_read(Enc2); // DENSITY (CH2)
     if (val_enc_2 != 0) {
-      timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_2] = val_enc_2;
     }
 
-    // Encoder 3: OFFSET (CH3)
-    int val_enc_3 = encoder_read(Enc3);
+    int val_enc_3 = encoder_read(Enc3); // OFFSET (CH3)
     if (val_enc_3 != 0) {
-      timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_3] = val_enc_3;
     }
+  }
+  bool move_detected = (events_in.enc_move[ENCODER_1] != 0) ||
+                       (events_in.enc_move[ENCODER_2] != 0) ||
+                       (events_in.enc_move[ENCODER_3] != 0);
+  if (move_detected) { 
+    timeout_reset(&encoder_read_timeout, time);
   }
 
   // ENCODER PUSHES
