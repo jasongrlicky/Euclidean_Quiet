@@ -610,11 +610,11 @@ void loop() {
 
   // Reset Input & Button
   int reset_in_value = analogRead(PIN_IN_RESET);
-  events_in.reset = input_detect_rise_analog(reset_in_value);
+  events_in.reset = input_detect_rise_reset(reset_in_value);
 
   // Trig Input 
   int trig_in_value = digitalRead(PIN_IN_TRIG);
-  events_in.trig = input_detect_rise_digital(trig_in_value);
+  events_in.trig = input_detect_rise_trig(trig_in_value);
 
   // Encoder Movement
   bool move_detected = false;

@@ -8,14 +8,14 @@ static int trig_in_value_previous = 0;
 
 static bool encoder_pushed = false;
 
-bool input_detect_rise_analog(int reset_in_value) {
+bool input_detect_rise_reset(int reset_in_value) {
   bool above_threshold = (reset_in_value >= RESET_PIN_THRESHOLD);
   bool should_toggle = reset_active ^ above_threshold;
   reset_active ^= should_toggle;
   return (reset_active && should_toggle);
 }
 
-bool input_detect_rise_digital(int trig_in_value) {
+bool input_detect_rise_trig(int trig_in_value) {
   bool result = (trig_in_value > trig_in_value_previous);
 
   trig_in_value_previous = trig_in_value;
