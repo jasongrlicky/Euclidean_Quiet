@@ -688,6 +688,14 @@ void loop() {
     events_in.enc_push = enc_idx;
   }
 
+  /* INPUT LOGGING */
+
+  #if LOGGING_ENABLED && LOGGING_INPUT
+  if (events_in.reset) {
+    Serial.println("INPUT: Reset");
+  }
+  #endif
+
   /* HANDLE INPUT */
 
   // Handle Encoder Pushes
@@ -1177,10 +1185,6 @@ static bool input_detect_reset(int reset_in_value) {
     reset_active = true;
 
     result = true;
-
-    #if LOGGING_ENABLED && LOGGING_INPUT
-    Serial.println("INPUT: Reset");
-    #endif
   }
   if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
     reset_active = false;
