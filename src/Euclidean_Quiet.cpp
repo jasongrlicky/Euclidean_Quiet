@@ -621,11 +621,6 @@ void loop() {
     if (val_enc_1 != 0) {
       timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_1] = val_enc_1;
-
-      #if LOGGING_ENABLED && LOGGING_INPUT
-      Serial.print("ENC_1: Move ");
-      Serial.println(val_enc_1);
-      #endif
     }
 
     // Encoder 2: DENSITY (CH2)
@@ -633,11 +628,6 @@ void loop() {
     if (val_enc_2 != 0) {
       timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_2] = val_enc_2;
-
-      #if LOGGING_ENABLED && LOGGING_INPUT
-      Serial.print("ENC_2: Move ");
-      Serial.println(val_enc_2);
-      #endif
     }
 
     // Encoder 3: OFFSET (CH3)
@@ -645,11 +635,6 @@ void loop() {
     if (val_enc_3 != 0) {
       timeout_reset(&encoder_read_timeout, time);
       events_in.enc_move[ENCODER_3] = val_enc_3;
-
-      #if LOGGING_ENABLED && LOGGING_INPUT
-      Serial.print("ENC_3: Move ");
-      Serial.println(val_enc_3);
-      #endif
     }
   }
 
@@ -657,7 +642,7 @@ void loop() {
   int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
   events_in.enc_push = input_detect_enc_push(channel_switch_val);
 
-  /* INPUT LOGGING */
+  /* INPUT EVENT LOGGING */
 
   #if LOGGING_ENABLED && LOGGING_INPUT
   if (events_in.reset) {
@@ -665,6 +650,18 @@ void loop() {
   }
   if (events_in.trig) {
     Serial.println("INPUT: Trigger");
+  }
+  if (events_in.enc_move[ENCODER_1] != 0) {
+    Serial.print("ENC_1: Move ");
+    Serial.println(events_in.enc_move[ENCODER_1]);
+  }
+  if (events_in.enc_move[ENCODER_2] != 0) {
+    Serial.print("ENC_2: Move ");
+    Serial.println(events_in.enc_move[ENCODER_2]);
+  }
+  if (events_in.enc_move[ENCODER_3] != 0) {
+    Serial.print("ENC_3: Move ");
+    Serial.println(events_in.enc_move[ENCODER_3]);
   }
   #endif
 
