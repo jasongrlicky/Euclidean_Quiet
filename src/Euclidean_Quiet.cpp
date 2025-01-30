@@ -514,6 +514,9 @@ static void led_wake();
 static void led_anim_wake();
 static void led_anim_sleep();
 static void startUpOK();
+#if LOGGING_ENABLED && LOGGING_INPUT
+static void log_input_events(InputEvents *events);
+#endif
 
 /// Initialize the MAX72XX LED Matrix
 void led_init(void) {
@@ -635,27 +638,8 @@ void loop() {
   int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
   events_in.enc_push = input_detect_enc_push(channel_switch_val);
 
-  /* INPUT EVENT LOGGING */
-
   #if LOGGING_ENABLED && LOGGING_INPUT
-  if (events_in.reset) {
-    Serial.println("INPUT: Reset");
-  }
-  if (events_in.trig) {
-    Serial.println("INPUT: Trigger");
-  }
-  if (events_in.enc_move[ENCODER_1] != 0) {
-    Serial.print("ENC_1: Move ");
-    Serial.println(events_in.enc_move[ENCODER_1]);
-  }
-  if (events_in.enc_move[ENCODER_2] != 0) {
-    Serial.print("ENC_2: Move ");
-    Serial.println(events_in.enc_move[ENCODER_2]);
-  }
-  if (events_in.enc_move[ENCODER_3] != 0) {
-    Serial.print("ENC_3: Move ");
-    Serial.println(events_in.enc_move[ENCODER_3]);
-  }
+  log_input_events(&events_in);
   #endif
 
   /* HANDLE INPUT */
@@ -1533,3 +1517,26 @@ static void startUpOK() {
   digitalWrite(PIN_OUT_CHANNEL_3, LOW);
   delay(200);
 }
+
+#if LOGGING_ENABLED && LOGGING_INPUT
+static void log_input_events(InputEvents *events) {
+  if (events->reset) {
+    Serial.println("INPUT: Reset");
+  }
+  if (events->trig) {
+    Serial.println("INPUT: Trigger");
+  }
+  if (events->enc_move[ENCODER_1] != 0) {
+    Serial.print("ENC_1: Move ");
+    Serial.println(events->enc_move[ENCODER_1]);
+  }
+  if (events->enc_move[ENCODER_2] != 0) {
+    Serial.print("ENC_2: Move ");
+    Serial.println(events->enc_move[ENCODER_2]);
+  }
+  if (events->enc_move[ENCODER_3] != 0) {
+    Serial.print("ENC_3: Move ");
+    Serial.println(events->enc_move[ENCODER_3]);
+  }
+}
+#endif
