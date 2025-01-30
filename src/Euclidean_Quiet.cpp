@@ -444,6 +444,7 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /// Returns true if `events` contains any externally-generated events
 static bool input_events_contains_any_external(InputEvents *events);
+static bool input_detect_reset(int reset_in_value);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
@@ -603,25 +604,12 @@ void loop() {
 
   InputEvents events_in = INPUT_EVENTS_EMPTY;
 
-  // READ TRIG AND RESET INPUTS
-  int trig_in_value = digitalRead(PIN_IN_TRIG);
+  // READ RESET INPUT & BUTTON
   int reset_in_value = analogRead(A1);
+  events_in.reset = input_detect_reset(reset_in_value);
 
-  // RESET INPUT & BUTTON
-  if ((!reset_active) && (reset_in_value >= RESET_PIN_THRESHOLD)) {
-    reset_active = true;
-
-    events_in.reset = true;
-
-    #if LOGGING_ENABLED && LOGGING_INPUT
-    Serial.println("INPUT: Reset");
-    #endif
-  }
-  if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
-    reset_active = false;
-  }
-
-  // TRIG INPUT 
+  // READ TRIG INPUT 
+  int trig_in_value = digitalRead(PIN_IN_TRIG);
   if (trig_in_value > trig_in_value_previous) { 
     events_in.trig = true;
 
@@ -1180,6 +1168,23 @@ static bool input_events_contains_any_external(InputEvents *events) {
     (events->enc_move[CHANNEL_2] != 0) ||
     (events->enc_move[CHANNEL_3] != 0)
   );
+  return result;
+}
+
+static bool input_detect_reset(int reset_in_value) {
+  bool result = false;
+  if ((!reset_active) && (reset_in_value >= RESET_PIN_THRESHOLD)) {
+    reset_active = true;
+
+    result = true;
+
+    #if LOGGING_ENABLED && LOGGING_INPUT
+    Serial.println("INPUT: Reset");
+    #endif
+  }
+  if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
+    reset_active = false;
+  }
   return result;
 }
 
