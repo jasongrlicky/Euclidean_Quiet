@@ -35,6 +35,4 @@
 // Number of columns in LED Matrix
 #define LED_COLUMNS 8
 
-#define RESET_PIN_THRESHOLD 100
-
 #endif /* HARDWARE_H_ */ 

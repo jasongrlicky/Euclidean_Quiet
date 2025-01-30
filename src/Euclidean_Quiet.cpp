@@ -8,6 +8,8 @@ extern "C" {
 #include <Encoder.h>
 #include <LedControl.h>
 
+#include "input.h"
+
 extern "C" {
 #include <euclidean.h>
 #include "hardware.h"
@@ -381,9 +383,6 @@ static Timeout playhead_idle_timeout = { .duration = PLAYHEAD_IDLE_TIME };
 static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
 #endif
 
-/// For recognizing trigger in rising edges
-static int trig_in_value_previous = 0; 
-static bool reset_active = false;
 static unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 
@@ -456,8 +455,6 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /// Returns true if `events` contains any externally-generated events
 static bool input_events_contains_any_external(InputEvents *events);
-static bool input_detect_reset(int reset_in_value);
-static bool input_detect_trig(int trig_in_value);
 static EncoderIdx input_detect_enc_push(int channel_switch_val);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
@@ -1121,27 +1118,6 @@ static bool input_events_contains_any_external(InputEvents *events) {
     (events->enc_move[CHANNEL_2] != 0) ||
     (events->enc_move[CHANNEL_3] != 0)
   );
-  return result;
-}
-
-static bool input_detect_reset(int reset_in_value) {
-  bool result = false;
-  if ((!reset_active) && (reset_in_value >= RESET_PIN_THRESHOLD)) {
-    reset_active = true;
-
-    result = true;
-  }
-  if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
-    reset_active = false;
-  }
-  return result;
-}
-
-static bool input_detect_trig(int trig_in_value) {
-  bool result = (trig_in_value > trig_in_value_previous);
-
-  trig_in_value_previous = trig_in_value;
-  
   return result;
 }
 
