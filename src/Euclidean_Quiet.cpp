@@ -1164,14 +1164,6 @@ void loop() {
   #endif
 }
 
-static bool input_detect_trig(int trig_in_value) {
-  bool result = (trig_in_value > trig_in_value_previous);
-
-  trig_in_value_previous = trig_in_value;
-  
-  return result;
-}
-
 static bool input_events_contains_any_external(InputEvents *events) {
   bool result = (
     events->trig ||
@@ -1194,6 +1186,14 @@ static bool input_detect_reset(int reset_in_value) {
   if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
     reset_active = false;
   }
+  return result;
+}
+
+static bool input_detect_trig(int trig_in_value) {
+  bool result = (trig_in_value > trig_in_value_previous);
+
+  trig_in_value_previous = trig_in_value;
+  
   return result;
 }
 
