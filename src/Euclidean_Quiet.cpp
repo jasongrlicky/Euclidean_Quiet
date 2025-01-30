@@ -622,9 +622,7 @@ void loop() {
   if (timeout_fired(&encoder_read_timeout, time)) {
     for (uint8_t enc_idx = 0; enc_idx < NUM_ENCODERS; enc_idx++) {
       int val = encoder_read(encoders[enc_idx]);
-      if (val != 0) {
-        events_in.enc_move[enc_idx] = val;
-      }
+      events_in.enc_move[enc_idx] = val;
     }
   }
   bool move_detected = (events_in.enc_move[ENCODER_1] != 0) ||
