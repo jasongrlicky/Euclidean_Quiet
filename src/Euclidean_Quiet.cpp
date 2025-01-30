@@ -312,6 +312,14 @@ typedef enum Channel {
   CHANNEL_3,
 } Channel;
 
+/// Channel that is wrapped as an optional value
+typedef struct ChannelOpt {
+  Channel inner;
+  bool valid;
+} ChannelOpt;
+
+static const ChannelOpt CHANNEL_OPT_NONE = { .inner = CHANNEL_1, .valid = false };
+
 /// A parameter of the Euclidean rhythm generator
 enum EuclideanParam {
   EUCLIDEAN_PARAM_NONE,
@@ -451,6 +459,7 @@ static bool input_events_contains_any_external(InputEvents *events);
 static bool input_detect_reset(int reset_in_value);
 static bool input_detect_trig(int trig_in_value);
 static EncoderIdx input_detect_enc_push(int channel_switch_val);
+static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
@@ -644,18 +653,9 @@ void loop() {
   /* HANDLE INPUT */
 
   // Handle Encoder Pushes
-  switch (events_in.enc_push) {
-    case ENCODER_1:
-      active_channel = CHANNEL_2;
-      break;
-    case ENCODER_2:
-      active_channel = CHANNEL_3;
-      break;
-    case ENCODER_3:
-      active_channel = CHANNEL_1;
-      break;
-    default:
-      break;
+  ChannelOpt active_channel_new = channel_for_encoder(events_in.enc_push);
+  if (active_channel_new.valid) {
+    active_channel = active_channel_new.inner;
   }
 
   EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
@@ -1176,6 +1176,23 @@ static EncoderIdx input_detect_enc_push(int channel_switch_val) {
   }
 
   return result;
+}
+
+static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
+  switch (enc_idx) {
+    case ENCODER_1:
+      return { .inner = CHANNEL_2, .valid = true };
+      break;
+    case ENCODER_2:
+      return { .inner = CHANNEL_3, .valid = true };
+      break;
+    case ENCODER_3:
+      return { .inner = CHANNEL_1, .valid = true };
+      break;
+    default:
+      return CHANNEL_OPT_NONE;
+      break;
+  }
 }
 
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period) {
