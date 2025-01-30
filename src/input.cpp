@@ -9,16 +9,10 @@ static int trig_in_value_previous = 0;
 static bool encoder_pushed = false;
 
 bool input_detect_rise_analog(int reset_in_value) {
-  bool result = false;
-  if ((!reset_active) && (reset_in_value >= RESET_PIN_THRESHOLD)) {
-    reset_active = true;
-
-    result = true;
-  }
-  if (reset_active && (reset_in_value < RESET_PIN_THRESHOLD)) {
-    reset_active = false;
-  }
-  return result;
+  bool above_threshold = (reset_in_value >= RESET_PIN_THRESHOLD);
+  bool should_toggle = reset_active ^ above_threshold;
+  reset_active ^= should_toggle;
+  return (reset_active && should_toggle);
 }
 
 bool input_detect_rise_digital(int trig_in_value) {
