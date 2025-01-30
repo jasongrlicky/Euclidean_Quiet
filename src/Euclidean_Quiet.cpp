@@ -619,15 +619,14 @@ void loop() {
   events_in.trig = input_detect_trig(trig_in_value);
 
   // Encoder Movement
+  bool move_detected = false;
   if (timeout_fired(&encoder_read_timeout, time)) {
     for (uint8_t enc_idx = 0; enc_idx < NUM_ENCODERS; enc_idx++) {
       int val = encoder_read(encoders[enc_idx]);
       events_in.enc_move[enc_idx] = val;
+      move_detected |= (val != 0);
     }
   }
-  bool move_detected = (events_in.enc_move[ENCODER_1] != 0) ||
-                       (events_in.enc_move[ENCODER_2] != 0) ||
-                       (events_in.enc_move[ENCODER_3] != 0);
   if (move_detected) { 
     timeout_reset(&encoder_read_timeout, time);
   }
