@@ -476,7 +476,6 @@ static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
-static void active_channel_set(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
 #define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
 #define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
@@ -595,7 +594,7 @@ void setup() {
   led_wake();
 
   // Select first channel on startup
-  active_channel_set(CHANNEL_1);
+  active_channel = CHANNEL_1;
 
   // Draw initial UI
   draw_channels();
@@ -647,13 +646,13 @@ void loop() {
   // Handle Encoder Pushes
   switch (events_in.enc_push) {
     case ENCODER_1:
-      active_channel_set(CHANNEL_2);
+      active_channel = CHANNEL_2;
       break;
     case ENCODER_2:
-      active_channel_set(CHANNEL_3);
+      active_channel = CHANNEL_3;
       break;
     case ENCODER_3:
-      active_channel_set(CHANNEL_1);
+      active_channel = CHANNEL_1;
       break;
     default:
       break;
@@ -1365,11 +1364,6 @@ static int encoder_read(Encoder& enc) {
     enc.write(0);
   }
   return result;
-}
-
-static void active_channel_set(Channel channel) {
-  // Update state
-  active_channel = channel;
 }
 
 static uint8_t output_channel_led_x(OutputChannel channel) {
