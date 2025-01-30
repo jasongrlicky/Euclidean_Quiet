@@ -44,13 +44,13 @@ EncoderIdx input_detect_enc_push(int channel_switch_val) {
   } else {
     enc_idx = ENCODER_3;
   }
-  
-  channel_pressed_counter++;
 
   // Early return: Encoder already registered as pushed
-  if (channel_pressed_counter > 1) {
+  if (channel_pressed_counter > 0) {
     return ENCODER_NONE;
   }
+  
+  channel_pressed_counter++;
 
   return enc_idx;
 }
