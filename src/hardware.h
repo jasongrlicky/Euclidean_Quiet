@@ -27,6 +27,14 @@
 // Number of encoders on the module
 #define NUM_ENCODERS 3
 
+/// Represents, optionally, one of the three encoders
+enum EncoderIdx {
+  ENCODER_1 = 0,
+  ENCODER_2 = 1,
+  ENCODER_3 = 2,
+  ENCODER_NONE = 4,
+};
+
 // LED Matrix address
 #define LED_ADDR 0
 

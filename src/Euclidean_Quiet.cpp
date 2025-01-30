@@ -253,14 +253,6 @@ extern "C" {
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
-/// Represents, optionally, one of the three encoders
-enum EncoderIdx {
-  ENCODER_1 = 0,
-  ENCODER_2 = 1,
-  ENCODER_3 = 2,
-  ENCODER_NONE = 4,
-};
-
 // Initialize objects for reading encoders
 // (from the Encoder.h library)
 static Encoder encoders[NUM_ENCODERS] = {
@@ -383,7 +375,6 @@ static Timeout playhead_idle_timeout = { .duration = PLAYHEAD_IDLE_TIME };
 static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
 #endif
 
-static unsigned long channelPressedCounter = 0;
 static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 
 typedef struct AdjustmentDisplayState {
@@ -455,7 +446,6 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /// Returns true if `events` contains any externally-generated events
 static bool input_events_contains_any_external(InputEvents *events);
-static EncoderIdx input_detect_enc_push(int channel_switch_val);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
@@ -1118,39 +1108,6 @@ static bool input_events_contains_any_external(InputEvents *events) {
     (events->enc_move[CHANNEL_2] != 0) ||
     (events->enc_move[CHANNEL_3] != 0)
   );
-  return result;
-}
-
-static EncoderIdx input_detect_enc_push(int channel_switch_val) {
-  bool enc_pushed;
-  EncoderIdx enc_idx;
-  if (channel_switch_val < 100) {
-    // Nothing pushed
-    enc_pushed = false;
-    enc_idx = ENCODER_NONE;
-    channelPressedCounter = 0;
-  } else if (channel_switch_val < 200) {
-    // Density pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_2;
-    channelPressedCounter++;
-  } else if (channel_switch_val < 400) {
-    // Length pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_1;
-    channelPressedCounter++;
-  } else {
-    // Offset pushed
-    enc_pushed = true;
-    enc_idx = ENCODER_3;
-    channelPressedCounter++;
-  }
-
-  EncoderIdx result = ENCODER_NONE;
-  if (enc_pushed && (channelPressedCounter <= 1)) {
-    result = enc_idx;
-  }
-
   return result;
 }
 
