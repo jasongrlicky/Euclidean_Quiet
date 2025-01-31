@@ -278,11 +278,20 @@ static const ChannelOpt CHANNEL_OPT_NONE = { .inner = CHANNEL_1, .valid = false 
 
 /// A parameter of the Euclidean rhythm generator
 enum EuclideanParam {
-  EUCLIDEAN_PARAM_NONE,
   EUCLIDEAN_PARAM_LENGTH,
   EUCLIDEAN_PARAM_DENSITY,
   EUCLIDEAN_PARAM_OFFSET,
 };
+
+/// Euclidean parameter that is wrapped as an optional value
+typedef struct EuclideanParamOpt {
+  EuclideanParam inner;
+  bool valid;
+} EuclideanParamOpt;
+
+static const EuclideanParamOpt EUCLIDEAN_PARAM_OPT_NONE = { .inner = EUCLIDEAN_PARAM_LENGTH, .valid = false };
+/// Wrap the provided value as an occupied optional
+static EuclideanParamOpt euclidean_param_opt(EuclideanParam inner) { return (EuclideanParamOpt) { .inner= inner, .valid = true }; }
 
 /// State of the Euclidean rhythm generator and sequencer for a single channel
 typedef struct EuclideanChannelState {
@@ -348,7 +357,7 @@ typedef struct AdjustmentDisplayState {
 } AdjustmentDisplayState;
 static AdjustmentDisplayState adjustment_display_state = {
   .channel = CHANNEL_1,
-  .parameter = EUCLIDEAN_PARAM_NONE,
+  .parameter = EUCLIDEAN_PARAM_LENGTH,
   .visible = false,
 };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
@@ -497,7 +506,7 @@ void loop() {
     active_channel = active_channel_new.inner;
   }
 
-  EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
+  EuclideanParamOpt param_changed = EUCLIDEAN_PARAM_OPT_NONE;
   #if EEPROM_WRITE && EEPROM_DEFER
   EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
   #endif
@@ -505,7 +514,7 @@ void loop() {
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
   if (nknob != 0) {
-    param_changed = EUCLIDEAN_PARAM_LENGTH;
+    param_changed = euclidean_param_opt(EUCLIDEAN_PARAM_LENGTH);
 
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -581,7 +590,7 @@ void loop() {
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
   if (kknob != 0) {
-    param_changed = EUCLIDEAN_PARAM_DENSITY;
+    param_changed = euclidean_param_opt(EUCLIDEAN_PARAM_DENSITY);
 
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -619,7 +628,7 @@ void loop() {
   // Handle Offset Knob Movement
   int oknob = events_in.enc_move[ENCODER_3];
   if (oknob != 0) {
-    param_changed = EUCLIDEAN_PARAM_OFFSET;
+    param_changed = euclidean_param_opt(EUCLIDEAN_PARAM_OFFSET);
 
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -655,7 +664,7 @@ void loop() {
   }
 
   // Update Generated Rhythms Based On Parameter Changes
-  if (param_changed != EUCLIDEAN_PARAM_NONE) {
+  if (param_changed.valid) {
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
@@ -665,10 +674,10 @@ void loop() {
     generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
     #if LOGGING_ENABLED
-    if (param_changed == EUCLIDEAN_PARAM_LENGTH) {
+    if (param_changed.inner == EUCLIDEAN_PARAM_LENGTH) {
       Serial.print("length: ");
       Serial.println(length);
-    } else if (param_changed == EUCLIDEAN_PARAM_DENSITY) {
+    } else if (param_changed.inner == EUCLIDEAN_PARAM_DENSITY) {
       Serial.print("density: ");
       Serial.println(density);
     } else {
@@ -847,7 +856,7 @@ void loop() {
   // Tracks if the screen needs to be redrawn. 
   bool needs_redraw = sequencers_updated || playhead_blink_updated;
 
-  if (param_changed == EUCLIDEAN_PARAM_NONE) {
+  if (!param_changed.valid) {
     // If no parameters have changed, check if the adjustment display still 
     // needs to be shown, and hide it if it doesn't
     if (adjustment_display_state.visible) {
@@ -860,7 +869,7 @@ void loop() {
   } else {
     // If parameters have changed, reset the adjustment display timeout and state
     adjustment_display_state.channel = active_channel;
-    adjustment_display_state.parameter = param_changed;
+    adjustment_display_state.parameter = param_changed.inner;
     adjustment_display_state.visible = true;
     timeout_reset(&adjustment_display_timeout, time);
 
