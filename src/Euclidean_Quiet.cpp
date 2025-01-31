@@ -8,6 +8,7 @@
 #include "hardware.h"
 #include "input.h"
 #include "led.h"
+#include "led_sleep.h"
 #include "output.h"
 #include "timeout.h"
 #include "types.h"
@@ -352,9 +353,6 @@ static AdjustmentDisplayState adjustment_display_state = {
 };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
-extern bool led_sleep_mode_active;
-static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
-
 typedef struct EuclideanChannelUpdate {
   uint8_t length;
   uint8_t density;
@@ -450,7 +448,7 @@ static void log_input_events(InputEvents *events);
 
 void setup() {
   time = millis();
-  timeout_reset(&led_sleep_timeout, time);
+  led_sleep_reset(time);
 
   led_init();
   eeprom_load(&euclidean_state);
@@ -880,23 +878,15 @@ void loop() {
   /* UPDATE LED SLEEP */
 
   if (input_events_contains_any_external(&events_in)) {
-    timeout_reset(&led_sleep_timeout, time);
+    led_sleep_reset(time);
   }
-  if (led_sleep_mode_active) {
-    // LED is sleeping:
-    // If it has been less than LED_SLEEP_TIME since an interaction event has
-    // been received, wake the LED
-    if (!timeout_fired(&led_sleep_timeout, time)) {
-      led_wake();
-      draw_channels();
-      draw_active_channel_display();
-    }
-  } else {
-    // LED is awake:
-    // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
-    if (timeout_fired(&led_sleep_timeout, time)) {
-      led_sleep();
-    }
+  LedSleepUpdate sleep_update = led_sleep_update(time);
+  if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
+    led_wake();
+    draw_channels();
+    draw_active_channel_display();
+  } else if (sleep_update == LED_SLEEP_UPDATE_SLEEP) {
+    led_sleep();
   }
 
   /* EEPROM WRITES */

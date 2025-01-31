@@ -3,8 +3,6 @@
 #include "config.h"
 #include "hardware.h"
 
-bool led_sleep_mode_active = false;
-
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
 // 1 is maximum number of devices that can be controlled
@@ -33,16 +31,12 @@ void led_set_row(uint8_t row, uint8_t pixels) {
 
 // cppcheck-suppress unusedFunction
 void led_sleep() {
-  led_sleep_mode_active = true;
-
   led_anim_sleep();
   lc.shutdown(LED_ADDR, true);
 }
 
 // cppcheck-suppress unusedFunction
 void led_wake() {
-  led_sleep_mode_active = false;
-
   lc.shutdown(LED_ADDR, false);
   led_anim_wake();
 }
