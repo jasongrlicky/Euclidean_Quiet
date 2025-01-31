@@ -17,7 +17,7 @@ static void led_anim_sleep();
 
 /* EXTERNAL */
 
-/// Initialize the MAX72XX LED Matrix
+// cppcheck-suppress unusedFunction
 void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
@@ -26,10 +26,12 @@ void led_init(void) {
   lc.clearDisplay(LED_ADDR);
 }
 
+// cppcheck-suppress unusedFunction
 void led_set_row(uint8_t row, uint8_t pixels) {
   lc.setRow(LED_ADDR, row, pixels);
 }
 
+// cppcheck-suppress unusedFunction
 void led_sleep() {
   led_sleep_mode_active = true;
 
@@ -37,6 +39,7 @@ void led_sleep() {
   lc.shutdown(LED_ADDR, true);
 }
 
+// cppcheck-suppress unusedFunction
 void led_wake() {
   led_sleep_mode_active = false;
 

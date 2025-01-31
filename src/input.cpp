@@ -57,6 +57,7 @@ static int encoder_read(Encoder& enc);
 
 /* EXTERNAL */
 
+// cppcheck-suppress unusedFunction
 void input_update(InputEvents *events, Milliseconds now) {
   // Reset Input & Button
   int reset_in_value = analogRead(PIN_IN_RESET);
@@ -85,6 +86,7 @@ void input_update(InputEvents *events, Milliseconds now) {
 
 }
 
+// cppcheck-suppress unusedFunction
 bool input_events_contains_any_external(InputEvents *events) {
   bool result = (
     events->trig ||
