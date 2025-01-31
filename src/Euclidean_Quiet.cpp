@@ -22,6 +22,7 @@
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
     - LED sleep timeout now takes into account encoder manipulations
+    - LED now dims itself before sleeping
   - UI Polish:
     - All steps of a generated pattern are now visible at all times - no more sequencer pages.
     - The steps of a pattern are visible while adjusting its length.
