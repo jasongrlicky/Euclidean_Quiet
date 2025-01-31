@@ -532,7 +532,9 @@ void loop() {
   }
 
   EuclideanParam param_changed = EUCLIDEAN_PARAM_NONE;
+  #if EEPROM_WRITE && EEPROM_DEFER
   EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
+  #endif
 
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
@@ -931,10 +933,9 @@ void loop() {
 
   /* EEPROM WRITES */
 
+  #if EEPROM_WRITE && EEPROM_DEFER
   if (params_update.length_changed) {
-    #if EEPROM_WRITE && EEPROM_DEFER
     EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
-    #endif
       
     #if LOGGING_ENABLED && LOGGING_EEPROM
     Serial.print("EEPROM Write: Length= ");
@@ -945,9 +946,7 @@ void loop() {
   }
 
   if (params_update.density_changed) {
-    #if EEPROM_WRITE && EEPROM_DEFER
     EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
-    #endif
       
     #if LOGGING_ENABLED && LOGGING_EEPROM
     Serial.print("EEPROM Write: Density= ");
@@ -958,9 +957,7 @@ void loop() {
   }
   
   if (params_update.offset_changed) {
-    #if EEPROM_WRITE && EEPROM_DEFER
     EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
-    #endif
 
     #if LOGGING_ENABLE && LOGGING_EEPROM
     Serial.print("EEPROM Write: Offset= ");
@@ -969,6 +966,7 @@ void loop() {
     Serial.println(params_update.offset);
     #endif
   }
+  #endif
 
   #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
   Microseconds cycle_time = micros() - cycle_time_start;
