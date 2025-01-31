@@ -405,7 +405,7 @@ Microseconds cycle_time_max;
 static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVAL };
 #endif
 
-/* INTERNAL */
+/* DECLARATIONS */
 
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
@@ -474,7 +474,7 @@ static void log_input_events(InputEvents *events);
 #endif
 
 /// Initialize the MAX72XX LED Matrix
-void led_init(void) {
+static void led_init(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
   lc.shutdown(LED_ADDR, false);
@@ -502,7 +502,7 @@ static void validate_euclidean_state(EuclideanState *s) {
 }
 
 /// Turn on pull-up resistors for encoders
-void encoders_init(void) {
+static void encoders_init(void) {
   digitalWrite(PIN_ENC_1A, HIGH);
   digitalWrite(PIN_ENC_1B, HIGH);
   digitalWrite(PIN_ENC_2A, HIGH);
@@ -511,14 +511,14 @@ void encoders_init(void) {
   digitalWrite(PIN_ENC_3B, HIGH);
 }
 
-void serial_init(void) {
+static void serial_init(void) {
   #if LOGGING_ENABLED
   Serial.begin(9600);
   #endif
 }
 
 /// Set up IO pins
-void io_pins_init(void) {
+static void io_pins_init(void) {
   pinMode(PIN_IN_TRIG, INPUT);
 
   pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
