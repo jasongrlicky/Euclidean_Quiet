@@ -5,7 +5,6 @@ extern "C" {
 #if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>
 #endif
-#include <Encoder.h>
 #include <LedControl.h>
 
 #include "input.h"
@@ -253,17 +252,6 @@ extern "C" {
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
-// Initialize objects for reading encoders
-// (from the Encoder.h library)
-static Encoder encoders[NUM_ENCODERS] = {
-  // Length  (Ch1) / N
-  Encoder(PIN_ENC_2B, PIN_ENC_2A), 
-  // Density (Ch2) / K
-  Encoder(PIN_ENC_1B, PIN_ENC_1A), 
-  // Offset  (Ch3) / O
-  Encoder(PIN_ENC_3B, PIN_ENC_3A), 
-};
-
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
 // 1 is maximum number of devices that can be controlled
@@ -375,8 +363,6 @@ static Timeout playhead_idle_timeout = { .duration = PLAYHEAD_IDLE_TIME };
 static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
 #endif
 
-static Timeout encoder_read_timeout = { .duration = READ_DELAY };
-
 typedef struct AdjustmentDisplayState {
   /// Which channel is currently showing its adjustment display. Only one 
   /// adjustment display can be visible at a time.
@@ -441,7 +427,6 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 /// @param position The step at which to read. Must be < `length`.
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
-static int encoder_read(Encoder& enc);
 static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
@@ -581,32 +566,7 @@ void loop() {
   /* INPUT EVENTS */
 
   InputEvents events_in = INPUT_EVENTS_EMPTY;
-
-  // Reset Input & Button
-  int reset_in_value = analogRead(PIN_IN_RESET);
-  events_in.reset = input_detect_rise_reset(reset_in_value);
-
-  // Trig Input 
-  int trig_in_value = digitalRead(PIN_IN_TRIG);
-  events_in.trig = input_detect_rise_trig(trig_in_value);
-
-  // Encoder Movement
-  bool move_detected = false;
-  if (timeout_fired(&encoder_read_timeout, time)) {
-    for (uint8_t enc_idx = 0; enc_idx < NUM_ENCODERS; enc_idx++) {
-      int val = encoder_read(encoders[enc_idx]);
-      events_in.enc_move[enc_idx] = val;
-      move_detected |= (val != 0);
-    }
-  }
-  if (move_detected) { 
-    timeout_reset(&encoder_read_timeout, time);
-  }
-
-  // Encoder Pushes
-  int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
-  events_in.enc_push = input_detect_enc_push(channel_switch_val);
-
+  input_update(&events_in, time);
   #if LOGGING_ENABLED && LOGGING_INPUT
   log_input_events(&events_in);
   #endif
@@ -1256,26 +1216,6 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y) {
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t idx = length - position - 1;
   return (pattern >> idx) & 0x01;
-}
-
-/* Read an encoder
-  returns +1, 0 or -1 dependent on direction
-  Contains no internal debounce, so calls should be delayed
-*/
-static int encoder_read(Encoder& enc) {
-  int result = 0;
-  int32_t value_read = enc.read();
-  if (value_read == 0) {
-    enc.write(0);
-    result = 0;
-  } else if (value_read < -2) {
-    result = -1;
-    enc.write(0);
-  } else if (value_read > 2) {
-    result = 1;
-    enc.write(0);
-  }
-  return result;
 }
 
 static uint8_t output_channel_led_x(OutputChannel channel) {

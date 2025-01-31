@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "types.h"
 
 /// Record of any input events that were received this cycle
 typedef struct InputEvents {
@@ -27,6 +28,9 @@ const InputEvents INPUT_EVENTS_EMPTY = {
   .reset = false,
   .internal_clock_tick = false,
 };
+
+/// Populates the passed-in struct with events observed since last cycle.
+void input_update(InputEvents *events, Milliseconds now);
 
 /// Returns true if `events` contains any externally-generated events
 bool input_events_contains_any_external(InputEvents *events);
