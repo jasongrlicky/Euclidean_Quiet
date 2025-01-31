@@ -457,9 +457,9 @@ static void log_input_events(InputEvents *events);
 
 void setup() {
   time = millis();
-  led_sleep_reset(time);
 
   led_init();
+  led_sleep_init(time);
   eeprom_load(&euclidean_state);
   validate_euclidean_state(&euclidean_state);
   init_encoders();
@@ -886,12 +886,12 @@ void loop() {
 
   /* UPDATE LED SLEEP */
 
-  if (input_events_contains_any_external(&events_in)) {
-    led_sleep_reset(time);
-  }
-  LedSleepUpdate sleep_update = led_sleep_update(time);
+  bool postpone_sleep = input_events_contains_any_external(&events_in);
+  LedSleepUpdate sleep_update = led_sleep_update(postpone_sleep, time);
   if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
     led_wake();
+  } else if (sleep_update == LED_SLEEP_UPDATE_DIM) {
+    led_dim();
   } else if (sleep_update == LED_SLEEP_UPDATE_SLEEP) {
     led_sleep();
   }

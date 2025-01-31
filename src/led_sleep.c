@@ -3,31 +3,52 @@
 #include "config.h"
 #include "timeout.h"
 
-static bool led_sleep_mode_active = false;
+typedef enum LedSleepState {
+    LED_SLEEP_STATE_WAKE,
+    LED_SLEEP_STATE_DIM,
+    LED_SLEEP_STATE_SLEEP,
+} LedSleepState;
 
+static LedSleepState led_sleep_state = LED_SLEEP_STATE_WAKE;
+
+static Timeout led_dim_timeout = { .duration = LED_DIM_TIME };
 static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
 
-void led_sleep_reset(Milliseconds now) {
-    timeout_reset(&led_sleep_timeout, now);
+void led_sleep_init(Milliseconds now) {
+  timeout_reset(&led_dim_timeout, now);
+  timeout_reset(&led_sleep_timeout, now);
 }
 
-LedSleepUpdate led_sleep_update(Milliseconds now) {
-  LedSleepUpdate update = LED_SLEEP_UPDATE_NONE;
-  if (led_sleep_mode_active) {
-    // LED is sleeping:
-    // If it has been less than LED_SLEEP_TIME since an interaction event has
-    // been received, wake the LED
-    if (!timeout_fired(&led_sleep_timeout, now)) {
-        led_sleep_mode_active = false;
-        update = LED_SLEEP_UPDATE_WAKE;
+LedSleepUpdate led_sleep_update(bool postpone_sleep, Milliseconds now) {
+  // Handle transition to wake state
+  if (postpone_sleep) {
+    timeout_reset(&led_dim_timeout, now);
+    timeout_reset(&led_sleep_timeout, now);
+
+    LedSleepUpdate update = LED_SLEEP_UPDATE_NONE;
+    if (led_sleep_state != LED_SLEEP_STATE_WAKE) {
+      led_sleep_state = LED_SLEEP_STATE_WAKE;
+      update = LED_SLEEP_UPDATE_WAKE;
     }
-  } else {
-    // LED is awake:
-    // Sleep it if no inputs have been received or generated since LED_SLEEP_TIME ago
-    if (timeout_fired(&led_sleep_timeout, now)) {
-        led_sleep_mode_active = true;
-        update = LED_SLEEP_UPDATE_SLEEP;
+
+    return update;
+  }
+
+  // Handle transition from wake to dim
+  if (led_sleep_state == LED_SLEEP_STATE_WAKE) {
+    if (timeout_fired(&led_dim_timeout, now)) {
+        led_sleep_state = LED_SLEEP_STATE_DIM;
+        return LED_SLEEP_UPDATE_DIM;
     }
   }
-  return update;
+
+  // Handle transition from dim to sleep
+  if (led_sleep_state == LED_SLEEP_STATE_DIM) {
+    if (timeout_fired(&led_sleep_timeout, now)) {
+        led_sleep_state = LED_SLEEP_STATE_SLEEP;
+        return LED_SLEEP_UPDATE_SLEEP;
+    }
+  }
+
+  return LED_SLEEP_UPDATE_NONE;
 }

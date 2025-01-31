@@ -11,12 +11,12 @@ extern "C" {
 typedef enum LedSleepUpdate {
     LED_SLEEP_UPDATE_NONE,
     LED_SLEEP_UPDATE_WAKE,
+    LED_SLEEP_UPDATE_DIM,
     LED_SLEEP_UPDATE_SLEEP,
 } LedSleepUpdate;
 
-void led_sleep_reset(Milliseconds now);
-
-LedSleepUpdate led_sleep_update(Milliseconds now);
+void led_sleep_init(Milliseconds now);
+LedSleepUpdate led_sleep_update(bool postpone_sleep, Milliseconds now);
 
 #ifdef __cplusplus
 }

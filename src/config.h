@@ -5,7 +5,9 @@ extern "C" {
 #endif
 
 #define LED_BRIGHTNESS 5 // From 0 (low) to 15
+#define LED_BRIGHTNESS_DIM 1 // From 0 (low) to 15
 #define ADJUSTMENT_DISPLAY_TIME 450 // How long adjustments (such as to channel pattern length) are displayed for
+#define LED_DIM_TIME 270000 // Milliseconds until LED matrix dims (4 minutes 30 seconds)
 #define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
 #define INPUT_INDICATOR_FLASH_TIME 16 // Milliseconds input indicators flash when being illuminated
 #define OUTPUT_INDICATOR_BLINK_TIME 16 // Milliseconds output indicators blink for when being illuminated

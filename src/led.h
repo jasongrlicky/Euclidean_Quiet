@@ -24,6 +24,7 @@
 void led_init(void);
 void led_set_row(uint8_t row, uint8_t pixels);
 void led_sleep();
+void led_dim();
 void led_wake();
 
 #endif /* LED_H_ */ 
