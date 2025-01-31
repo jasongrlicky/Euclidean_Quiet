@@ -1,5 +1,8 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* HARDWARE CONSTANTS */
 
@@ -43,5 +46,9 @@ enum EncoderIdx {
 #define LED_ROWS 8
 // Number of columns in LED Matrix
 #define LED_COLUMNS 8
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* HARDWARE_H_ */ 

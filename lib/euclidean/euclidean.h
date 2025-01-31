@@ -1,5 +1,8 @@
 #ifndef EUCLIDEAN_H_
 #define EUCLIDEAN_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 
@@ -30,4 +33,7 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density);
 /// lowest-order bits of the return value.
 uint16_t pattern_rotate(uint16_t pattern, uint8_t pattern_len, uint8_t offset);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* EUCLIDEAN_H_ */ 

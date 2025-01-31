@@ -1,21 +1,16 @@
-extern "C" {
 #include "config.h"
-}
 
 #if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>
 #endif
 
-#include "input.h"
-#include "led.h"
-
-extern "C" {
 #include <euclidean.h>
 #include "hardware.h"
+#include "input.h"
+#include "led.h"
 #include "output.h"
 #include "timeout.h"
 #include "types.h"
-}
 
 /* 
   Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.

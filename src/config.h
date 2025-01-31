@@ -1,5 +1,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define LED_BRIGHTNESS 5 // From 0 (low) to 15
 #define ADJUSTMENT_DISPLAY_TIME 450 // How long adjustments (such as to channel pattern length) are displayed for
@@ -31,4 +34,7 @@
 #define LOGGING_CYCLE_TIME 1 // 0 = Don't log max cycle time in the last interval, 1 = Do log max cycle time
 #define LOGGING_CYCLE_TIME_INTERVAL 1000 // Milliseconds to capture the max cycle time during
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* CONFIG_H_ */ 

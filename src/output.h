@@ -1,5 +1,8 @@
 #ifndef OUTPUT_H_
 #define OUTPUT_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <Arduino.h>
 
@@ -21,4 +24,7 @@ void output_clear_all(void);
 
 bool output_any_active(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* OUTPUT_H_ */ 

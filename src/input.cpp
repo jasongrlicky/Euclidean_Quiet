@@ -3,10 +3,8 @@
 #include <Arduino.h>
 #include <Encoder.h>
 
-extern "C" {
 #include "config.h"
 #include "timeout.h"
-}
 
 /* CONFIG */
 

@@ -1,5 +1,8 @@
 #ifndef TIMEOUT_H_
 #define TIMEOUT_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 
@@ -40,4 +43,7 @@ void timeout_once_reset(TimeoutOnce *timeout_once, Milliseconds now);
 /// `true` if this is the first time after the timer has fired.
 bool timeout_once_fired(TimeoutOnce *timeout_once, Milliseconds now);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* TIMEOUT_H_ */ 
