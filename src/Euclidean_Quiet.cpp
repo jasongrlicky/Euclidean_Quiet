@@ -5,6 +5,7 @@
 #endif
 
 #include <euclidean.h>
+#include "framebuffer.h"
 #include "hardware.h"
 #include "input.h"
 #include "led.h"
@@ -232,19 +233,6 @@
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
-/// Represents a method of deciding on illumination of a pixel on the LED matrix
-/// display.
-typedef enum Color {
-  /// Do not light up this pixel
-  COLOR_OFF = 0,
-  /// Light up this pixel
-  COLOR_ON = 1,
-  /// Blink every other LED rapidly for this pixel
-  COLOR_DAZZLE = 2,
-  /// Show a fast marching ants pattern for this pixel
-  COLOR_ANTS = 3
-} Color;
-
 #define ANIM_DAZZLE_NUM_FRAMES 2
 static Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
 static uint8_t anim_dazzle_frame = 0;
@@ -253,14 +241,8 @@ static uint8_t anim_dazzle_frame = 0;
 static Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
 static uint8_t anim_ants_frame = 0;
 
-/// Buffer that can be drawn into and manipulated before being drawn to the
-/// hardware display. 2 bits per pixel, so it supports 4 colors.
-static uint16_t framebuffer[LED_ROWS];
-
-/// To keep latency from spiking, we only draw one row of the framebuffer to the
-/// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
-/// the framebuffer to keep visual latency equal for all rows. 
-static uint8_t framebuffer_out_row;
+extern uint16_t framebuffer[LED_ROWS];
+extern uint8_t framebuffer_out_row;
 
 /// References one of the three channels
 typedef enum Channel {
@@ -418,33 +400,6 @@ static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
-#define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
-#define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
-#define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))
-#define framebuffer_pixel_off_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_OFF))
-/// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate 
-/// system that is not mirrored left-to-right. Overwrites existing color.
-/// @param x Zero-indexed position, from left to right.
-/// @param y Zero-indexed position, from top to bottom.
-/// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
-/// or `1` turns it on.
-static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
-/// Like `framebuffer_pixel_set()`, but does not overwrite the existing color - it 
-/// is assumed to be `COLOR_OFF`. It also does not mark the row as needing a 
-/// redraw. You can mark the row as needing a redraw by calling
-/// `framebuffer_row_off()` before calling this function.
-/// @param x Zero-indexed position, from left to right.
-/// @param y Zero-indexed position, from top to bottom.
-/// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON` 
-/// or `1` turns it on.
-static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color);
-/// Clear a row of pixels on the framebuffer
-/// @param y Zero-indexed position, from top to bottom.
-#define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
-/// Set the color values directly for a row of pixels on the LED Matrix.
-/// Colors are 2-bit.
-/// @param y Zero-indexed position, from top to bottom.
-static inline void framebuffer_row_set(uint8_t y, uint16_t pixels);
 /// Copy one row of the framebuffer to the LED matrix. We only copy one row of 
 /// the framebuffer to the LED matrix per cycle to avoid having to wait on the 
 /// display driver chip.
@@ -1196,23 +1151,6 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
   return result;
 }
 
-static inline void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color) {
-  // Clear existing color
-  uint16_t mask = 0x0003; // Must be 16 bits because it gets inverted
-  framebuffer[y] &= ~(mask << (x * 2));
-
-  // Set new color
-  framebuffer[y] |= (color << (x * 2));
-}
-
-static inline void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
-  // Set new color
-  framebuffer[y] |= (color << (x * 2));
-}
-
-static inline void framebuffer_row_set(uint8_t y, uint16_t pixels) {
-  framebuffer[y] = pixels;
-}
 
 static void framebuffer_copy_row_to_display() {
   uint8_t row = (framebuffer_out_row) % LED_ROWS;
