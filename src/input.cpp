@@ -36,17 +36,17 @@ static Timeout encoder_read_timeout = { .duration = READ_DELAY };
 /// @brief Detects rising edge for reset input
 /// @param reset_in_value Raw reading from reset input pin
 /// @return `true` if a rising edge was detected, `false` otherwise
-static bool input_detect_rise_reset(int reset_in_value);
+static bool detect_rise_reset(int reset_in_value);
 
 /// @brief Detects rising edge for trigger input
 /// @param trig_in_value Raw reading from trig input pin
 /// @return `true` if a rising edge was detected, `false` otherwise
-static bool input_detect_rise_trig(int trig_in_value);
+static bool detect_rise_trig(int trig_in_value);
 
 /// @brief Detects initial event of an encoder being pushed
 /// @param channel_switch_val Raw reading from channel switch pin
 /// @return `true` if an encoder was pushed this cycle, `false` otherwise
-static EncoderIdx input_detect_enc_push(int channel_switch_val);
+static EncoderIdx detect_enc_push(int channel_switch_val);
 
 /// @brief Detect encoder movement
 /// @param enc Encoder object that abstracts reading encoders
@@ -59,11 +59,11 @@ static int encoder_read(Encoder& enc);
 void input_update(InputEvents *events, Milliseconds now) {
   // Reset Input & Button
   int reset_in_value = analogRead(PIN_IN_RESET);
-  events->reset = input_detect_rise_reset(reset_in_value);
+  events->reset = detect_rise_reset(reset_in_value);
 
   // Trig Input 
   int trig_in_value = digitalRead(PIN_IN_TRIG);
-  events->trig = input_detect_rise_trig(trig_in_value);
+  events->trig = detect_rise_trig(trig_in_value);
 
   // Encoder Movement
   bool move_detected = false;
@@ -80,7 +80,7 @@ void input_update(InputEvents *events, Milliseconds now) {
 
   // Encoder Pushes
   int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
-  events->enc_push = input_detect_enc_push(channel_switch_val);
+  events->enc_push = detect_enc_push(channel_switch_val);
 
 }
 
@@ -99,14 +99,14 @@ bool input_events_contains_any_external(InputEvents *events) {
 
 /* INTERNAL */
 
-static bool input_detect_rise_reset(int reset_in_value) {
+static bool detect_rise_reset(int reset_in_value) {
   bool above_threshold = (reset_in_value >= RESET_PIN_THRESHOLD);
   bool should_toggle = reset_active ^ above_threshold;
   reset_active ^= should_toggle;
   return (reset_active && should_toggle);
 }
 
-static bool input_detect_rise_trig(int trig_in_value) {
+static bool detect_rise_trig(int trig_in_value) {
   bool result = (trig_in_value > trig_in_value_previous);
 
   trig_in_value_previous = trig_in_value;
@@ -114,7 +114,7 @@ static bool input_detect_rise_trig(int trig_in_value) {
   return result;
 }
 
-static EncoderIdx input_detect_enc_push(int channel_switch_val) {
+static EncoderIdx detect_enc_push(int channel_switch_val) {
   // Early return: No encoder is pushed
   if (channel_switch_val < 100) {
     encoder_pushed = false;
