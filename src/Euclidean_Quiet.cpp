@@ -892,8 +892,6 @@ void loop() {
   LedSleepUpdate sleep_update = led_sleep_update(time);
   if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
     led_wake();
-    draw_channels();
-    draw_active_channel_display();
   } else if (sleep_update == LED_SLEEP_UPDATE_SLEEP) {
     led_sleep();
   }
