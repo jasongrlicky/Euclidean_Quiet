@@ -239,7 +239,7 @@ static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
 // 1 is maximum number of devices that can be controlled
-static LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
+extern LedControl lc;
 
 /// Represents a method of deciding on illumination of a pixel on the LED matrix
 /// display.
@@ -363,7 +363,7 @@ static AdjustmentDisplayState adjustment_display_state = {
 };
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
-static bool led_sleep_mode_active = false;
+extern bool led_sleep_mode_active;
 static Timeout led_sleep_timeout = { .duration = LED_SLEEP_TIME };
 
 typedef struct EuclideanChannelUpdate {
@@ -391,7 +391,6 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /* DECLARATIONS */
 
-static void init_led(void);
 static void validate_euclidean_state(EuclideanState *s);
 static void init_encoders(void);
 static void init_serial(void);
@@ -453,10 +452,6 @@ static inline void framebuffer_row_set(uint8_t y, uint16_t pixels);
 /// the framebuffer to the LED matrix per cycle to avoid having to wait on the 
 /// display driver chip.
 static void framebuffer_copy_row_to_display();
-static void led_sleep();
-static void led_wake();
-static void led_anim_wake();
-static void led_anim_sleep();
 static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(InputEvents *events);
@@ -468,7 +463,7 @@ void setup() {
   time = millis();
   timeout_reset(&led_sleep_timeout, time);
 
-  init_led();
+  led_init();
   eeprom_load(&euclidean_state);
   validate_euclidean_state(&euclidean_state);
   init_encoders();
@@ -969,15 +964,6 @@ void loop() {
  
 /* INTERNAL */
  
-/// Initialize the MAX72XX LED Matrix
-static void init_led(void) {
-  // The LED matrix is in power-saving mode on startup.
-  // Set power-saving mode to false to wake it up
-  lc.shutdown(LED_ADDR, false);
-  lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
-  lc.clearDisplay(LED_ADDR);
-}
-
 /// Keep the data in the state in bounds. Bounds excursions can happen when 
 /// loading from the EEPROM.
 static void validate_euclidean_state(EuclideanState *s) {
@@ -1294,41 +1280,6 @@ static inline int eeprom_addr_density(Channel channel) {
 
 static inline int eeprom_addr_offset(Channel channel) {
   return channel + 7;
-}
-
-static void led_sleep() {
-  led_sleep_mode_active = true;
-
-  led_anim_sleep();
-  lc.shutdown(LED_ADDR, true);
-}
-
-static void led_wake() {
-  led_sleep_mode_active = false;
-
-  lc.shutdown(LED_ADDR, false);
-  led_anim_wake();
-}
-
-static void led_anim_wake() { 
-  for (uint8_t step = 0; step < 4; step++) {
-    uint8_t a = 3 - step;
-    lc.setRow(LED_ADDR, a, 255);
-    lc.setRow(LED_ADDR, 7 - a, 255);
-    delay(100);
-    lc.setRow(LED_ADDR, a, 0);
-    lc.setRow(LED_ADDR, 7 - a, 0);
-  }
-}
-
-static void led_anim_sleep() {
-  for (uint8_t a = 0; a < 4; a++) {
-    lc.setRow(LED_ADDR, a, 255);
-    lc.setRow(LED_ADDR, 7 - a, 255);
-    delay(200);
-    lc.setRow(LED_ADDR, a, 0);
-    lc.setRow(LED_ADDR, 7 - a, 0);
-  }
 }
 
 static void startUpOK() {
