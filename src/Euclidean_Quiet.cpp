@@ -474,7 +474,7 @@ static void log_input_events(InputEvents *events);
 #endif
 
 /// Initialize the MAX72XX LED Matrix
-static void led_init(void) {
+static void init_led(void) {
   // The LED matrix is in power-saving mode on startup.
   // Set power-saving mode to false to wake it up
   lc.shutdown(LED_ADDR, false);
@@ -502,7 +502,7 @@ static void validate_euclidean_state(EuclideanState *s) {
 }
 
 /// Turn on pull-up resistors for encoders
-static void encoders_init(void) {
+static void init_encoders(void) {
   digitalWrite(PIN_ENC_1A, HIGH);
   digitalWrite(PIN_ENC_1B, HIGH);
   digitalWrite(PIN_ENC_2A, HIGH);
@@ -511,14 +511,14 @@ static void encoders_init(void) {
   digitalWrite(PIN_ENC_3B, HIGH);
 }
 
-static void serial_init(void) {
+static void init_serial(void) {
   #if LOGGING_ENABLED
   Serial.begin(9600);
   #endif
 }
 
 /// Set up IO pins
-static void io_pins_init(void) {
+static void init_io_pins(void) {
   pinMode(PIN_IN_TRIG, INPUT);
 
   pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
@@ -533,12 +533,12 @@ void setup() {
   time = millis();
   timeout_reset(&led_sleep_timeout, time);
 
-  led_init();
+  init_led();
   eeprom_load(&euclidean_state);
   validate_euclidean_state(&euclidean_state);
-  encoders_init();
-  serial_init();
-  io_pins_init();
+  init_encoders();
+  init_serial();
+  init_io_pins();
 
   // Initialise generated rhythms
   for (int a = 0; a < NUM_CHANNELS; a++) {
