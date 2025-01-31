@@ -406,6 +406,7 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 #endif
 
 /* INTERNAL */
+
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
