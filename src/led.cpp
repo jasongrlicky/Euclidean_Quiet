@@ -1,6 +1,7 @@
 #include "led.h"
 
 #include "config.h"
+#include "hardware.h"
 
 bool led_sleep_mode_active = false;
 

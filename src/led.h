@@ -3,8 +3,6 @@
 
 #include <LedControl.h>
 
-#include "hardware.h"
-
 /// Row of LED Display marked "CH SEL" on panel
 #define LED_CH_SEL_Y 6
 /// Column of LED Display marked "TRIG" on panel
