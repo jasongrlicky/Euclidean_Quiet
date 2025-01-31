@@ -50,5 +50,4 @@ enum EncoderIdx {
 #ifdef __cplusplus
 }
 #endif
-
 #endif /* HARDWARE_H_ */ 
