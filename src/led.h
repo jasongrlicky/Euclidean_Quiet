@@ -23,6 +23,7 @@
 #define LED_OUT_Y 7
 
 void led_init(void);
+void led_set_row(uint8_t row, uint8_t pixels);
 void led_sleep();
 void led_wake();
 

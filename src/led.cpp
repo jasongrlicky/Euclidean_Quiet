@@ -7,7 +7,7 @@ bool led_sleep_mode_active = false;
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)
 // 1 is maximum number of devices that can be controlled
-LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
+static LedControl lc = LedControl(PIN_OUT_LED_DATA, PIN_OUT_LED_CLOCK, PIN_OUT_LED_SELECT, 1);
 
 /* DECLARATIONS */
 
@@ -24,6 +24,11 @@ void led_init(void) {
   lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
   lc.clearDisplay(LED_ADDR);
 }
+
+void led_set_row(uint8_t row, uint8_t pixels) {
+  lc.setRow(LED_ADDR, row, pixels);
+}
+
 void led_sleep() {
   led_sleep_mode_active = true;
 

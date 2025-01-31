@@ -5,7 +5,6 @@ extern "C" {
 #if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>
 #endif
-#include <LedControl.h>
 
 #include "input.h"
 #include "led.h"
@@ -235,11 +234,6 @@ extern "C" {
 /* GLOBALS */
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
-
-// Initialize objects for controlling LED matrix
-// (from LedControl.h library)
-// 1 is maximum number of devices that can be controlled
-extern LedControl lc;
 
 /// Represents a method of deciding on illumination of a pixel on the LED matrix
 /// display.
@@ -1244,7 +1238,7 @@ static void framebuffer_copy_row_to_display() {
     }
   }
 
-  lc.setRow(LED_ADDR, row, to_draw);
+  led_set_row(row, to_draw);
 
   // Next cycle, copy the next row of the framebuffer to the LED matrix
   framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
