@@ -14,11 +14,13 @@ static LedSleepState state = LED_SLEEP_STATE_WAKE;
 static Timeout dim_timeout = { .duration = LED_DIM_TIME };
 static Timeout sleep_timeout = { .duration = LED_SLEEP_TIME };
 
+// cppcheck-suppress unusedFunction
 void led_sleep_init(Milliseconds now) {
   timeout_reset(&dim_timeout, now);
   timeout_reset(&sleep_timeout, now);
 }
 
+// cppcheck-suppress unusedFunction
 LedSleepUpdate led_sleep_update(bool postpone_sleep, Milliseconds now) {
   // Handle transition to wake state
   if (postpone_sleep) {
