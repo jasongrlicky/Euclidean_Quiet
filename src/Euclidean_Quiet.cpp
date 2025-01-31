@@ -407,6 +407,11 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /* DECLARATIONS */
 
+static void init_led(void);
+static void validate_euclidean_state(EuclideanState *s);
+static void init_encoders(void);
+static void init_serial(void);
+static void init_io_pins(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
@@ -472,60 +477,6 @@ static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(InputEvents *events);
 #endif
-
-/// Initialize the MAX72XX LED Matrix
-static void init_led(void) {
-  // The LED matrix is in power-saving mode on startup.
-  // Set power-saving mode to false to wake it up
-  lc.shutdown(LED_ADDR, false);
-  lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
-  lc.clearDisplay(LED_ADDR);
-}
-
-/// Keep the data in the state in bounds. Bounds excursions can happen when 
-/// loading from the EEPROM.
-static void validate_euclidean_state(EuclideanState *s) {
-  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-    if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
-      s->channels[c].length = BEAT_LENGTH_DEFAULT;
-    }
-    if (s->channels[c].density > BEAT_DENSITY_MAX) {
-      s->channels[c].density = BEAT_DENSITY_DEFAULT;
-    }
-    if (s->channels[c].offset > BEAT_OFFSET_MAX) {
-      s->channels[c].offset = BEAT_OFFSET_DEFAULT;
-    }
-    if (s->channels[c].position > BEAT_POSITION_MAX) {
-      s->channels[c].position = BEAT_POSITION_DEFAULT;
-    }
-  }
-}
-
-/// Turn on pull-up resistors for encoders
-static void init_encoders(void) {
-  digitalWrite(PIN_ENC_1A, HIGH);
-  digitalWrite(PIN_ENC_1B, HIGH);
-  digitalWrite(PIN_ENC_2A, HIGH);
-  digitalWrite(PIN_ENC_2B, HIGH);
-  digitalWrite(PIN_ENC_3A, HIGH);
-  digitalWrite(PIN_ENC_3B, HIGH);
-}
-
-static void init_serial(void) {
-  #if LOGGING_ENABLED
-  Serial.begin(9600);
-  #endif
-}
-
-/// Set up IO pins
-static void init_io_pins(void) {
-  pinMode(PIN_IN_TRIG, INPUT);
-
-  pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
-  pinMode(PIN_OUT_CHANNEL_2, OUTPUT);
-  pinMode(PIN_OUT_CHANNEL_3, OUTPUT);
-  pinMode(PIN_OUT_OFFBEAT, OUTPUT);
-}
 
 /* MAIN */
 
@@ -1033,6 +984,63 @@ void loop() {
 
   #endif
 }
+ 
+/* INTERNAL */
+ 
+/// Initialize the MAX72XX LED Matrix
+static void init_led(void) {
+  // The LED matrix is in power-saving mode on startup.
+  // Set power-saving mode to false to wake it up
+  lc.shutdown(LED_ADDR, false);
+  lc.setIntensity(LED_ADDR, LED_BRIGHTNESS);
+  lc.clearDisplay(LED_ADDR);
+}
+
+/// Keep the data in the state in bounds. Bounds excursions can happen when 
+/// loading from the EEPROM.
+static void validate_euclidean_state(EuclideanState *s) {
+  for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+    if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
+      s->channels[c].length = BEAT_LENGTH_DEFAULT;
+    }
+    if (s->channels[c].density > BEAT_DENSITY_MAX) {
+      s->channels[c].density = BEAT_DENSITY_DEFAULT;
+    }
+    if (s->channels[c].offset > BEAT_OFFSET_MAX) {
+      s->channels[c].offset = BEAT_OFFSET_DEFAULT;
+    }
+    if (s->channels[c].position > BEAT_POSITION_MAX) {
+      s->channels[c].position = BEAT_POSITION_DEFAULT;
+    }
+  }
+}
+
+/// Turn on pull-up resistors for encoders
+static void init_encoders(void) {
+  digitalWrite(PIN_ENC_1A, HIGH);
+  digitalWrite(PIN_ENC_1B, HIGH);
+  digitalWrite(PIN_ENC_2A, HIGH);
+  digitalWrite(PIN_ENC_2B, HIGH);
+  digitalWrite(PIN_ENC_3A, HIGH);
+  digitalWrite(PIN_ENC_3B, HIGH);
+}
+
+static void init_serial(void) {
+  #if LOGGING_ENABLED
+  Serial.begin(9600);
+  #endif
+}
+
+/// Set up IO pins
+static void init_io_pins(void) {
+  pinMode(PIN_IN_TRIG, INPUT);
+
+  pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
+  pinMode(PIN_OUT_CHANNEL_2, OUTPUT);
+  pinMode(PIN_OUT_CHANNEL_3, OUTPUT);
+  pinMode(PIN_OUT_OFFBEAT, OUTPUT);
+}
+
 
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
   switch (enc_idx) {
