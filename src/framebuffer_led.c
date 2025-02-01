@@ -10,7 +10,7 @@ extern uint16_t framebuffer[LED_ROWS];
 /// To keep latency from spiking, we only draw one row of the framebuffer to the
 /// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
 /// the framebuffer to keep visual latency equal for all rows. 
-static uint8_t framebuffer_out_row;
+static uint8_t out_row;
 
 #define ANIM_BLINK_NUM_FRAMES 2
 static Timeout anim_blink_timeout = { .duration = ANIM_BLINK_INTERVAL };
@@ -28,7 +28,7 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 
 // cppcheck-suppress unusedFunction
 void framebuffer_copy_row_to_display() {
-  uint8_t row = (framebuffer_out_row) % LED_ROWS;
+  uint8_t row = (out_row) % LED_ROWS;
   uint16_t fb_row_bits = framebuffer[row];
 
   uint8_t to_draw = 0;
@@ -47,7 +47,7 @@ void framebuffer_copy_row_to_display() {
   led_set_row(row, to_draw);
 
   // Next cycle, copy the next row of the framebuffer to the LED matrix
-  framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
+  out_row = (out_row + 1) % LED_ROWS;
 }
 
 // cppcheck-suppress unusedFunction
