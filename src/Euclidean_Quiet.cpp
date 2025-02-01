@@ -360,9 +360,13 @@ static Timeout log_cycle_time_timeout = { .duration = LOGGING_CYCLE_TIME_INTERVA
 
 /* DECLARATIONS */
 
+/// Keep the data in the state in bounds. Bounds excursions can happen when 
+/// loading from the EEPROM.
 static void validate_euclidean_state(EuclideanState *s);
+/// Turn on pull-up resistors for encoders
 static void init_encoders(void);
 static void init_serial(void);
+/// Set up IO pins
 static void init_io_pins(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
@@ -383,6 +387,7 @@ static void draw_active_channel_display();
 /// @param position The step at which to read. Must be < `length`.
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
+/// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
@@ -823,8 +828,6 @@ void loop() {
  
 /* INTERNAL */
  
-/// Keep the data in the state in bounds. Bounds excursions can happen when 
-/// loading from the EEPROM.
 static void validate_euclidean_state(EuclideanState *s) {
   for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
     if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
@@ -842,7 +845,6 @@ static void validate_euclidean_state(EuclideanState *s) {
   }
 }
 
-/// Turn on pull-up resistors for encoders
 static void init_encoders(void) {
   digitalWrite(PIN_ENC_1A, HIGH);
   digitalWrite(PIN_ENC_1B, HIGH);
@@ -858,7 +860,6 @@ static void init_serial(void) {
   #endif
 }
 
-/// Set up IO pins
 static void init_io_pins(void) {
   pinMode(PIN_IN_TRIG, INPUT);
 
@@ -1064,7 +1065,6 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
   return result;
 }
 
-/// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s) {
   /*
   EEPROM Schema:
