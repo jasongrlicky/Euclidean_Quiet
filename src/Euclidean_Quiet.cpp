@@ -451,7 +451,7 @@ void loop() {
     active_channel = active_channel_new.inner;
   }
 
-  EuclideanParamOpt param_changed = EUCLIDEAN_PARAM_OPT_NONE;
+  EuclideanParamOpt knob_moved_for_param = EUCLIDEAN_PARAM_OPT_NONE;
   #if EEPROM_WRITE
   EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
   #endif
@@ -459,7 +459,7 @@ void loop() {
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
   if (nknob != 0) {
-    param_changed = euclidean_param_opt(EUCLIDEAN_PARAM_LENGTH);
+    knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_LENGTH);
 
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -516,7 +516,7 @@ void loop() {
   // Handle Density Knob Movement
   int kknob = events_in.enc_move[ENCODER_2];
   if (kknob != 0) {
-    param_changed = euclidean_param_opt(EUCLIDEAN_PARAM_DENSITY);
+    knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_DENSITY);
 
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -543,7 +543,7 @@ void loop() {
   // Handle Offset Knob Movement
   int oknob = events_in.enc_move[ENCODER_3];
   if (oknob != 0) {
-    param_changed = euclidean_param_opt(EUCLIDEAN_PARAM_OFFSET);
+    knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_OFFSET);
 
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -568,7 +568,7 @@ void loop() {
   }
 
   // Update Generated Rhythms Based On Parameter Changes
-  if (param_changed.valid) {
+  if (knob_moved_for_param.valid) {
     Channel channel = active_channel;
     EuclideanChannelState channel_state = euclidean_state.channels[channel];
     uint8_t length = channel_state.length;
@@ -578,10 +578,10 @@ void loop() {
     generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
     #if LOGGING_ENABLED
-    if (param_changed.inner == EUCLIDEAN_PARAM_LENGTH) {
+    if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_LENGTH) {
       Serial.print("length: ");
       Serial.println(length);
-    } else if (param_changed.inner == EUCLIDEAN_PARAM_DENSITY) {
+    } else if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_DENSITY) {
       Serial.print("density: ");
       Serial.println(density);
     } else {
@@ -747,10 +747,10 @@ void loop() {
   // Tracks if the screen needs to be redrawn. 
   bool needs_redraw = sequencers_updated || playhead_flash_updated;
 
-  if (param_changed.valid) {
+  if (knob_moved_for_param.valid) {
     // If parameters have changed, reset the adjustment display timeout and state
     adjustment_display_state.channel = active_channel;
-    adjustment_display_state.parameter = param_changed.inner;
+    adjustment_display_state.parameter = knob_moved_for_param.inner;
     adjustment_display_state.visible = true;
     timeout_reset(&adjustment_display_timeout, time);
 
