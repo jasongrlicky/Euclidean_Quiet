@@ -15,9 +15,9 @@ typedef enum Color {
   COLOR_OFF = 0,
   /// Light up this pixel
   COLOR_ON = 1,
-  /// Blink every other LED rapidly for this pixel
-  COLOR_DAZZLE = 2,
-  /// Show a fast marching ants pattern for this pixel
+  /// Blink the LED rapidly for this pixel
+  COLOR_BLINK = 2,
+  /// Show a marching ants pattern for this pixel
   COLOR_ANTS = 3
 } Color;
 

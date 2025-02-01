@@ -12,9 +12,9 @@ extern uint16_t framebuffer[LED_ROWS];
 /// the framebuffer to keep visual latency equal for all rows. 
 static uint8_t framebuffer_out_row;
 
-#define ANIM_DAZZLE_NUM_FRAMES 2
-static Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
-static uint8_t anim_dazzle_frame = 0;
+#define ANIM_BLINK_NUM_FRAMES 2
+static Timeout anim_blink_timeout = { .duration = ANIM_BLINK_INTERVAL };
+static uint8_t anim_blink_frame = 0;
 
 #define ANIM_ANTS_NUM_FRAMES 4
 static Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
@@ -22,7 +22,6 @@ static uint8_t anim_ants_frame = 0;
 
 /* DECLARATIONS */
 
-static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y);
 static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 
 /* EXTERNAL */
@@ -38,8 +37,8 @@ void framebuffer_copy_row_to_display() {
 
     if (color == COLOR_ANTS) {
       to_draw |= (anim_marching_ants(anim_ants_frame, col, row) << col);
-    } else if (color == COLOR_DAZZLE) {
-      to_draw |= (anim_dazzle(anim_dazzle_frame, col, row) << col);
+    } else if (color == COLOR_BLINK) {
+      to_draw |= ((anim_blink_frame) << col);
     } else {
       to_draw |= (color << col);
     }
@@ -53,8 +52,8 @@ void framebuffer_copy_row_to_display() {
 
 // cppcheck-suppress unusedFunction
 void framebuffer_update_color_animations(Milliseconds now) {
-  if(timeout_loop(&anim_dazzle_timeout, now)) {
-    anim_dazzle_frame = (anim_dazzle_frame + 1) % ANIM_DAZZLE_NUM_FRAMES;
+  if(timeout_loop(&anim_blink_timeout, now)) {
+    anim_blink_frame = (anim_blink_frame + 1) % ANIM_BLINK_NUM_FRAMES;
   }
 
   if(timeout_loop(&anim_ants_timeout, now)) {
@@ -63,10 +62,6 @@ void framebuffer_update_color_animations(Milliseconds now) {
 }
 
 /* INTERNAL */
-
-static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y) {
-  return ((x + y + frame) % ANIM_DAZZLE_NUM_FRAMES);
-}
 
 static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y) {
   uint8_t val = (x + y + (ANIM_ANTS_NUM_FRAMES - frame)) / 2;

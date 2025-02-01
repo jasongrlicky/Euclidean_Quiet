@@ -314,12 +314,10 @@ static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUT
 
 // Tracks the playhead blink itself
 static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME_DEFAULT } };
-#if PLAYHEAD_IDLE
 // Track the time since the playhead has moved so we can make it blink in its idle loop
 static Timeout playhead_idle_timeout = { .duration = PLAYHEAD_IDLE_TIME };
 // Loop for making the playhead blink periodically after it is idle
 static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
-#endif
 
 typedef struct AdjustmentDisplayState {
   /// Which channel is currently showing its adjustment display. Only one 
@@ -709,16 +707,13 @@ void loop() {
     // Reset playhead blink
     timeout_once_reset(&playhead_blink_timeout, time);
 
-    #if PLAYHEAD_IDLE
     // Reset playhead idle
     timeout_reset(&playhead_idle_timeout, time);
-    #endif
   }
 
   // Update playhead idle - Make playhead blink periodically when it hasn't 
   // moved in a certain amount of time
   bool playhead_blink_updated = false;
-  #if PLAYHEAD_IDLE
   if (timeout_fired(&playhead_idle_timeout, time)) {
     if (timeout_loop(&playhead_idle_loop_timeout, time)) {
       playhead_blink_timeout.inner.duration = PLAYHEAD_BLINK_TIME_DEFAULT;
@@ -726,7 +721,6 @@ void loop() {
       playhead_blink_updated = true;
     }
   }
-  #endif
 
   // Update playhead blink
   if (timeout_once_fired(&playhead_blink_timeout, time)) {
@@ -1027,7 +1021,13 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
     bool active_step = pattern_read(pattern, length, step);
     bool playhead_here = (step == position);
     bool playhead_blink_active = playhead_blink_timeout.active;
-    Color color = (active_step ^ (playhead_here && playhead_blink_active)) ? COLOR_ON : COLOR_OFF;
+    bool blinking_now = playhead_here && playhead_blink_active;
+    Color color;
+    if (blinking_now) {
+      color = COLOR_BLINK;
+    } else {
+      color = (active_step) ? COLOR_ON : COLOR_OFF;
+    }
 
     framebuffer_pixel_set_fast(x, y, color);
   }
