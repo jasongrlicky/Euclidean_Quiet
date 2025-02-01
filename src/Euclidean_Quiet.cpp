@@ -747,7 +747,15 @@ void loop() {
   // Tracks if the screen needs to be redrawn. 
   bool needs_redraw = sequencers_updated || playhead_flash_updated;
 
-  if (!param_changed.valid) {
+  if (param_changed.valid) {
+    // If parameters have changed, reset the adjustment display timeout and state
+    adjustment_display_state.channel = active_channel;
+    adjustment_display_state.parameter = param_changed.inner;
+    adjustment_display_state.visible = true;
+    timeout_reset(&adjustment_display_timeout, time);
+
+    needs_redraw = true;
+  } else {
     // If no parameters have changed, check if the adjustment display still 
     // needs to be shown, and hide it if it doesn't
     if (adjustment_display_state.visible) {
@@ -757,14 +765,6 @@ void loop() {
         needs_redraw = true;
       }
     }
-  } else {
-    // If parameters have changed, reset the adjustment display timeout and state
-    adjustment_display_state.channel = active_channel;
-    adjustment_display_state.parameter = param_changed.inner;
-    adjustment_display_state.visible = true;
-    timeout_reset(&adjustment_display_timeout, time);
-
-    needs_redraw = true;
   }
 
   if (needs_redraw) {
