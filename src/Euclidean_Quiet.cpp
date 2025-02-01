@@ -449,9 +449,7 @@ void loop() {
   }
 
   EuclideanParamOpt param_changed = EUCLIDEAN_PARAM_OPT_NONE;
-  #if EEPROM_WRITE && EEPROM_DEFER
   EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
-  #endif
 
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
@@ -481,27 +479,15 @@ void loop() {
       density += nknob;
       euclidean_state.channels[channel].density = density;
 
-      #if EEPROM_DEFER
       params_update.density = density;
       params_update.density_changed = true;
-      #endif
-
-      #if EEPROM_WRITE && !EEPROM_DEFER
-      EEPROM.update(eeprom_addr_density(channel), density);
-      #endif
     }
     if ((offset >= (length + nknob)) && (offset < 16)) {
       offset += nknob;
       euclidean_state.channels[channel].offset = offset;
 
-      #if EEPROM_DEFER
       params_update.offset = offset;
       params_update.offset_changed = true;
-      #endif
-
-      #if EEPROM_WRITE && !EEPROM_DEFER
-      EEPROM.update(eeprom_addr_offset(channel), offset);
-      #endif
     }
 
     length += nknob;
@@ -512,21 +498,8 @@ void loop() {
       euclidean_state.channels[channel].position = 0;
     }
 
-    #if EEPROM_DEFER
     params_update.length = length;
     params_update.length_changed = true;
-    #endif
-    
-    #if EEPROM_WRITE && !EEPROM_DEFER
-    EEPROM.update(eeprom_addr_length(channel), length);
-    #endif
-      
-    #if LOGGING_ENABLED && EEPROM_WRITE && !EEPROM_DEFER
-    Serial.print("eeprom write N= ");
-    Serial.print((channel * 2) + 1);
-    Serial.print(" ");
-    Serial.println(length);
-    #endif
   }
 
   // Handle Density Knob Movement
@@ -550,21 +523,8 @@ void loop() {
     density += kknob;
     euclidean_state.channels[channel].density = density;
 
-    #if EEPROM_DEFER
     params_update.density = density;
     params_update.density_changed = true;
-    #endif
-
-    #if EEPROM_WRITE && !EEPROM_DEFER
-    EEPROM.update(eeprom_addr_density(channel), density);
-    #endif
-
-    #if LOGGING_ENABLED && EEPROM_WRITE && !EEPROM_DEFER
-    Serial.print("eeprom write K= ");
-    Serial.print((channel * 2) + 2);
-    Serial.print(" ");
-    Serial.println(density);
-    #endif
   }
 
   // Handle Offset Knob Movement
@@ -588,21 +548,8 @@ void loop() {
     offset += oknob;
     euclidean_state.channels[channel].offset = offset;
 
-    #if EEPROM_DEFER
     params_update.offset = offset;
     params_update.offset_changed = true;
-    #endif
-
-    #if EEPROM_WRITE && !EEPROM_DEFER
-    EEPROM.update(eeprom_addr_offset(channel), offset);
-    #endif
-
-    #if LOGGING_ENABLED && EEPROM_WRITE && !EEPROM_DEFER
-    Serial.print("eeprom write O= ");
-    Serial.print((channel) + 7);
-    Serial.print(" ");
-    Serial.println(offset);
-    #endif
   }
 
   // Update Generated Rhythms Based On Parameter Changes
@@ -832,7 +779,7 @@ void loop() {
 
   /* EEPROM WRITES */
 
-  #if EEPROM_WRITE && EEPROM_DEFER
+  #if EEPROM_WRITE
   if (params_update.length_changed) {
     EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
   }
@@ -844,7 +791,7 @@ void loop() {
   }
   #endif
 
-  #if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE && EEPROM_DEFER
+  #if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE
     if (params_update.length_changed) {
       Serial.print("EEPROM Write: Length= ");
       Serial.print(eeprom_addr_length(active_channel));
