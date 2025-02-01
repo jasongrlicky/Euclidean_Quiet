@@ -835,36 +835,34 @@ void loop() {
   #if EEPROM_WRITE && EEPROM_DEFER
   if (params_update.length_changed) {
     EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
-      
-    #if LOGGING_ENABLED && LOGGING_EEPROM
-    Serial.print("EEPROM Write: Length= ");
-    Serial.print(eeprom_addr_length(active_channel));
-    Serial.print(" ");
-    Serial.println(params_update.length);
-    #endif
   }
-
   if (params_update.density_changed) {
     EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
-      
-    #if LOGGING_ENABLED && LOGGING_EEPROM
-    Serial.print("EEPROM Write: Density= ");
-    Serial.print(eeprom_addr_density(active_channel));
-    Serial.print(" ");
-    Serial.println(params_update.density);
-    #endif
   }
-  
   if (params_update.offset_changed) {
     EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
-
-    #if LOGGING_ENABLE && LOGGING_EEPROM
-    Serial.print("EEPROM Write: Offset= ");
-    Serial.print(eeprom_addr_offset(active_channel));
-    Serial.print(" ");
-    Serial.println(params_update.offset);
-    #endif
   }
+  #endif
+
+  #if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE && EEPROM_DEFER
+    if (params_update.length_changed) {
+      Serial.print("EEPROM Write: Length= ");
+      Serial.print(eeprom_addr_length(active_channel));
+      Serial.print(" ");
+      Serial.println(params_update.length);
+    }
+    if (params_update.density_changed) {
+      Serial.print("EEPROM Write: Density= ");
+      Serial.print(eeprom_addr_density(active_channel));
+      Serial.print(" ");
+      Serial.println(params_update.density);
+    }
+    if (params_update.offset_changed) {
+      Serial.print("EEPROM Write: Offset= ");
+      Serial.print(eeprom_addr_offset(active_channel));
+      Serial.print(" ");
+      Serial.println(params_update.offset);
+    }
   #endif
 
   #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
