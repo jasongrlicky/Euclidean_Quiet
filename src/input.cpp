@@ -85,7 +85,7 @@ void input_update(InputEvents *events, Milliseconds now) {
 }
 
 // cppcheck-suppress unusedFunction
-bool input_events_contains_any_external(InputEvents *events) {
+bool input_events_contains_any_external(const InputEvents *events) {
   bool result = (
     events->trig ||
     events->reset ||

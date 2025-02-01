@@ -395,7 +395,7 @@ static inline int eeprom_addr_offset(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
 static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
-static void log_input_events(InputEvents *events);
+static void log_input_events(const InputEvents *events);
 #endif
 
 /* MAIN */
@@ -1128,7 +1128,7 @@ static void startUpOK() {
 }
 
 #if LOGGING_ENABLED && LOGGING_INPUT
-static void log_input_events(InputEvents *events) {
+static void log_input_events(const InputEvents *events) {
   if (events->reset) {
     Serial.println("INPUT: Reset");
   }

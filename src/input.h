@@ -37,7 +37,7 @@ const InputEvents INPUT_EVENTS_EMPTY = {
 void input_update(InputEvents *events, Milliseconds now);
 
 /// Returns true if `events` contains any externally-generated events
-bool input_events_contains_any_external(InputEvents *events);
+bool input_events_contains_any_external(const InputEvents *events);
 
 #ifdef __cplusplus
 }

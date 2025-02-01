@@ -21,7 +21,7 @@ typedef struct Timeout {
 void timeout_reset(Timeout *timeout, Milliseconds now);
 
 /// Check if the timeout has fired, given the current time, `now`
-bool timeout_fired(Timeout const *timeout, Milliseconds now);
+bool timeout_fired(const Timeout *timeout, Milliseconds now);
 
 /// Check if the timeout has fired, given the current time, `now`. If it has 
 /// fired, resets the timeout, so it becomes periodic.
