@@ -1,5 +1,7 @@
 #include "output.h"
 
+#include <Arduino.h>
+
 #include "hardware.h"
 
 // Bit flags: Uses 4 least significant bits to store ongoing output pulses.

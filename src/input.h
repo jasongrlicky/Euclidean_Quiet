@@ -1,5 +1,9 @@
 #ifndef INPUT_H_
 #define INPUT_H_
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #include <stdint.h>
 
@@ -35,4 +39,7 @@ void input_update(InputEvents *events, Milliseconds now);
 /// Returns true if `events` contains any externally-generated events
 bool input_events_contains_any_external(InputEvents *events);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* INPUT_H_ */

@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-#include <Arduino.h>
+#include <stdbool.h>
 
 // Indices for individual output channels
 typedef enum OutputChannel {

@@ -25,11 +25,6 @@ typedef enum Color {
 /// hardware display. 2 bits per pixel, so it supports 4 colors.
 uint16_t framebuffer[LED_ROWS];
 
-/// To keep latency from spiking, we only draw one row of the framebuffer to the
-/// LED matrix at a time. The row that gets drawn rotates between the 8 rows of 
-/// the framebuffer to keep visual latency equal for all rows. 
-uint8_t framebuffer_out_row;
-
 #define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
 #define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
 #define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))

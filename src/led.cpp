@@ -1,5 +1,7 @@
 #include "led.h"
 
+#include <LedControl.h>
+
 #include "config.h"
 #include "hardware.h"
 

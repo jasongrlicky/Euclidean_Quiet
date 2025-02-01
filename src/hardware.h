@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <pins_arduino.h>
+
 /* HARDWARE CONSTANTS */
 
 // Input pin definitions

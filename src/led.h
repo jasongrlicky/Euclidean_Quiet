@@ -1,7 +1,11 @@
 #ifndef LED_H_
 #define LED_H_
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#include <LedControl.h>
+#include <stdint.h>
 
 /// Row of LED Display marked "CH SEL" on panel
 #define LED_CH_SEL_Y 6
@@ -27,4 +31,7 @@ void led_sleep();
 void led_dim();
 void led_wake();
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* LED_H_ */ 

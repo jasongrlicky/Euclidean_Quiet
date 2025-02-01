@@ -4,8 +4,11 @@
 #include <EEPROM.h>
 #endif
 
+#include <Arduino.h>
+
 #include <euclidean.h>
 #include "framebuffer.h"
+#include "framebuffer_led.h"
 #include "hardware.h"
 #include "input.h"
 #include "led.h"
@@ -233,17 +236,6 @@
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
-#define ANIM_DAZZLE_NUM_FRAMES 2
-static Timeout anim_dazzle_timeout = { .duration = ANIM_DAZZLE_INTERVAL };
-static uint8_t anim_dazzle_frame = 0;
-
-#define ANIM_ANTS_NUM_FRAMES 4
-static Timeout anim_ants_timeout = { .duration = ANIM_ANTS_INTERVAL };
-static uint8_t anim_ants_frame = 0;
-
-extern uint16_t framebuffer[LED_ROWS];
-extern uint8_t framebuffer_out_row;
-
 /// References one of the three channels
 typedef enum Channel {
   CHANNEL_1,
@@ -387,8 +379,6 @@ static inline void draw_channel(Channel channel);
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
 static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
 static void draw_active_channel_display();
-static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y);
-static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -400,10 +390,6 @@ static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
 static uint8_t output_channel_led_x(OutputChannel channel);
-/// Copy one row of the framebuffer to the LED matrix. We only copy one row of 
-/// the framebuffer to the LED matrix per cycle to avoid having to wait on the 
-/// display driver chip.
-static void framebuffer_copy_row_to_display();
 static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(InputEvents *events);
@@ -702,15 +688,6 @@ void loop() {
     output_clear_all();
   }
 
-  /* DRAWING - UPDATE ANIMATIONS */
-  if(timeout_loop(&anim_dazzle_timeout, time)) {
-    anim_dazzle_frame = (anim_dazzle_frame + 1) % ANIM_DAZZLE_NUM_FRAMES;
-  }
-
-  if(timeout_loop(&anim_ants_timeout, time)) {
-    anim_ants_frame = (anim_ants_frame + 1) % ANIM_ANTS_NUM_FRAMES;
-  }
-
   /* DRAWING - OUTPUT INDICATORS */
 
   // If the sequencer has moved, note active output channels and blink 
@@ -838,6 +815,7 @@ void loop() {
 
   /* UPDATE LED DISPLAY */
 
+  framebuffer_update_color_animations(time);
   framebuffer_copy_row_to_display();
 
   /* UPDATE LED SLEEP */
@@ -950,7 +928,6 @@ static void init_io_pins(void) {
   pinMode(PIN_OUT_CHANNEL_3, OUTPUT);
   pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 }
-
 
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
   switch (enc_idx) {
@@ -1123,15 +1100,6 @@ static void draw_active_channel_display() {
     framebuffer_row_set(LED_CH_SEL_Y, row_bits);
 }
 
-static inline uint8_t anim_dazzle(uint8_t frame, uint8_t x, uint8_t y) {
-  return ((x + y + frame) % ANIM_DAZZLE_NUM_FRAMES);
-}
-
-static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y) {
-  uint8_t val = (x + y + (ANIM_ANTS_NUM_FRAMES - frame)) / 2;
-  return (val % 2);
-}
-
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
   uint8_t idx = length - position - 1;
   return (pattern >> idx) & 0x01;
@@ -1149,30 +1117,6 @@ static uint8_t output_channel_led_x(OutputChannel channel) {
     result = LED_OUT_OFFBEAT_X;
   }
   return result;
-}
-
-
-static void framebuffer_copy_row_to_display() {
-  uint8_t row = (framebuffer_out_row) % LED_ROWS;
-  uint16_t fb_row_bits = framebuffer[row];
-
-  uint8_t to_draw = 0;
-  for (uint8_t col = 0; col < LED_COLUMNS; col++) {
-    Color color = (Color)((fb_row_bits >> (col * 2)) & 0b00000011);
-
-    if (color == COLOR_ANTS) {
-      to_draw |= (anim_marching_ants(anim_ants_frame, col, row) << col);
-    } else if (color == COLOR_DAZZLE) {
-      to_draw |= (anim_dazzle(anim_dazzle_frame, col, row) << col);
-    } else {
-      to_draw |= (color << col);
-    }
-  }
-
-  led_set_row(row, to_draw);
-
-  // Next cycle, copy the next row of the framebuffer to the LED matrix
-  framebuffer_out_row = (framebuffer_out_row + 1) % LED_ROWS;
 }
 
 /// Load state from EEPROM into the given `EuclideanState`
