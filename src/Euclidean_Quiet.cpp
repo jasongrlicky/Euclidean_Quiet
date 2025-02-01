@@ -452,7 +452,9 @@ void loop() {
   }
 
   EuclideanParamOpt param_changed = EUCLIDEAN_PARAM_OPT_NONE;
+  #if EEPROM_WRITE
   EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
+  #endif
 
   // Handle Length Knob Movement
   int nknob = events_in.enc_move[ENCODER_1];
@@ -482,15 +484,19 @@ void loop() {
       density += nknob;
       euclidean_state.channels[channel].density = density;
 
+      #if EEPROM_WRITE
       params_update.density = density;
       params_update.density_changed = true;
+      #endif
     }
     if ((offset >= (length + nknob)) && (offset < 16)) {
       offset += nknob;
       euclidean_state.channels[channel].offset = offset;
 
+      #if EEPROM_WRITE
       params_update.offset = offset;
       params_update.offset_changed = true;
+      #endif
     }
 
     length += nknob;
@@ -501,8 +507,10 @@ void loop() {
       euclidean_state.channels[channel].position = 0;
     }
 
+    #if EEPROM_WRITE
     params_update.length = length;
     params_update.length_changed = true;
+    #endif
   }
 
   // Handle Density Knob Movement
@@ -526,8 +534,10 @@ void loop() {
     density += kknob;
     euclidean_state.channels[channel].density = density;
 
+    #if EEPROM_WRITE
     params_update.density = density;
     params_update.density_changed = true;
+    #endif
   }
 
   // Handle Offset Knob Movement
@@ -551,8 +561,10 @@ void loop() {
     offset += oknob;
     euclidean_state.channels[channel].offset = offset;
 
+    #if EEPROM_WRITE
     params_update.offset = offset;
     params_update.offset_changed = true;
+    #endif
   }
 
   // Update Generated Rhythms Based On Parameter Changes
