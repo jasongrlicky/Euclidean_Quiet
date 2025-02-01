@@ -310,13 +310,13 @@ static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDIC
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
 static uint8_t output_channels_active_step_bitflags = 0;
-static TimeoutOnce output_indicator_blink_timeout = { .inner = { .duration = OUTPUT_INDICATOR_BLINK_TIME } };
+static TimeoutOnce output_indicator_flash_timeout = { .inner = { .duration = OUTPUT_INDICATOR_FLASH_TIME } };
 
-// Tracks the playhead blink itself
-static TimeoutOnce playhead_blink_timeout = { .inner = { .duration = PLAYHEAD_BLINK_TIME_DEFAULT } };
-// Track the time since the playhead has moved so we can make it blink in its idle loop
+// Tracks the playhead flash itself
+static TimeoutOnce playhead_flash_timeout = { .inner = { .duration = PLAYHEAD_FLASH_TIME_DEFAULT } };
+// Track the time since the playhead has moved so we can make it flash in its idle loop
 static Timeout playhead_idle_timeout = { .duration = PLAYHEAD_IDLE_TIME };
-// Loop for making the playhead blink periodically after it is idle
+// Loop for making the playhead flash periodically after it is idle
 static Timeout playhead_idle_loop_timeout = { .duration = PLAYHEAD_IDLE_LOOP_PERIOD };
 
 typedef struct AdjustmentDisplayState {
@@ -365,7 +365,7 @@ static void init_encoders(void);
 static void init_serial(void);
 static void init_io_pins(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
-static Milliseconds calc_playhead_blink_time(Milliseconds clock_period);
+static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
 static void sequencer_advance();
@@ -635,7 +635,7 @@ void loop() {
 
   /* DRAWING - OUTPUT INDICATORS */
 
-  // If the sequencer has moved, note active output channels and blink 
+  // If the sequencer has moved, note active output channels and flash 
   // output indicators
   if (clock_tick | events_in.reset) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
@@ -653,11 +653,11 @@ void loop() {
       }
     }
 
-    timeout_once_reset(&output_indicator_blink_timeout, time);
+    timeout_once_reset(&output_indicator_flash_timeout, time);
   }
 
   // Draw Output Indicators
-  if (timeout_once_fired(&output_indicator_blink_timeout, time)) {
+  if (timeout_once_fired(&output_indicator_flash_timeout, time)) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
       uint8_t x = output_channel_led_x((OutputChannel)out_channel);
       
@@ -698,37 +698,37 @@ void loop() {
   /* DRAWING - CHANNELS */
 
   if (sequencers_updated) {
-    // Update playhead blink duration based on the last interval between two
+    // Update playhead flash duration based on the last interval between two
     // clock or reset signals received.
     Milliseconds previous_period = time - last_clock_or_reset;
-    playhead_blink_timeout.inner.duration = calc_playhead_blink_time(previous_period);
+    playhead_flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
     last_clock_or_reset = time;
 
-    // Reset playhead blink
-    timeout_once_reset(&playhead_blink_timeout, time);
+    // Reset playhead flash
+    timeout_once_reset(&playhead_flash_timeout, time);
 
     // Reset playhead idle
     timeout_reset(&playhead_idle_timeout, time);
   }
 
-  // Update playhead idle - Make playhead blink periodically when it hasn't 
+  // Update playhead idle - Make playhead flash periodically when it hasn't 
   // moved in a certain amount of time
-  bool playhead_blink_updated = false;
+  bool playhead_flash_updated = false;
   if (timeout_fired(&playhead_idle_timeout, time)) {
     if (timeout_loop(&playhead_idle_loop_timeout, time)) {
-      playhead_blink_timeout.inner.duration = PLAYHEAD_BLINK_TIME_DEFAULT;
-      timeout_once_reset(&playhead_blink_timeout, time);
-      playhead_blink_updated = true;
+      playhead_flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
+      timeout_once_reset(&playhead_flash_timeout, time);
+      playhead_flash_updated = true;
     }
   }
 
-  // Update playhead blink
-  if (timeout_once_fired(&playhead_blink_timeout, time)) {
-      playhead_blink_updated = true;
+  // Update playhead flash
+  if (timeout_once_fired(&playhead_flash_timeout, time)) {
+      playhead_flash_updated = true;
   }
 
   // Tracks if the screen needs to be redrawn. 
-  bool needs_redraw = sequencers_updated || playhead_blink_updated;
+  bool needs_redraw = sequencers_updated || playhead_flash_updated;
 
   if (!param_changed.valid) {
     // If no parameters have changed, check if the adjustment display still 
@@ -885,7 +885,7 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
   }
 }
 
-static Milliseconds calc_playhead_blink_time(Milliseconds clock_period) {
+static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
   // 256ms period = ~234bpm
   // 1280ms period = ~47bpm
   clock_period = constrain(clock_period, 256, 1280);
@@ -1020,10 +1020,10 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 
     bool active_step = pattern_read(pattern, length, step);
     bool playhead_here = (step == position);
-    bool playhead_blink_active = playhead_blink_timeout.active;
-    bool blinking_now = playhead_here && playhead_blink_active;
+    bool playhead_flash_active = playhead_flash_timeout.active;
+    bool flashing_now = playhead_here && playhead_flash_active;
     Color color;
-    if (blinking_now) {
+    if (flashing_now) {
       color = COLOR_BLINK;
     } else {
       color = (active_step) ? COLOR_ON : COLOR_OFF;
