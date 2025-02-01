@@ -38,7 +38,7 @@ void framebuffer_copy_row_to_display() {
     if (color == COLOR_ANTS) {
       to_draw |= (anim_marching_ants(anim_ants_frame, col, row) << col);
     } else if (color == COLOR_BLINK) {
-      to_draw |= ((anim_blink_frame) << col);
+      to_draw |= (anim_blink_frame << col);
     } else {
       to_draw |= (color << col);
     }
