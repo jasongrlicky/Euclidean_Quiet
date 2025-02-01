@@ -29,11 +29,11 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 // cppcheck-suppress unusedFunction
 void framebuffer_copy_row_to_display() {
   uint8_t row = (out_row) % LED_ROWS;
-  uint16_t fb_row_bits = framebuffer[row];
+  uint16_t row_bits = framebuffer[row];
 
   uint8_t to_draw = 0;
   for (uint8_t col = 0; col < LED_COLUMNS; col++) {
-    Color color = (Color)((fb_row_bits >> (col * 2)) & 0b00000011);
+    Color color = (Color)((row_bits >> (col * 2)) & 0b00000011);
 
     if (color == COLOR_ANTS) {
       to_draw |= (anim_marching_ants(anim_ants_frame, col, row) << col);
