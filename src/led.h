@@ -21,8 +21,8 @@ extern "C"
 #define LED_OUT_CH2_X 5
 /// Column of LED Display marked "3" on panel
 #define LED_OUT_CH3_X 7
-/// Row of LED Display marked "OUT" on panel
-#define LED_OUT_Y 7
+/// Row of LED Display marked "OUT" on panel, for showing input/output indicators
+#define LED_INDICATORS_Y 7
 
 /// Initialize the MAX72XX LED Matrix
 void led_init(void);

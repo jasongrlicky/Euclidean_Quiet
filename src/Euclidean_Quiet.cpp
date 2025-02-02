@@ -668,7 +668,7 @@ void loop() {
       
       uint8_t active_step = (output_channels_active_step_bitflags >> out_channel) & 0x01;
 
-      framebuffer_pixel_set(x, LED_OUT_Y, (Color)active_step);
+      framebuffer_pixel_set(x, LED_INDICATORS_Y, (Color)active_step);
     }
   }
 
@@ -676,22 +676,22 @@ void loop() {
 
   // Flash Trig indicator LED if we received a clock tick
   if (clock_tick) {
-    framebuffer_pixel_on(LED_IN_TRIG_X, LED_OUT_Y);
+    framebuffer_pixel_on(LED_IN_TRIG_X, LED_INDICATORS_Y);
     timeout_once_reset(&trig_indicator_timeout, time);
   }
 
   // Flash Reset indicator LED if we received a reset input event
   if (events_in.reset) {
-    framebuffer_pixel_on(LED_IN_RESET_X, LED_OUT_Y);
+    framebuffer_pixel_on(LED_IN_RESET_X, LED_INDICATORS_Y);
     timeout_once_reset(&reset_indicator_timeout, time);
   }
   
   // Turn off indicator LEDs that have been on long enough
   if (timeout_once_fired(&trig_indicator_timeout, time)) {
-    framebuffer_pixel_off(LED_IN_TRIG_X, LED_OUT_Y);
+    framebuffer_pixel_off(LED_IN_TRIG_X, LED_INDICATORS_Y);
   }
   if (timeout_once_fired(&reset_indicator_timeout, time)) {
-    framebuffer_pixel_off(LED_IN_RESET_X, LED_OUT_Y);
+    framebuffer_pixel_off(LED_IN_RESET_X, LED_INDICATORS_Y);
   }
 
   /* DRAWING - ACTIVE CHANNEL DISPLAY */
