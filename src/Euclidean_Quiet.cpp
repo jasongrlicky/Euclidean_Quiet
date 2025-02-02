@@ -653,8 +653,7 @@ void loop() {
 
   /* DRAWING - OUTPUT INDICATORS */
 
-  // If the sequencer has moved, note active output channels and flash 
-  // output indicators
+  // If the sequencer has moved, note active output channels
   if (sequencers_updated) {
     output_channels_active_step_bitflags = out_channels_firing;
 
