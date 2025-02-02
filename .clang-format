@@ -1,0 +1,8 @@
+AllowShortIfStatementsOnASingleLine: true
+BasedOnStyle: LLVM
+ColumnLimit: 110
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForIndentation
+AlignArrayOfStructures: Left
+IndentCaseLabels: true
