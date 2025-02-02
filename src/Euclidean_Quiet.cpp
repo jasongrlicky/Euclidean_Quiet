@@ -392,6 +392,7 @@ static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
+/// Calculate the x-coordinate of the indicator LED for the given  output channel
 static uint8_t output_channel_led_x(OutputChannel channel);
 static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
