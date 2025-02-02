@@ -638,7 +638,7 @@ void loop() {
     }
   }
 
-  if (clock_tick || events_in.reset) {
+  if (sequencers_updated) {
     // Update output pulse length and timeout
     Milliseconds pulse_length = constrain(((time - output_pulse_timeout.start) / 5), 2, 5);
     output_pulse_timeout.duration = pulse_length;
@@ -655,7 +655,7 @@ void loop() {
 
   // If the sequencer has moved, note active output channels and flash 
   // output indicators
-  if (clock_tick | events_in.reset) {
+  if (sequencers_updated) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
       uint8_t x = output_channel_led_x((OutputChannel)out_channel);
 
