@@ -310,7 +310,7 @@ static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDIC
 /// Stores which output channels have active steps this step of their sequencer,
 /// as bitflags indexted by `OutputChannel`.
 static uint8_t output_channels_active_step_bitflags = 0;
-static TimeoutOnce output_indicator_flash_timeout = { .inner = { .duration = OUTPUT_INDICATOR_FLASH_TIME } };
+static TimeoutOnce output_indicator_timeout = { .inner = { .duration = OUTPUT_INDICATOR_FLASH_TIME } };
 
 // Tracks the playhead flash itself
 static TimeoutOnce playhead_flash_timeout = { .inner = { .duration = PLAYHEAD_FLASH_TIME_DEFAULT } };
@@ -658,11 +658,11 @@ void loop() {
   if (sequencers_updated) {
     output_channels_active_step_bitflags = out_channels_firing;
 
-    timeout_once_reset(&output_indicator_flash_timeout, time);
+    timeout_once_reset(&output_indicator_timeout, time);
   }
 
   // Draw Output Indicators
-  if (timeout_once_fired(&output_indicator_flash_timeout, time)) {
+  if (timeout_once_fired(&output_indicator_timeout, time)) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
       uint8_t x = output_channel_led_x((OutputChannel)out_channel);
       
