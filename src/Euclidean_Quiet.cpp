@@ -303,7 +303,7 @@ static Milliseconds last_clock_or_reset;
 static uint16_t generated_rhythms[NUM_CHANNELS];
 static Channel active_channel; // Channel that is currently active
 static Timeout internal_clock_timeout = { .duration = INTERNAL_CLOCK_PERIOD };
-static Timeout output_pulse_timeout = { .duration = 5 }; // Pulse length, set based on the time since last trigger
+static TimeoutOnce output_pulse_timeout = { .inner = { .duration = 5 } }; // Pulse length, set based on the time since last trigger
 
 static TimeoutOnce trig_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} };
 static TimeoutOnce reset_indicator_timeout = { .inner = {.duration = INPUT_INDICATOR_FLASH_TIME} };
@@ -636,14 +636,14 @@ void loop() {
 
   if (sequencers_updated) {
     // Update output pulse length and timeout
-    Milliseconds pulse_length = constrain(((time - output_pulse_timeout.start) / 5), 2, 5);
-    output_pulse_timeout.duration = pulse_length;
+    Milliseconds pulse_length = constrain(((time - output_pulse_timeout.inner.start) / 5), 2, 5);
+    output_pulse_timeout.inner.duration = pulse_length;
 
-    timeout_reset(&output_pulse_timeout, time);
+    timeout_once_reset(&output_pulse_timeout, time);
   }
 
   // FINISH ANY PULSES THAT ARE ACTIVE
-  if (output_any_active() && (timeout_fired(&output_pulse_timeout, time))) {
+  if (timeout_once_fired(&output_pulse_timeout, time)) {
     output_clear_all();
   }
 

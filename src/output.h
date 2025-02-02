@@ -18,11 +18,10 @@ typedef enum OutputChannel {
 
 #define output_set_high(channel) (output_set(channel, true))
 #define output_set_low(channel) (output_set(channel, false))
+/// Send output signals on the actual hardware
 void output_set(OutputChannel channel, bool value);
 
 void output_clear_all(void);
-
-bool output_any_active(void);
 
 #ifdef __cplusplus
 }
