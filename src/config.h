@@ -10,7 +10,6 @@ extern "C" {
 #define LED_DIM_TIME 270000 // Milliseconds until LED matrix dims (4 minutes 30 seconds)
 #define LED_SLEEP_TIME 300000 // Milliseconds until LED matrix sleeps (5 minutes)
 #define INPUT_INDICATOR_FLASH_TIME 16 // Milliseconds input indicators flash when being illuminated
-#define OUTPUT_INDICATOR_FLASH_TIME 16 // Milliseconds output indicators flash for when being illuminated
 #define PLAYHEAD_FLASH_TIME_DEFAULT 180 // Milliseconds playhead is visible for when it changes
 #define PLAYHEAD_IDLE_TIME 2000 // Milliseconds after moving that playhead begins to flash automatically
 #define PLAYHEAD_IDLE_LOOP_PERIOD 3500 // Milliseconds for period of playhead idle flashing loop
