@@ -657,8 +657,6 @@ void loop() {
   // output indicators
   if (sequencers_updated) {
     for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-      uint8_t x = output_channel_led_x((OutputChannel)out_channel);
-
       uint8_t mask = 0x01 << out_channel;
       bool active_step_prev = output_channels_active_step_bitflags & mask;
       bool active_step = out_channels_firing & mask;
@@ -666,8 +664,6 @@ void loop() {
       if (active_step != active_step_prev) {
         // Toggle output channel as having an active step in the bitflags w/ XOR
         output_channels_active_step_bitflags ^= mask;
-      } else {
-        framebuffer_pixel_off(x, LED_OUT_Y);
       }
     }
 
