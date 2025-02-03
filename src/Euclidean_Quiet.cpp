@@ -359,8 +359,6 @@ static void validate_euclidean_state(EuclideanState *s);
 /// Turn on pull-up resistors for encoders
 static void init_encoders(void);
 static void init_serial(void);
-static void init_input_pins(void);
-static void init_output_pins(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static void sequencer_handle_reset();
@@ -401,8 +399,8 @@ void setup() {
 	validate_euclidean_state(&euclidean_state);
 	init_encoders();
 	init_serial();
-	init_input_pins();
-	init_output_pins();
+	input_pins_init();
+	output_pins_init();
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
@@ -817,17 +815,6 @@ static void init_serial(void) {
 #if LOGGING_ENABLED
 	Serial.begin(9600);
 #endif
-}
-
-static void init_input_pins(void) {
-	pinMode(PIN_IN_TRIG, INPUT);
-}
-
-static void init_output_pins(void) {
-	pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
-	pinMode(PIN_OUT_CHANNEL_2, OUTPUT);
-	pinMode(PIN_OUT_CHANNEL_3, OUTPUT);
-	pinMode(PIN_OUT_OFFBEAT, OUTPUT);
 }
 
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {

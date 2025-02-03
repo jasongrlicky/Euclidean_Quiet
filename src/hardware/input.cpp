@@ -57,6 +57,11 @@ static int encoder_read(Encoder &enc);
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
+void input_pins_init(void) {
+	pinMode(PIN_IN_TRIG, INPUT);
+}
+
+// cppcheck-suppress unusedFunction
 void input_update(InputEvents *events, Milliseconds now) {
 	// Reset Input & Button
 	int reset_in_value = analogRead(PIN_IN_RESET);

@@ -8,6 +8,8 @@ extern "C" {
 
 #include <stdbool.h>
 
+void output_pins_init(void);
+
 #define output_set_high(channel) (output_set(channel, true))
 #define output_set_low(channel) (output_set(channel, false))
 /// Send output signals on the actual hardware
