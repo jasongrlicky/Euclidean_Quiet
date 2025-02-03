@@ -15,6 +15,7 @@
 #include "output.h"
 #include "timeout.h"
 #include "types.h"
+
 #include <euclidean.h>
 
 // clang-format off
