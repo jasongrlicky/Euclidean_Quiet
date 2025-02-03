@@ -420,7 +420,7 @@ void setup() {
 
 	// Draw initial UI
 	draw_channels();
-	draw_active_channel_display(active_channel);
+	active_channel_display_draw(active_channel);
 }
 
 void loop() {
@@ -656,7 +656,7 @@ void loop() {
 	/* DRAWING - ACTIVE CHANNEL DISPLAY */
 
 	if (events_in.enc_push != ENCODER_NONE) {
-		draw_active_channel_display(active_channel);
+		active_channel_display_draw(active_channel);
 	}
 
 	/* DRAWING - CHANNELS */

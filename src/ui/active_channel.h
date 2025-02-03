@@ -6,7 +6,7 @@ extern "C" {
 
 #include "common/types.h"
 
-void draw_active_channel_display(Channel active_channel);
+void active_channel_display_draw(Channel active_channel);
 
 #ifdef __cplusplus
 }
