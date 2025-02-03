@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+// clang-format off
+
 #define LED_BRIGHTNESS 5 // From 0 (low) to 15
 #define LED_BRIGHTNESS_DIM 1 // From 0 (low) to 15
 #define ADJUSTMENT_DISPLAY_TIME 450 // How long adjustments (such as to channel pattern length) are displayed for
@@ -33,7 +35,9 @@ extern "C" {
 #define LOGGING_CYCLE_TIME 1 // 0 = Don't log max cycle time in the last interval, 1 = Do log max cycle time
 #define LOGGING_CYCLE_TIME_INTERVAL 1000 // Milliseconds to capture the max cycle time during
 
+// clang-format on
+
 #ifdef __cplusplus
 }
 #endif
-#endif /* CONFIG_H_ */ 
+#endif /* CONFIG_H_ */
