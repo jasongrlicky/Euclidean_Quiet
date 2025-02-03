@@ -17,6 +17,7 @@
 #include "timeout.h"
 #include "types.h"
 
+// clang-format off
 /* 
   Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
 
@@ -211,6 +212,7 @@
   Order: [HIGHEST R] Offset, Length, Density, (unpressed) [LOWEST R]
 
 */
+// clang-format on
 
 /* SOFTWARE CONSTANTS */
 
