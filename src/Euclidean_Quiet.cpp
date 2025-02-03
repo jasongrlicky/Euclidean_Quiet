@@ -9,13 +9,13 @@
 #include "framebuffer.h"
 #include "framebuffer_led.h"
 #include "hardware.h"
-#include "indicators.h"
 #include "input.h"
 #include "led.h"
 #include "led_sleep.h"
 #include "output.h"
 #include "timeout.h"
 #include "types.h"
+#include "ui/indicators.h"
 
 #include <euclidean.h>
 
