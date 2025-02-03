@@ -328,11 +328,13 @@ typedef struct AdjustmentDisplayState {
   /// Is the adjustment display showing currently
   bool visible;
 } AdjustmentDisplayState;
+
 static AdjustmentDisplayState adjustment_display_state = {
   .channel = CHANNEL_1,
   .parameter = EUCLIDEAN_PARAM_LENGTH,
   .visible = false,
 };
+
 static Timeout adjustment_display_timeout = { .duration = ADJUSTMENT_DISPLAY_TIME };
 
 typedef struct EuclideanChannelUpdate {
