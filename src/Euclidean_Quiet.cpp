@@ -24,11 +24,11 @@
 
   Changes from official v1.2 firmware:
   - Behavior changes:
-    - Channel 1 is now selected when the module starts up
+    - Channel 1 is now selected when the module starts up.
     - The internal clock no longer starts when the module starts up.
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
-    - LED sleep timeout now takes into account encoder manipulations
-    - LED now dims itself before sleeping
+    - LED sleep timeout now takes into account encoder manipulations.
+    - LED now dims itself before sleeping.
   - UI Polish:
     - All steps of a generated pattern are now visible at all times - no more sequencer pages.
     - The steps of a pattern are visible while adjusting its length.
@@ -42,16 +42,18 @@
     - The adjustment display now hides itself after a certain amount of time, instead of waiting for the next clock signal.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
-    - Sometimes ignored "Reset" input that happened simultaneously with "Trig" input
+    - Sometimes ignored "Reset" input that happened simultaneously with "Trig" input.
     - Turning the density up if it was already at the maximum would cause it to toggle between the two highest values.
     - When the LED matrix wakes from sleep mode, the channel selection would not be displayed
     - Reset did not function for any channel if channel 1's playhead was at position 0.
     - Validating faulty saved data did not happen until after that data was used.
     - When reducing the length parameter for a channel, its adjusted density would not be saved.
-    - When a pattern length was reduced to below the sequencer's current position, the position was not reset
+    - When a pattern length was reduced to below the sequencer's current position, the position was not reset.
   - Development:
-    - Migrated firmware project to PlatformIO.
-    - Added tests for Euclidean rhythm generation.
+    - Basically a complete rewrite of the firmware.
+    - Migrated project to PlatformIO from Arduino IDE.
+    - Source code is now formatted by clang-format.
+    - Added automated tests for Euclidean rhythm generation algorithm.
 */
 
 /* Sebsongs Modular Euclidean v. 1.2. Dec 2 2022.
