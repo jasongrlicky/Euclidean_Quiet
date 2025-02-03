@@ -4,8 +4,25 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 typedef unsigned long Milliseconds;
 typedef unsigned long Microseconds;
+
+/// References one of the three channels
+typedef enum Channel {
+	CHANNEL_1,
+	CHANNEL_2,
+	CHANNEL_3,
+} Channel;
+
+/// Channel that is wrapped as an optional value
+typedef struct ChannelOpt {
+	Channel inner;
+	bool valid;
+} ChannelOpt;
+
+static const ChannelOpt CHANNEL_OPT_NONE = {.inner = CHANNEL_1, .valid = false};
 
 #ifdef __cplusplus
 }

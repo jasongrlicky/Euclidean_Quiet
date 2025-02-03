@@ -16,6 +16,7 @@
 #include "hardware/output.h"
 #include "hardware/pins.h"
 #include "hardware/properties.h"
+#include "ui/active_channel.h"
 #include "ui/indicators.h"
 
 #include <euclidean.h>
@@ -243,21 +244,6 @@
 
 static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
 
-/// References one of the three channels
-typedef enum Channel {
-	CHANNEL_1,
-	CHANNEL_2,
-	CHANNEL_3,
-} Channel;
-
-/// Channel that is wrapped as an optional value
-typedef struct ChannelOpt {
-	Channel inner;
-	bool valid;
-} ChannelOpt;
-
-static const ChannelOpt CHANNEL_OPT_NONE = {.inner = CHANNEL_1, .valid = false};
-
 /// A parameter of the Euclidean rhythm generator
 enum EuclideanParam {
 	EUCLIDEAN_PARAM_LENGTH,
@@ -388,7 +374,6 @@ static void draw_channels();
 static inline void draw_channel(Channel channel);
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
 static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
-static void draw_active_channel_display();
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -434,7 +419,7 @@ void setup() {
 
 	// Draw initial UI
 	draw_channels();
-	draw_active_channel_display();
+	draw_active_channel_display(active_channel);
 }
 
 void loop() {
@@ -670,7 +655,7 @@ void loop() {
 	/* DRAWING - ACTIVE CHANNEL DISPLAY */
 
 	if (events_in.enc_push != ENCODER_NONE) {
-		draw_active_channel_display();
+		draw_active_channel_display(active_channel);
 	}
 
 	/* DRAWING - CHANNELS */
@@ -1005,18 +990,6 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 
 		framebuffer_pixel_set_fast(x, y, color);
 	}
-}
-
-static void draw_active_channel_display() {
-	uint16_t row_bits = 0;
-	if (active_channel == CHANNEL_1) {
-		row_bits = 0x0005; // Two left dots
-	} else if (active_channel == CHANNEL_2) {
-		row_bits = 0x0140; // Two middle dots
-	} else if (active_channel == CHANNEL_3) {
-		row_bits = 0x5000; // Two right dots
-	}
-	framebuffer_row_set(LED_CH_SEL_Y, row_bits);
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
