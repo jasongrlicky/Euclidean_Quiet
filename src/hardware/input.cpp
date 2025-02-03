@@ -1,8 +1,8 @@
 #include "input.h"
 
-#include "common/hardware/pins.h"
 #include "common/timeout.h"
 #include "config.h"
+#include "hardware/pins.h"
 
 #include <Arduino.h>
 #include <Encoder.h>

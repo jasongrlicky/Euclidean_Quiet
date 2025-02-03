@@ -6,7 +6,7 @@ extern "C" {
 
 #include <stdint.h>
 
-#include "common/hardware/properties.h"
+#include "hardware/properties.h"
 
 /// Represents a method of deciding on illumination of a pixel on the LED matrix
 /// display.

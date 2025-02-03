@@ -1,7 +1,7 @@
 #include "led.h"
 
-#include "common/hardware/pins.h"
 #include "config.h"
+#include "hardware/pins.h"
 
 #include <LedControl.h>
 

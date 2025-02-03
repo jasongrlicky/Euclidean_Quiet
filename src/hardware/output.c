@@ -1,6 +1,6 @@
 #include "output.h"
 
-#include "common/hardware/pins.h"
+#include "hardware/pins.h"
 
 #include <Arduino.h>
 

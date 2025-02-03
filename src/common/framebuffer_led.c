@@ -1,9 +1,9 @@
 #include "framebuffer_led.h"
 
 #include "common/framebuffer.h"
-#include "common/hardware/led.h"
 #include "common/timeout.h"
 #include "config.h"
+#include "hardware/led.h"
 
 extern uint16_t framebuffer[LED_ROWS];
 
