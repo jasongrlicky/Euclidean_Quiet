@@ -11,7 +11,7 @@
 #include "common/led_sleep.h"
 #include "common/timeout.h"
 #include "common/types.h"
-#include "common/ui/indicators.h"
+#include "ui/indicators.h"
 #include "hardware/input.h"
 #include "hardware/led.h"
 #include "hardware/output.h"
