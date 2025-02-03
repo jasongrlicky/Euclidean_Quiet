@@ -287,6 +287,7 @@ typedef struct EuclideanState {
   bool sequencer_running;
 } EuclideanState;
 
+// clang-format off
 static EuclideanState euclidean_state = {
   .channels = {
     { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
@@ -295,6 +296,7 @@ static EuclideanState euclidean_state = {
   },
   .sequencer_running = false,
 };
+// clang-format on
 
 static Milliseconds time;
 static Milliseconds last_clock_or_reset;
