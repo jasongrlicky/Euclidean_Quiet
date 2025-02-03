@@ -6,16 +6,16 @@
 
 #include <Arduino.h>
 
+#include "common/hardware/input.h"
+#include "common/hardware/led.h"
+#include "common/hardware/output.h"
+#include "common/ui/indicators.h"
 #include "framebuffer.h"
 #include "framebuffer_led.h"
 #include "hardware.h"
-#include "hardware/input.h"
-#include "hardware/led.h"
-#include "hardware/output.h"
 #include "led_sleep.h"
 #include "timeout.h"
 #include "types.h"
-#include "ui/indicators.h"
 
 #include <euclidean.h>
 
