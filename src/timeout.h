@@ -6,7 +6,7 @@ extern "C" {
 
 #include <stdbool.h>
 
-#include "types.h"
+#include "common/types.h"
 
 /// Manually checked simple timeout that operates in milliseconds. Can repeat if
 /// checked using `timeout_loop`, or not repeat if checked using `timeout_fired`.

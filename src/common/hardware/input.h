@@ -4,8 +4,8 @@
 extern "C" {
 #endif
 
-#include "events.h"
-#include "types.h"
+#include "common/events.h"
+#include "common/types.h"
 
 /// Populates the passed-in struct with events observed since last cycle.
 void input_update(InputEvents *events, Milliseconds now);

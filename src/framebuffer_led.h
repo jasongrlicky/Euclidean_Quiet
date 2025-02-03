@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-#include "types.h"
+#include "common/types.h"
 
 /// Update the animations for framebuffer colors
 void framebuffer_update_color_animations(Milliseconds now);

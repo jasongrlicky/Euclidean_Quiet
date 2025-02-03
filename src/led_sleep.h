@@ -6,7 +6,7 @@ extern "C" {
 
 #include <stdbool.h>
 
-#include "types.h"
+#include "common/types.h"
 
 typedef enum LedSleepUpdate {
 	LED_SLEEP_UPDATE_NONE,

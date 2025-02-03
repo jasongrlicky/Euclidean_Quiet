@@ -9,13 +9,13 @@
 #include "common/hardware/input.h"
 #include "common/hardware/led.h"
 #include "common/hardware/output.h"
+#include "common/types.h"
 #include "common/ui/indicators.h"
 #include "framebuffer.h"
 #include "framebuffer_led.h"
 #include "hardware.h"
 #include "led_sleep.h"
 #include "timeout.h"
-#include "types.h"
 
 #include <euclidean.h>
 

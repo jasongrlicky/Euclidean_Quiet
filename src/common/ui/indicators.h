@@ -4,8 +4,8 @@
 extern "C" {
 #endif
 
-#include "events.h"
-#include "types.h"
+#include "common/events.h"
+#include "common/types.h"
 
 #include <stdint.h>
 
