@@ -3,8 +3,8 @@
 #include <Arduino.h>
 #include <Encoder.h>
 
+#include "common/timeout.h"
 #include "config.h"
-#include "timeout.h"
 
 /* CONFIG */
 

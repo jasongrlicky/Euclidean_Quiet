@@ -1,7 +1,7 @@
 #include "led_sleep.h"
 
+#include "common/timeout.h"
 #include "config.h"
-#include "timeout.h"
 
 typedef enum LedSleepState {
 	LED_SLEEP_STATE_WAKE,

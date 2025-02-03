@@ -2,8 +2,8 @@
 
 #include <LedControl.h>
 
+#include "common/hardware.h"
 #include "config.h"
-#include "hardware.h"
 
 // Initialize objects for controlling LED matrix
 // (from LedControl.h library)

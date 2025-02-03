@@ -2,8 +2,6 @@
 
 #include <Arduino.h>
 
-#include "hardware.h"
-
 static inline uint8_t output_pin_from_channel(OutputChannel channel) {
 	switch (channel) {
 		case OUTPUT_CHANNEL_1:
