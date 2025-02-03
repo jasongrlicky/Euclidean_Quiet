@@ -1,5 +1,7 @@
 #include "output.h"
 
+#include "common/hardware/pins.h"
+
 #include <Arduino.h>
 
 static inline uint8_t output_pin_from_channel(OutputChannel channel) {

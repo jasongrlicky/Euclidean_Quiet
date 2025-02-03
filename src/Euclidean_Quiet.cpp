@@ -12,6 +12,7 @@
 #include "common/hardware/input.h"
 #include "common/hardware/led.h"
 #include "common/hardware/output.h"
+#include "common/hardware/pins.h"
 #include "common/led_sleep.h"
 #include "common/timeout.h"
 #include "common/types.h"

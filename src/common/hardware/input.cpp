@@ -1,10 +1,11 @@
 #include "input.h"
 
-#include <Arduino.h>
-#include <Encoder.h>
-
+#include "common/hardware/pins.h"
 #include "common/timeout.h"
 #include "config.h"
+
+#include <Arduino.h>
+#include <Encoder.h>
 
 /* CONFIG */
 
