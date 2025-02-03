@@ -316,9 +316,6 @@ static Timeout internal_clock_timeout = {.duration = INTERNAL_CLOCK_PERIOD};
 static TimeoutOnce output_pulse_timeout = {
     .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
 
-static TimeoutOnce trig_indicator_timeout = {.inner = {.duration = INPUT_INDICATOR_FLASH_TIME}};
-static TimeoutOnce reset_indicator_timeout = {.inner = {.duration = INPUT_INDICATOR_FLASH_TIME}};
-
 // Tracks the playhead flash itself
 static TimeoutOnce playhead_flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}};
 // Track the time since the playhead has moved so we can make it flash in its idle loop
@@ -661,32 +658,12 @@ void loop() {
 		output_clear_all();
 	}
 
-	/* DRAWING - OUTPUT INDICATORS */
+	/* DRAWING - INDICATORS */
+
+	indicators_input_update(&events_in, time);
 
 	if (sequencers_updated) {
-		draw_output_indicators(out_channels_firing);
-	}
-
-	/* DRAWING - INPUT INDICATORS */
-
-	// Flash Trig indicator LED if we received a clock tick
-	if (clock_tick) {
-		framebuffer_pixel_on(LED_IN_TRIG_X, LED_INDICATORS_Y);
-		timeout_once_reset(&trig_indicator_timeout, time);
-	}
-
-	// Flash Reset indicator LED if we received a reset input event
-	if (events_in.reset) {
-		framebuffer_pixel_on(LED_IN_RESET_X, LED_INDICATORS_Y);
-		timeout_once_reset(&reset_indicator_timeout, time);
-	}
-
-	// Turn off indicator LEDs that have been on long enough
-	if (timeout_once_fired(&trig_indicator_timeout, time)) {
-		framebuffer_pixel_off(LED_IN_TRIG_X, LED_INDICATORS_Y);
-	}
-	if (timeout_once_fired(&reset_indicator_timeout, time)) {
-		framebuffer_pixel_off(LED_IN_RESET_X, LED_INDICATORS_Y);
+		indicators_output_draw(out_channels_firing);
 	}
 
 	/* DRAWING - ACTIVE CHANNEL DISPLAY */
