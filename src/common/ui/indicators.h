@@ -11,7 +11,11 @@ extern "C" {
 
 void indicators_input_update(const InputEvents *events, Milliseconds now);
 
-void indicators_output_draw(uint8_t out_channels_firing);
+/// Draw output indicators for latching outputs - ones that stay lit until they
+/// are specifically unlit on the next clock cycle.
+/// @param out_channels_firing Bitflags storing which output channels will fire 
+/// this cycle, indexed by `OutputChannel`.
+void indicators_output_draw_latching(uint8_t out_channels_firing);
 
 #ifdef __cplusplus
 }

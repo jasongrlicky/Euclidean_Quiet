@@ -664,7 +664,7 @@ void loop() {
 	indicators_input_update(&events_in, time);
 
 	if (sequencers_updated) {
-		indicators_output_draw(out_channels_firing);
+		indicators_output_draw_latching(out_channels_firing);
 	}
 
 	/* DRAWING - ACTIVE CHANNEL DISPLAY */

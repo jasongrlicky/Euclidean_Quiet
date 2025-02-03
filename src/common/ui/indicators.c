@@ -39,7 +39,7 @@ void indicators_input_update(const InputEvents *events, Milliseconds now) {
 	}
 }
 
-void indicators_output_draw(uint8_t out_channels_firing) {
+void indicators_output_draw_latching(uint8_t out_channels_firing) {
 	for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
 		uint8_t x = output_channel_led_x((OutputChannel)out_channel);
 
