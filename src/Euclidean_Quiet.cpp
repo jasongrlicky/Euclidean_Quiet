@@ -356,8 +356,6 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 /// Keep the data in the state in bounds. Bounds excursions can happen when
 /// loading from the EEPROM.
 static void validate_euclidean_state(EuclideanState *s);
-/// Turn on pull-up resistors for encoders
-static void init_encoders(void);
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
@@ -397,10 +395,9 @@ void setup() {
 	led_sleep_init(time);
 	eeprom_load(&euclidean_state);
 	validate_euclidean_state(&euclidean_state);
-	init_encoders();
 	init_serial();
-	input_pins_init();
-	output_pins_init();
+	input_init();
+	output_init();
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
@@ -800,15 +797,6 @@ static void validate_euclidean_state(EuclideanState *s) {
 			s->channels[c].position = BEAT_POSITION_DEFAULT;
 		}
 	}
-}
-
-static void init_encoders(void) {
-	digitalWrite(PIN_ENC_1A, HIGH);
-	digitalWrite(PIN_ENC_1B, HIGH);
-	digitalWrite(PIN_ENC_2A, HIGH);
-	digitalWrite(PIN_ENC_2B, HIGH);
-	digitalWrite(PIN_ENC_3A, HIGH);
-	digitalWrite(PIN_ENC_3B, HIGH);
 }
 
 static void init_serial(void) {

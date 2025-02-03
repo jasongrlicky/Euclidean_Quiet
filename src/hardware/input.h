@@ -7,7 +7,7 @@ extern "C" {
 #include "common/events.h"
 #include "common/types.h"
 
-void input_pins_init(void);
+void input_init(void);
 
 /// Populates the passed-in struct with events observed since last cycle.
 void input_update(InputEvents *events, Milliseconds now);

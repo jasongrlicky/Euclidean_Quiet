@@ -11,7 +11,7 @@ static inline uint8_t output_pin_from_channel(OutputChannel channel);
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
-void output_pins_init(void) {
+void output_init(void) {
 	pinMode(PIN_OUT_CHANNEL_1, OUTPUT);
 	pinMode(PIN_OUT_CHANNEL_2, OUTPUT);
 	pinMode(PIN_OUT_CHANNEL_3, OUTPUT);

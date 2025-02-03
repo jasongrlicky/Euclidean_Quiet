@@ -57,8 +57,16 @@ static int encoder_read(Encoder &enc);
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
-void input_pins_init(void) {
+void input_init(void) {
 	pinMode(PIN_IN_TRIG, INPUT);
+
+	// Turn on pull-up resistors for encoders
+	digitalWrite(PIN_ENC_1A, HIGH);
+	digitalWrite(PIN_ENC_1B, HIGH);
+	digitalWrite(PIN_ENC_2A, HIGH);
+	digitalWrite(PIN_ENC_2B, HIGH);
+	digitalWrite(PIN_ENC_3A, HIGH);
+	digitalWrite(PIN_ENC_3B, HIGH);
 }
 
 // cppcheck-suppress unusedFunction
