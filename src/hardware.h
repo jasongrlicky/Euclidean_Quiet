@@ -31,12 +31,12 @@ extern "C" {
 #define PIN_ENC_3B 5
 
 /// Represents, optionally, one of the three encoders
-enum EncoderIdx {
+typedef enum EncoderIdx {
 	ENCODER_1 = 0,
 	ENCODER_2 = 1,
 	ENCODER_3 = 2,
 	ENCODER_NONE = 4,
-};
+} EncoderIdx;
 
 // Number of encoders on the module
 #define NUM_ENCODERS 3

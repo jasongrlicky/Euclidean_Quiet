@@ -4,10 +4,11 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-
 #include "hardware.h"
 #include "types.h"
+
+#include <stdbool.h>
+#include <stdint.h>
 
 /// Record of any input events that were received this cycle
 typedef struct InputEvents {
