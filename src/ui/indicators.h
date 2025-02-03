@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 #include "hardware.h"
-#include "input.h"
+#include "hardware/input.h"
 #include "types.h"
 
 void indicators_input_update(const InputEvents *events, Milliseconds now);
