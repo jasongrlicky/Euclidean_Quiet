@@ -14,7 +14,6 @@
 #include "hardware/input.h"
 #include "hardware/led.h"
 #include "hardware/output.h"
-#include "hardware/pins.h"
 #include "hardware/properties.h"
 #include "ui/active_channel.h"
 #include "ui/indicators.h"
@@ -32,16 +31,18 @@
     - Patterns generated are now accurate to the original Euclidean Rhythms paper.
     - LED sleep timeout now takes into account encoder manipulations.
     - LED now dims itself before sleeping.
+		- Removed LED blink sequence on back of module when starting up.
   - UI Polish:
     - All steps of a generated pattern are now visible at all times - no more sequencer pages.
     - The steps of a pattern are visible while adjusting its length.
+    - New adjustment display when setting pattern length.
     - The effects of resetting the sequencers is now immediately visible.
     - There is now an indicator LED for Reset input, next to the one labeled "Trig".
     - Output indicator LEDs now stay lit for the entire duration of the step.
     - The "Trig" LED indicator now illuminates every clock pulse instead of alternating ones.
     - Made channel selection easier to see (two dots instead of 4 overlapping).
-    - Shortened the time that LEDs stay lit when setting pattern length for a channel.
-    - Before a clock trigger has been received, the full pattern is drawn for each channel.
+		- Removed LED sleep animations.
+    - Before a clock trigger has been received, each channel's pattern is displayed.
     - The adjustment display now hides itself after a certain amount of time, instead of waiting for the next clock signal.
   - Bugs Fixed:
     - The internal clock started up again when the reset button was pressed.
@@ -381,7 +382,6 @@ static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
-static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
 #endif
@@ -405,8 +405,6 @@ void setup() {
 		    euclidean_pattern_rotate(euclidean_state.channels[a].length, euclidean_state.channels[a].density,
 		                             euclidean_state.channels[a].offset);
 	}
-
-	startUpOK();
 
 	led_wake();
 
@@ -999,25 +997,6 @@ static inline int eeprom_addr_length(Channel channel) { return (channel * 2) + 1
 static inline int eeprom_addr_density(Channel channel) { return (channel * 2) + 2; }
 
 static inline int eeprom_addr_offset(Channel channel) { return channel + 7; }
-
-static void startUpOK() {
-	digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
-	delay(50);
-	digitalWrite(PIN_OUT_CHANNEL_3, LOW);
-	delay(200);
-	digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
-	delay(50);
-	digitalWrite(PIN_OUT_CHANNEL_3, LOW);
-	delay(200);
-	digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
-	delay(50);
-	digitalWrite(PIN_OUT_CHANNEL_3, LOW);
-	delay(200);
-	digitalWrite(PIN_OUT_CHANNEL_3, HIGH);
-	delay(50);
-	digitalWrite(PIN_OUT_CHANNEL_3, LOW);
-	delay(200);
-}
 
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events) {
