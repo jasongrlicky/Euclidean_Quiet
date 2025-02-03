@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-#include "hardware.h"
+#include "hardware/properties.h"
 
 #include <stdbool.h>
 #include <stdint.h>

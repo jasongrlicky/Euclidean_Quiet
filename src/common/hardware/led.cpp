@@ -1,6 +1,5 @@
 #include "led.h"
 
-#include "common/hardware.h"
 #include "common/hardware/pins.h"
 #include "config.h"
 
