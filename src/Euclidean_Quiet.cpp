@@ -11,12 +11,12 @@
 #include "common/led_sleep.h"
 #include "common/timeout.h"
 #include "common/types.h"
-#include "ui/indicators.h"
 #include "hardware/input.h"
 #include "hardware/led.h"
 #include "hardware/output.h"
 #include "hardware/pins.h"
 #include "hardware/properties.h"
+#include "ui/indicators.h"
 
 #include <euclidean.h>
 
