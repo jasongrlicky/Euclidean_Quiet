@@ -11,7 +11,7 @@ extern "C" {
 /// @param length Number of total steps in the pattern, up to 16.
 /// @param density Number of active steps in the pattern.
 /// @param offset: Rotation of the pattern to the right.
-/// @returns Pattern in the form of a bit flag (beat flag?), stored in the 
+/// @returns Pattern in the form of a bit flag (beat flag?), stored in the
 /// lowest-order bits of the return value.
 uint16_t euclidean_pattern_rotate(uint8_t length, uint8_t density, uint8_t offset);
 
@@ -19,7 +19,7 @@ uint16_t euclidean_pattern_rotate(uint8_t length, uint8_t density, uint8_t offse
 ///
 /// @param length Number of total steps in the pattern, up to 16.
 /// @param density Number of active steps in the pattern.
-/// @returns Pattern in the form of a bit flag (beat flag?), stored in the 
+/// @returns Pattern in the form of a bit flag (beat flag?), stored in the
 /// lowest-order bits of the return value.
 uint16_t euclidean_pattern(uint8_t length, uint8_t density);
 
@@ -29,11 +29,11 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density);
 /// in the lowest-order bits.
 /// @param pattern_len Number of total steps in the pattern, up to 16.
 /// @param offset Number of steps to rotate `pattern` right by
-/// @returns Pattern in the form of a bit flag (beat flag?), stored in the 
+/// @returns Pattern in the form of a bit flag (beat flag?), stored in the
 /// lowest-order bits of the return value.
 uint16_t pattern_rotate(uint16_t pattern, uint8_t pattern_len, uint8_t offset);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* EUCLIDEAN_H_ */ 
+#endif /* EUCLIDEAN_H_ */

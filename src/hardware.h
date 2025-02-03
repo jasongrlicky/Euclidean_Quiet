@@ -35,10 +35,10 @@ extern "C" {
 
 /// Represents, optionally, one of the three encoders
 enum EncoderIdx {
-  ENCODER_1 = 0,
-  ENCODER_2 = 1,
-  ENCODER_3 = 2,
-  ENCODER_NONE = 4,
+	ENCODER_1 = 0,
+	ENCODER_2 = 1,
+	ENCODER_3 = 2,
+	ENCODER_NONE = 4,
 };
 
 // LED Matrix address
@@ -52,4 +52,4 @@ enum EncoderIdx {
 #ifdef __cplusplus
 }
 #endif
-#endif /* HARDWARE_H_ */ 
+#endif /* HARDWARE_H_ */

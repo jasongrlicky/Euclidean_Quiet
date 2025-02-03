@@ -8,10 +8,10 @@ extern "C" {
 
 // Indices for individual output channels
 typedef enum OutputChannel {
-  OUTPUT_CHANNEL_1 = 0,
-  OUTPUT_CHANNEL_2 = 1,
-  OUTPUT_CHANNEL_3 = 2,
-  OUTPUT_CHANNEL_OFFBEAT = 3
+	OUTPUT_CHANNEL_1 = 0,
+	OUTPUT_CHANNEL_2 = 1,
+	OUTPUT_CHANNEL_3 = 2,
+	OUTPUT_CHANNEL_OFFBEAT = 3
 } OutputChannel;
 
 #define OUTPUT_NUM_CHANNELS 4
@@ -26,4 +26,4 @@ void output_clear_all(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* OUTPUT_H_ */ 
+#endif /* OUTPUT_H_ */

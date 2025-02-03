@@ -5,132 +5,138 @@
 /* INTERNAL */
 
 /// Concatenate two binary numbers bitwise
-inline static uint16_t binary_concat(uint16_t a, uint16_t b, uint8_t b_len) {
-  return (a << b_len) | b;
-}
+inline static uint16_t binary_concat(uint16_t a, uint16_t b, uint8_t b_len) { return (a << b_len) | b; }
 
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
 uint16_t euclidean_pattern_rotate(uint8_t length, uint8_t density, uint8_t offset) {
-  uint16_t pattern = euclidean_pattern(length, density);
-  pattern = pattern_rotate(pattern, length, offset);
-  return pattern;
+	uint16_t pattern = euclidean_pattern(length, density);
+	pattern = pattern_rotate(pattern, length, offset);
+	return pattern;
 }
 
 // cppcheck-suppress unusedFunction
 uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
-  // Link to original paper:
-  // http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
+	// Link to original paper:
+	// http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf
 
-  // Early returns: All bits off
-  if (density == 0) { return 0; }
-  if (length == 0) { return 0; }
+	// Early returns: All bits off
+	if (density == 0) {
+		return 0;
+	}
+	if (length == 0) {
+		return 0;
+	}
 
-  // Constraint: density does not exceed length
-  density = (length < density) ? length : density;
+	// Constraint: density does not exceed length
+	density = (length < density) ? length : density;
 
-  // Early return: All bits on
-  if (density == length) { 
-    // Generate bitflags of all 1s for the given length
-    return (1 << length) - 1;
-  }
+	// Early return: All bits on
+	if (density == length) {
+		// Generate bitflags of all 1s for the given length
+		return (1 << length) - 1;
+	}
 
-  // At this point:
-  //  length > 0
-  //  0 < density < length
+	// At this point:
+	//  length > 0
+	//  0 < density < length
 
-  // A and B are sequences of bits that are built up each step of the algorithm.
-  //
-  // At first, they just represent the bits 1 (active step) and 0 (inactive step).
-  uint16_t a = 1;
-  uint16_t b = 0;
-  uint8_t a_len = 1;
-  uint8_t b_len = 1;
+	// A and B are sequences of bits that are built up each step of the algorithm.
+	//
+	// At first, they just represent the bits 1 (active step) and 0 (inactive step).
+	uint16_t a = 1;
+	uint16_t b = 0;
+	uint8_t a_len = 1;
+	uint8_t b_len = 1;
 
-  // Holds the current state of the pattern, but not directly. The count of As
-  // and Bs represents some number of sequence A, followed by some number of 
-  // sequence B.
-  //
-  // We initialize the pattern to a sequence of As followed by Bs. For example, 
-  // a density of 3 and a length of 8 would yield a_count = 3, b_count = 5, 
-  // representing AAABBBBB.
-  uint8_t a_count = density;
-  uint8_t b_count = length - a_count;
+	// Holds the current state of the pattern, but not directly. The count of As
+	// and Bs represents some number of sequence A, followed by some number of
+	// sequence B.
+	//
+	// We initialize the pattern to a sequence of As followed by Bs. For example,
+	// a density of 3 and a length of 8 would yield a_count = 3, b_count = 5,
+	// representing AAABBBBB.
+	uint8_t a_count = density;
+	uint8_t b_count = length - a_count;
 
-  do {
-    uint8_t b_num_to_distribute_per_a = b_count / a_count;
-    uint8_t b_num_remainder = b_count - (a_count * b_num_to_distribute_per_a);
+	do {
+		uint8_t b_num_to_distribute_per_a = b_count / a_count;
+		uint8_t b_num_remainder = b_count - (a_count * b_num_to_distribute_per_a);
 
-    // Append B onto A the number of times we could fully distribute Bs to As
-    for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
-      // Append B onto A, so A is now AB
-      a = binary_concat(a, b, b_len);
-      a_len += b_len;
+		// Append B onto A the number of times we could fully distribute Bs to As
+		for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
+			// Append B onto A, so A is now AB
+			a = binary_concat(a, b, b_len);
+			a_len += b_len;
 
-      // Reduce the number of Bs by the number of As, since we've distributed a
-      // B to each A
-      b_count -= a_count;
-    }
-    if (b_num_to_distribute_per_a && (b_num_remainder <= 1)) { break; }
+			// Reduce the number of Bs by the number of As, since we've distributed a
+			// B to each A
+			b_count -= a_count;
+		}
+		if (b_num_to_distribute_per_a && (b_num_remainder <= 1)) {
+			break;
+		}
 
-    // If there is a remainder of Bs to distribute, Append B onto A also
-    if (b_num_remainder) {
-      // Bs are now the As that couldn't have Bs distributed to them
-      b_count = a_count - b_num_remainder;
-      // Now As are the ABs that had Bs distributed to them
-      a_count = b_num_remainder;
+		// If there is a remainder of Bs to distribute, Append B onto A also
+		if (b_num_remainder) {
+			// Bs are now the As that couldn't have Bs distributed to them
+			b_count = a_count - b_num_remainder;
+			// Now As are the ABs that had Bs distributed to them
+			a_count = b_num_remainder;
 
-      // Note value for A before it gets modified
-      uint16_t a_prev = a;
-      uint8_t a_len_prev = a_len;
+			// Note value for A before it gets modified
+			uint16_t a_prev = a;
+			uint8_t a_len_prev = a_len;
 
-      // Append B onto A, so A is now AB
-      a = binary_concat(a, b, b_len);
-      a_len += b_len;
+			// Append B onto A, so A is now AB
+			a = binary_concat(a, b, b_len);
+			a_len += b_len;
 
-      // Replace B with the previous value for A
-      b = a_prev;
-      b_len = a_len_prev;
-    }
-  } while (b_count > 1);
+			// Replace B with the previous value for A
+			b = a_prev;
+			b_len = a_len_prev;
+		}
+	} while (b_count > 1);
 
-  // Expand meta-sequence into bits
-  uint16_t pattern = 0;
-  for (uint8_t i = 0; i < a_count; i++) {
-    pattern = binary_concat(pattern, a, a_len);
-  }
-  for (uint8_t i = 0; i < b_count; i++) {
-    pattern = binary_concat(pattern, b, b_len);
-  }
+	// Expand meta-sequence into bits
+	uint16_t pattern = 0;
+	for (uint8_t i = 0; i < a_count; i++) {
+		pattern = binary_concat(pattern, a, a_len);
+	}
+	for (uint8_t i = 0; i < b_count; i++) {
+		pattern = binary_concat(pattern, b, b_len);
+	}
 
-  return pattern;
+	return pattern;
 }
 
 // cppcheck-suppress unusedFunction
 uint16_t pattern_rotate(uint16_t pattern, uint8_t pattern_len, uint8_t offset) {
-  // Constraint: offset does not exceed pattern length
-  offset = (pattern_len < offset) ? pattern_len : offset;
+	// Constraint: offset does not exceed pattern length
+	offset = (pattern_len < offset) ? pattern_len : offset;
 
-  if (offset == 0) { return pattern; }
+	if (offset == 0) {
+		return pattern;
+	}
 
-  // Create a mask of all 1s that is pattern_len long
-  uint16_t mask = ((1 << pattern_len) - 1);
+	// Create a mask of all 1s that is pattern_len long
+	uint16_t mask = ((1 << pattern_len) - 1);
 
-  // Ignore any bits that are beyond pattern_len
-  pattern &= mask;
+	// Ignore any bits that are beyond pattern_len
+	pattern &= mask;
 
-  // Bits that do not get wrapped, they just get shifted right
-  uint16_t pattern_shifted = pattern >> offset;
+	// Bits that do not get wrapped, they just get shifted right
+	uint16_t pattern_shifted = pattern >> offset;
 
-  // Bits that get wrapped around to the left
-  uint16_t pattern_wrapped = pattern << (pattern_len - offset);
+	// Bits that get wrapped around to the left
+	uint16_t pattern_wrapped = pattern << (pattern_len - offset);
 
-  // Recombine the two parts of the pattern
-  uint16_t result = pattern_shifted | pattern_wrapped;
+	// Recombine the two parts of the pattern
+	uint16_t result = pattern_shifted | pattern_wrapped;
 
-  // Ignore any bits beyond pattern_len (which could have been generated by wrapping)
-  result &= mask;
+	// Ignore any bits beyond pattern_len (which could have been generated by wrapping)
+	result &= mask;
 
-  return result;
+	return result;
 }

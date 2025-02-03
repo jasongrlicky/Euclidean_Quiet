@@ -11,10 +11,10 @@ extern "C" {
 /// Manually checked simple timeout that operates in milliseconds. Can repeat if
 /// checked using `timeout_loop`, or not repeat if checked using `timeout_fired`.
 typedef struct Timeout {
-  /// How long after `start` the timeout will be considered fired
-  Milliseconds duration;
-  /// When the timeout started
-  Milliseconds start;
+	/// How long after `start` the timeout will be considered fired
+	Milliseconds duration;
+	/// When the timeout started
+	Milliseconds start;
 } Timeout;
 
 /// Make the timeout start again at `now`.
@@ -23,17 +23,16 @@ void timeout_reset(Timeout *timeout, Milliseconds now);
 /// Check if the timeout has fired, given the current time, `now`
 bool timeout_fired(const Timeout *timeout, Milliseconds now);
 
-/// Check if the timeout has fired, given the current time, `now`. If it has 
+/// Check if the timeout has fired, given the current time, `now`. If it has
 /// fired, resets the timeout, so it becomes periodic.
 bool timeout_loop(Timeout *timeout, Milliseconds now);
 
-
 /// Similar to `Timeout`, but only fires once until it has been reset.
 typedef struct TimeoutOnce {
-  Timeout inner;
-  /// Is `true` until the timeout has fired once, then is `false` until the 
-  /// timeout has been reset.
-  bool active;
+	Timeout inner;
+	/// Is `true` until the timeout has fired once, then is `false` until the
+	/// timeout has been reset.
+	bool active;
 } TimeoutOnce;
 
 /// Make the timeout start again at `now`.
@@ -46,4 +45,4 @@ bool timeout_once_fired(TimeoutOnce *timeout_once, Milliseconds now);
 #ifdef __cplusplus
 }
 #endif
-#endif /* TIMEOUT_H_ */ 
+#endif /* TIMEOUT_H_ */
