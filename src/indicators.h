@@ -4,6 +4,10 @@
 extern "C" {
 #endif
 
+#include "hardware.h"
+
+void draw_output_indicators(uint8_t out_channels_firing);
+
 #ifdef __cplusplus
 }
 #endif

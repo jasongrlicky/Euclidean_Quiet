@@ -9,6 +9,7 @@
 #include "framebuffer.h"
 #include "framebuffer_led.h"
 #include "hardware.h"
+#include "indicators.h"
 #include "input.h"
 #include "led.h"
 #include "led_sleep.h"
@@ -401,8 +402,6 @@ static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
 static inline int eeprom_addr_density(Channel channel);
 static inline int eeprom_addr_offset(Channel channel);
-/// Calculate the x-coordinate of the indicator LED for the given  output channel
-static uint8_t output_channel_led_x(OutputChannel channel);
 static void startUpOK();
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
@@ -665,13 +664,7 @@ void loop() {
 	/* DRAWING - OUTPUT INDICATORS */
 
 	if (sequencers_updated) {
-		for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-			uint8_t x = output_channel_led_x((OutputChannel)out_channel);
-
-			uint8_t active_step = (out_channels_firing >> out_channel) & 0x01;
-
-			framebuffer_pixel_set(x, LED_INDICATORS_Y, (Color)active_step);
-		}
+		draw_output_indicators(out_channels_firing);
 	}
 
 	/* DRAWING - INPUT INDICATORS */
@@ -1051,20 +1044,6 @@ static void draw_active_channel_display() {
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
 	uint8_t idx = length - position - 1;
 	return (pattern >> idx) & 0x01;
-}
-
-static uint8_t output_channel_led_x(OutputChannel channel) {
-	uint8_t result;
-	if (channel == OUTPUT_CHANNEL_1) {
-		result = LED_OUT_CH1_X;
-	} else if (channel == OUTPUT_CHANNEL_2) {
-		result = LED_OUT_CH2_X;
-	} else if (channel == OUTPUT_CHANNEL_3) {
-		result = LED_OUT_CH3_X;
-	} else {
-		result = LED_OUT_OFFBEAT_X;
-	}
-	return result;
 }
 
 static void eeprom_load(EuclideanState *s) {
