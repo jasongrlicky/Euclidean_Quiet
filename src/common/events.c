@@ -10,6 +10,8 @@ const InputEvents INPUT_EVENTS_EMPTY = {
 
 // cppcheck-suppress unusedFunction
 bool input_events_contains_any_external(const InputEvents *events) {
+	if (!events) return false;
+
 	// clang-format off
 	bool result = (events->trig || 
                    events->reset || 
