@@ -7,8 +7,8 @@ extern "C" {
 #include "common/events.h"
 #include "common/types.h"
 
-/// @brief Update internal clock mode, responding to input events and generating 
-/// a clock tick periodically
+/// @brief Respond to input events and populate the passed-in struct with 
+/// an internal clock tick event periodically.
 /// @param events Input events, to which this function will add an internal
 /// clock tick event if one should be generated this cycle.
 void internal_clock_update(InputEvents *events, Milliseconds now);
