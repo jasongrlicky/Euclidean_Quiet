@@ -15,6 +15,7 @@
 #include "hardware/led.h"
 #include "hardware/output.h"
 #include "hardware/properties.h"
+#include "modes/clock.h"
 #include "ui/active_channel.h"
 #include "ui/indicators.h"
 
@@ -243,8 +244,6 @@
 
 /* GLOBALS */
 
-static bool internal_clock_enabled = INTERNAL_CLOCK_DEFAULT;
-
 /// A parameter of the Euclidean rhythm generator
 enum EuclideanParam {
 	EUCLIDEAN_PARAM_LENGTH,
@@ -300,7 +299,6 @@ static Milliseconds last_clock_or_reset;
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 static uint16_t generated_rhythms[NUM_CHANNELS];
 static Channel active_channel; // Channel that is currently active
-static Timeout internal_clock_timeout = {.duration = INTERNAL_CLOCK_PERIOD};
 static TimeoutOnce output_pulse_timeout = {
     .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
 
@@ -581,18 +579,7 @@ void loop() {
 
 	/* UPDATE INTERNAL CLOCK */
 
-	// Turn off internal clock when external clock received
-	if (events_in.trig) {
-		internal_clock_enabled = false;
-	}
-
-	if (events_in.reset) {
-		timeout_reset(&internal_clock_timeout, time);
-	}
-
-	if (internal_clock_enabled && (timeout_loop(&internal_clock_timeout, time))) {
-		events_in.internal_clock_tick = true;
-	}
+	internal_clock_update(&events_in, time);
 
 	/* UPDATE SEQUENCER */
 
