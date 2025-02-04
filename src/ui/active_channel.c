@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 
+// cppcheck-suppress unusedFunction
 void active_channel_display_draw(Channel active_channel) {
 	uint16_t row_bits = 0;
 	if (active_channel == CHANNEL_1) {
