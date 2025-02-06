@@ -1,6 +1,6 @@
 #include "active_channel.h"
 
-#include "common/framebuffer.h"
+#include "framebuffer.h"
 #include "hardware/properties.h"
 
 #include <stdint.h>

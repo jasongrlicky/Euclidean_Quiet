@@ -1,8 +1,8 @@
 #include "indicators.h"
 
-#include "common/framebuffer.h"
-#include "common/timeout.h"
 #include "config.h"
+#include "common/timeout.h"
+#include "framebuffer.h"
 
 #include <stdbool.h>
 

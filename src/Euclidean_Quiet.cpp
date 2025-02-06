@@ -6,9 +6,6 @@
 
 #include <Arduino.h>
 
-#include "common/framebuffer.h"
-#include "common/framebuffer_led.h"
-#include "common/led_sleep.h"
 #include "common/timeout.h"
 #include "common/types.h"
 #include "hardware/input.h"
@@ -17,7 +14,10 @@
 #include "hardware/properties.h"
 #include "modes/clock.h"
 #include "ui/active_channel.h"
+#include "ui/framebuffer.h"
+#include "ui/framebuffer_led.h"
 #include "ui/indicators.h"
+#include "ui/led_sleep.h"
 
 #include <euclidean.h>
 
