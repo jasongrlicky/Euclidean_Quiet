@@ -693,8 +693,13 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 }
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
-	// 256ms period = ~234bpm
-	// 1280ms period = ~47bpm
+	// This is a standard "scale from input range to output range" function, but 
+	// it uses specific ranges so that we can avoid multiplication or division by
+	// numbers that aren't powers of 2.
+
+	// 256ms min period = ~234bpm
+	// 1280ms max period = ~47bpm
+	// 1280-256 = an input range of 1024, or 2^10
 	clock_period = constrain(clock_period, 256, 1280);
 	// Subtract input min
 	Milliseconds delta = clock_period - 256;
