@@ -47,12 +47,12 @@ typedef struct EuclideanChannelUpdate {
 } EuclideanChannelUpdate;
 
 static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
-    .length = 0,
-    .density = 0,
-    .offset = 0,
-    .length_changed = false,
-    .density_changed = false,
-    .offset_changed = false,
+	.length = 0,
+	.density = 0,
+	.offset = 0,
+	.length_changed = false,
+	.density_changed = false,
+	.offset_changed = false,
 };
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
