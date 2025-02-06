@@ -78,6 +78,23 @@ void euclid_draw_channels(void) {
 	}
 }
 
+void euclid_validate_state(EuclideanState *s) {
+	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+		if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
+			s->channels[c].length = BEAT_LENGTH_DEFAULT;
+		}
+		if (s->channels[c].density > BEAT_DENSITY_MAX) {
+			s->channels[c].density = BEAT_DENSITY_DEFAULT;
+		}
+		if (s->channels[c].offset > BEAT_OFFSET_MAX) {
+			s->channels[c].offset = BEAT_OFFSET_DEFAULT;
+		}
+		if (s->channels[c].position > BEAT_POSITION_MAX) {
+			s->channels[c].position = BEAT_POSITION_DEFAULT;
+		}
+	}
+}
+
 /* INTERNAL */
 
 static void sequencer_handle_reset() {

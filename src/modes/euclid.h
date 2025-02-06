@@ -96,6 +96,10 @@ uint8_t euclid_update(const InputEvents *events);
 
 void euclid_draw_channels(void);
 
+/// Keep the data in the state in bounds. Bounds excursions can happen when
+/// loading from the EEPROM.
+void euclid_validate_state(EuclideanState *s);
+
 #ifdef __cplusplus
 }
 #endif

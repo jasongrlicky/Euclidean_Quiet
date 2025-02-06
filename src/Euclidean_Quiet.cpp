@@ -264,9 +264,6 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 
 /* DECLARATIONS */
 
-/// Keep the data in the state in bounds. Bounds excursions can happen when
-/// loading from the EEPROM.
-static void validate_euclidean_state(EuclideanState *s);
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
@@ -287,7 +284,7 @@ void setup() {
 	led_init();
 	led_sleep_init(time);
 	eeprom_load(&euclidean_state);
-	validate_euclidean_state(&euclidean_state);
+	euclid_validate_state(&euclidean_state);
 	init_serial();
 	input_init();
 	output_init();
@@ -651,23 +648,6 @@ void loop() {
 }
 
 /* INTERNAL */
-
-static void validate_euclidean_state(EuclideanState *s) {
-	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-		if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
-			s->channels[c].length = BEAT_LENGTH_DEFAULT;
-		}
-		if (s->channels[c].density > BEAT_DENSITY_MAX) {
-			s->channels[c].density = BEAT_DENSITY_DEFAULT;
-		}
-		if (s->channels[c].offset > BEAT_OFFSET_MAX) {
-			s->channels[c].offset = BEAT_OFFSET_DEFAULT;
-		}
-		if (s->channels[c].position > BEAT_POSITION_MAX) {
-			s->channels[c].position = BEAT_POSITION_DEFAULT;
-		}
-	}
-}
 
 static void init_serial(void) {
 #if LOGGING_ENABLED
