@@ -13,6 +13,7 @@
 #include "hardware/output.h"
 #include "hardware/properties.h"
 #include "modes/clock.h"
+#include "modes/euclid.h"
 #include "ui/active_channel.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
@@ -222,76 +223,7 @@
 */
 // clang-format on
 
-/* SOFTWARE CONSTANTS */
-
-#define NUM_CHANNELS 3
-// Bounds for three channel parameters
-// N: Beat Length
-#define BEAT_LENGTH_MIN 1
-#define BEAT_LENGTH_MAX 16
-#define BEAT_LENGTH_DEFAULT 16
-// K: Density
-#define BEAT_DENSITY_MIN 0
-#define BEAT_DENSITY_MAX 16
-#define BEAT_DENSITY_DEFAULT 4
-// O: Offset
-#define BEAT_OFFSET_MIN 0
-#define BEAT_OFFSET_MAX 15
-#define BEAT_OFFSET_DEFAULT 0
-// Sequencer position
-#define BEAT_POSITION_MAX 15
-#define BEAT_POSITION_DEFAULT 0
-
 /* GLOBALS */
-
-/// A parameter of the Euclidean rhythm generator
-enum EuclideanParam {
-	EUCLIDEAN_PARAM_LENGTH,
-	EUCLIDEAN_PARAM_DENSITY,
-	EUCLIDEAN_PARAM_OFFSET,
-};
-
-/// Euclidean parameter that is wrapped as an optional value
-typedef struct EuclideanParamOpt {
-	EuclideanParam inner;
-	bool valid;
-} EuclideanParamOpt;
-
-static const EuclideanParamOpt EUCLIDEAN_PARAM_OPT_NONE = {.inner = EUCLIDEAN_PARAM_LENGTH, .valid = false};
-/// Wrap the provided value as an occupied optional
-static EuclideanParamOpt euclidean_param_opt(EuclideanParam inner) {
-	return (EuclideanParamOpt){.inner = inner, .valid = true};
-}
-
-/// State of the Euclidean rhythm generator and sequencer for a single channel
-typedef struct EuclideanChannelState {
-	/// Number of steps in the Euclidean rhythm, 1-16
-	uint8_t length;
-	/// Number of active steps in the Euclidean rhythm, 1-16
-	uint8_t density;
-	/// Number of steps to rotate the Euclidean rhythm to the right, 1-16
-	uint8_t offset;
-	/// Step index representing the playhead position for this channel's sequencer, 0-15
-	uint8_t position;
-} EuclideanChannelState;
-
-/// State of the entire Euclidean module
-typedef struct EuclideanState {
-	/// State for each of this module's channels, indexed by `Channel` enum.
-	EuclideanChannelState channels[NUM_CHANNELS];
-	bool sequencer_running;
-} EuclideanState;
-
-// clang-format off
-static EuclideanState euclidean_state = {
-  .channels = {
-    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
-    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
-    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 }
-  },
-  .sequencer_running = false,
-};
-// clang-format on
 
 static Milliseconds time;
 static Milliseconds last_clock_or_reset;
