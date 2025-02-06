@@ -4,6 +4,10 @@
 extern "C" {
 #endif
 
+#include "common/events.h"
+#include "common/timeout.h"
+#include "common/types.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -64,14 +68,33 @@ typedef struct EuclideanState {
 	bool sequencer_running;
 } EuclideanState;
 
+typedef struct AdjustmentDisplayState {
+	/// Which channel is currently showing its adjustment display. Only one
+	/// adjustment display can be visible at a time.
+	Channel channel;
+	/// The parameter that is being displayed in the adjustment display.
+	EuclideanParam parameter;
+	/// Is the adjustment display showing currently
+	bool visible;
+} AdjustmentDisplayState;
+
 /* GLOBALS */
 
 extern EuclideanState euclidean_state;
+extern uint16_t generated_rhythms[NUM_CHANNELS];
+extern AdjustmentDisplayState adjustment_display_state;
+extern TimeoutOnce playhead_flash_timeout;
 
 /* EXTERNAL */
 
 /// Wrap the provided value as an occupied optional
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
+
+// Returns bitflags storing which output channels will fire this cycle, indexed 
+// by `OutputChannel`.
+uint8_t euclid_update(const InputEvents *events);
+
+void euclid_draw_channels(void);
 
 #ifdef __cplusplus
 }

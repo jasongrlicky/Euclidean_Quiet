@@ -228,34 +228,14 @@
 static Milliseconds time;
 static Milliseconds last_clock_or_reset;
 
-/// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
-static uint16_t generated_rhythms[NUM_CHANNELS];
 static Channel active_channel; // Channel that is currently active
 static TimeoutOnce output_pulse_timeout = {
     .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
 
-// Tracks the playhead flash itself
-static TimeoutOnce playhead_flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}};
 // Track the time since the playhead has moved so we can make it flash in its idle loop
 static Timeout playhead_idle_timeout = {.duration = PLAYHEAD_IDLE_TIME};
 // Loop for making the playhead flash periodically after it is idle
 static Timeout playhead_idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERIOD};
-
-typedef struct AdjustmentDisplayState {
-	/// Which channel is currently showing its adjustment display. Only one
-	/// adjustment display can be visible at a time.
-	Channel channel;
-	/// The parameter that is being displayed in the adjustment display.
-	EuclideanParam parameter;
-	/// Is the adjustment display showing currently
-	bool visible;
-} AdjustmentDisplayState;
-
-static AdjustmentDisplayState adjustment_display_state = {
-    .channel = CHANNEL_1,
-    .parameter = EUCLIDEAN_PARAM_LENGTH,
-    .visible = false,
-};
 
 static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME};
 
@@ -290,23 +270,6 @@ static void validate_euclidean_state(EuclideanState *s);
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
-static void sequencer_handle_reset();
-static void sequencer_handle_clock();
-static void sequencer_advance();
-/// What is the output that should be sent for each sequencer this cycle
-/// @return Bitflags, indexed using `OutputChannel`. 1 = begin an output pulse this cycle for this channel, 0
-/// = do nothing for this channel
-static uint8_t sequencer_read_current_step();
-static void draw_channels();
-static inline void draw_channel(Channel channel);
-static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
-static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
-/// Read a single step from a pattern
-/// @param pattern The pattern to read from, stored as 16 bitflags.
-/// @param length The length of the pattern. Must be <= 16.
-/// @param position The step at which to read. Must be < `length`.
-/// @return `true` if there is an active step at this position, `false` otherwise.
-static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
 static inline int eeprom_addr_length(Channel channel);
@@ -342,7 +305,7 @@ void setup() {
 	active_channel = CHANNEL_1;
 
 	// Draw initial UI
-	draw_channels();
+	euclid_draw_channels();
 	active_channel_display_draw(active_channel);
 }
 
@@ -523,17 +486,7 @@ void loop() {
 
 	// Bitflags storing which output channels will fire this cycle, indexed by
 	// `OutputChannel`.
-	uint8_t out_channels_firing = 0;
-
-	if (events_in.reset) {
-		sequencer_handle_reset();
-	}
-
-	if (clock_tick) {
-		sequencer_handle_clock();
-
-		out_channels_firing = sequencer_read_current_step();
-	}
+	uint8_t out_channels_firing = euclid_update(&events_in);
 
 	/* OUTPUT */
 
@@ -627,7 +580,7 @@ void loop() {
 	}
 
 	if (needs_redraw) {
-		draw_channels();
+		euclid_draw_channels();
 	}
 
 	/* UPDATE LED DISPLAY */
@@ -751,145 +704,6 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// Add output min
 	result += 64;
 	return result;
-}
-
-static void sequencer_handle_reset() {
-	// Go to the first step for each channel
-	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		euclidean_state.channels[channel].position = 0;
-	}
-
-	// Stop the sequencer
-	euclidean_state.sequencer_running = false;
-}
-
-static void sequencer_handle_clock() {
-	// Advance sequencer if it is running
-	if (euclidean_state.sequencer_running) {
-		// Only advance if sequencer is running
-		sequencer_advance();
-	} else {
-		// If sequencer is stopped, start it so that the next clock advances
-		euclidean_state.sequencer_running = true;
-	}
-}
-
-static void sequencer_advance() {
-	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		uint8_t length = channel_state.length;
-		uint8_t position = channel_state.position;
-
-		// Move sequencer playhead to next step
-		position++;
-		if (position >= length) {
-			position = 0;
-		}
-		euclidean_state.channels[channel].position = position;
-
-#if LOGGING_ENABLED && LOGGING_POSITION
-		if (channel == 0) {
-			Serial.print("> CH_1 Position: ");
-			Serial.println(position);
-		}
-#endif
-	}
-}
-
-static uint8_t sequencer_read_current_step() {
-	uint8_t out_channels_firing = 0;
-
-	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		uint8_t length = channel_state.length;
-		uint8_t position = channel_state.position;
-		uint16_t pattern = generated_rhythms[channel];
-
-		// Turn on LEDs on the bottom row for channels where the step is active
-		bool step_is_active = pattern_read(pattern, length, position);
-		if (step_is_active) {
-			out_channels_firing |= (0x01 << channel);
-		} else {
-			// Create output pulses for Offbeat Channel - inverse of Channel 1
-			if (channel == CHANNEL_1) {
-				out_channels_firing |= (0x01 << OUTPUT_CHANNEL_OFFBEAT);
-			}
-		}
-	}
-
-	return out_channels_firing;
-}
-
-static void draw_channels() {
-	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		draw_channel((Channel)channel);
-	}
-}
-
-static inline void draw_channel(Channel channel) {
-	EuclideanChannelState channel_state = euclidean_state.channels[channel];
-	uint8_t length = channel_state.length;
-	uint8_t position = channel_state.position;
-	uint16_t pattern = generated_rhythms[channel];
-
-	// Clear rows
-	uint8_t row = channel * 2;
-	framebuffer_row_off(row);
-	framebuffer_row_off(row + 1);
-
-	bool showing_length_display = (adjustment_display_state.visible) &&
-	                              (channel == adjustment_display_state.channel) &&
-	                              (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH);
-	if (showing_length_display) {
-		draw_channel_length(channel, pattern, length);
-	}
-	draw_channel_pattern(channel, pattern, length, position);
-}
-
-static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length) {
-	uint8_t row = channel * 2;
-
-	for (uint8_t step = length; step < 16; step++) {
-		uint8_t x = step;
-		uint8_t y = row;
-		if (step > 7) {
-			x -= 8;
-			y += 1;
-		}
-
-		framebuffer_pixel_set_fast(x, y, COLOR_ANTS);
-	}
-}
-
-static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
-	uint8_t row = channel * 2;
-
-	for (uint8_t step = 0; step < length; step++) {
-		uint8_t x = step;
-		uint8_t y = row;
-		if (step > 7) {
-			x -= 8;
-			y += 1;
-		}
-
-		bool active_step = pattern_read(pattern, length, step);
-		bool playhead_here = (step == position);
-		bool playhead_flash_active = playhead_flash_timeout.active;
-		bool flashing_now = playhead_here && playhead_flash_active;
-		Color color;
-		if (flashing_now) {
-			color = COLOR_BLINK;
-		} else {
-			color = (active_step) ? COLOR_ON : COLOR_OFF;
-		}
-
-		framebuffer_pixel_set_fast(x, y, color);
-	}
-}
-
-static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
-	uint8_t idx = length - position - 1;
-	return (pattern >> idx) & 0x01;
 }
 
 static void eeprom_load(EuclideanState *s) {
