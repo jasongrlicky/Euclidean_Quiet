@@ -24,7 +24,6 @@
 
 /* GLOBALS */
 
-static Milliseconds time;
 static Milliseconds last_clock_or_reset;
 
 static Channel active_channel; // Channel that is currently active
@@ -78,7 +77,7 @@ static void log_input_events(const InputEvents *events);
 /* MAIN */
 
 void setup() {
-	time = millis();
+	Milliseconds time = millis();
 
 	led_init();
 	led_sleep_init(time);
@@ -106,7 +105,7 @@ void setup() {
 }
 
 void loop() {
-	time = millis();
+	Milliseconds time = millis();
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 	Microseconds cycle_time_start = micros();
