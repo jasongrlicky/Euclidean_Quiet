@@ -22,10 +22,10 @@
 
 #include <euclidean.h>
 
+// Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
+
 // clang-format off
 /* 
-  Alternate "Quiet" Firmware for Sebsongs Modular Euclidean Eurorack module.
-
   Changes from official v1.2 firmware:
   - Behavior changes:
     - Channel 1 is now selected when the module starts up.
