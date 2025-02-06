@@ -77,10 +77,10 @@ static void log_input_events(const InputEvents *events);
 /* MAIN */
 
 void setup() {
-	Milliseconds time = millis();
+	Milliseconds now = millis();
 
 	led_init();
-	led_sleep_init(time);
+	led_sleep_init(now);
 	eeprom_load(&euclidean_state);
 	euclid_validate_state(&euclidean_state);
 	init_serial();
@@ -105,7 +105,7 @@ void setup() {
 }
 
 void loop() {
-	Milliseconds time = millis();
+	Milliseconds now = millis();
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 	Microseconds cycle_time_start = micros();
@@ -114,7 +114,7 @@ void loop() {
 	/* INPUT EVENTS */
 
 	InputEvents events_in = INPUT_EVENTS_EMPTY;
-	input_update(&events_in, time);
+	input_update(&events_in, now);
 #if LOGGING_ENABLED && LOGGING_INPUT
 	log_input_events(&events_in);
 #endif
@@ -269,7 +269,7 @@ void loop() {
 
 	/* UPDATE INTERNAL CLOCK */
 
-	internal_clock_update(&events_in, time);
+	internal_clock_update(&events_in, now);
 
 	/* UPDATE SEQUENCER */
 
@@ -294,20 +294,20 @@ void loop() {
 
 	if (sequencers_updated) {
 		// Update output pulse length and timeout
-		Milliseconds pulse_length = constrain(((time - output_pulse_timeout.inner.start) / 5), 2, 5);
+		Milliseconds pulse_length = constrain(((now - output_pulse_timeout.inner.start) / 5), 2, 5);
 		output_pulse_timeout.inner.duration = pulse_length;
 
-		timeout_once_reset(&output_pulse_timeout, time);
+		timeout_once_reset(&output_pulse_timeout, now);
 	}
 
 	// FINISH ANY PULSES THAT ARE ACTIVE
-	if (timeout_once_fired(&output_pulse_timeout, time)) {
+	if (timeout_once_fired(&output_pulse_timeout, now)) {
 		output_clear_all();
 	}
 
 	/* DRAWING - INDICATORS */
 
-	indicators_input_update(&events_in, time);
+	indicators_input_update(&events_in, now);
 
 	if (sequencers_updated) {
 		indicators_output_draw_latching(out_channels_firing);
@@ -324,30 +324,30 @@ void loop() {
 	if (sequencers_updated) {
 		// Update playhead flash duration based on the last interval between two
 		// clock or reset signals received.
-		Milliseconds previous_period = time - last_clock_or_reset;
+		Milliseconds previous_period = now - last_clock_or_reset;
 		playhead_flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
-		last_clock_or_reset = time;
+		last_clock_or_reset = now;
 
 		// Reset playhead flash
-		timeout_once_reset(&playhead_flash_timeout, time);
+		timeout_once_reset(&playhead_flash_timeout, now);
 
 		// Reset playhead idle
-		timeout_reset(&playhead_idle_timeout, time);
+		timeout_reset(&playhead_idle_timeout, now);
 	}
 
 	// Update playhead idle - Make playhead flash periodically when it hasn't
 	// moved in a certain amount of time
 	bool playhead_flash_updated = false;
-	if (timeout_fired(&playhead_idle_timeout, time)) {
-		if (timeout_loop(&playhead_idle_loop_timeout, time)) {
+	if (timeout_fired(&playhead_idle_timeout, now)) {
+		if (timeout_loop(&playhead_idle_loop_timeout, now)) {
 			playhead_flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
-			timeout_once_reset(&playhead_flash_timeout, time);
+			timeout_once_reset(&playhead_flash_timeout, now);
 			playhead_flash_updated = true;
 		}
 	}
 
 	// Update playhead flash
-	if (timeout_once_fired(&playhead_flash_timeout, time)) {
+	if (timeout_once_fired(&playhead_flash_timeout, now)) {
 		playhead_flash_updated = true;
 	}
 
@@ -359,14 +359,14 @@ void loop() {
 		adjustment_display_state.channel = active_channel;
 		adjustment_display_state.parameter = knob_moved_for_param.inner;
 		adjustment_display_state.visible = true;
-		timeout_reset(&adjustment_display_timeout, time);
+		timeout_reset(&adjustment_display_timeout, now);
 
 		needs_redraw = true;
 	} else {
 		// If no parameters have changed, check if the adjustment display still
 		// needs to be shown, and hide it if it doesn't
 		if (adjustment_display_state.visible) {
-			bool should_be_hidden = timeout_fired(&adjustment_display_timeout, time);
+			bool should_be_hidden = timeout_fired(&adjustment_display_timeout, now);
 			if (should_be_hidden) {
 				adjustment_display_state.visible = false;
 				needs_redraw = true;
@@ -380,13 +380,13 @@ void loop() {
 
 	/* UPDATE LED DISPLAY */
 
-	framebuffer_update_color_animations(time);
+	framebuffer_update_color_animations(now);
 	framebuffer_copy_row_to_display();
 
 	/* UPDATE LED SLEEP */
 
 	bool postpone_sleep = input_events_contains_any_external(&events_in);
-	LedSleepUpdate sleep_update = led_sleep_update(postpone_sleep, time);
+	LedSleepUpdate sleep_update = led_sleep_update(postpone_sleep, now);
 	if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
 		led_wake();
 	} else if (sleep_update == LED_SLEEP_UPDATE_DIM) {
@@ -436,7 +436,7 @@ void loop() {
 		cycle_time_max = cycle_time;
 	}
 
-	if (timeout_loop(&log_cycle_time_timeout, time)) {
+	if (timeout_loop(&log_cycle_time_timeout, now)) {
 		Serial.print("Max Cycle Time: ");
 		Serial.println(cycle_time_max);
 		cycle_time_max = 0;
