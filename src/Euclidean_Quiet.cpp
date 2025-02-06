@@ -22,6 +22,8 @@
 
 #include <euclidean.h>
 
+typedef int Address;
+
 /* GLOBALS */
 
 static Milliseconds last_clock_or_reset;
@@ -47,12 +49,12 @@ typedef struct EuclideanChannelUpdate {
 } EuclideanChannelUpdate;
 
 static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
-	.length = 0,
-	.density = 0,
-	.offset = 0,
-	.length_changed = false,
-	.density_changed = false,
-	.offset_changed = false,
+    .length = 0,
+    .density = 0,
+    .offset = 0,
+    .length_changed = false,
+    .density_changed = false,
+    .offset_changed = false,
 };
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
@@ -67,9 +69,9 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
-static inline int eeprom_addr_length(Channel channel);
-static inline int eeprom_addr_density(Channel channel);
-static inline int eeprom_addr_offset(Channel channel);
+static inline Address eeprom_addr_length(Channel channel);
+static inline Address eeprom_addr_density(Channel channel);
+static inline Address eeprom_addr_offset(Channel channel);
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
 #endif
@@ -471,7 +473,7 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 }
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
-	// This is a standard "scale from input range to output range" function, but 
+	// This is a standard "scale from input range to output range" function, but
 	// it uses specific ranges so that we can avoid multiplication or division by
 	// numbers that aren't powers of 2.
 
@@ -508,11 +510,11 @@ static void eeprom_load(EuclideanState *s) {
 #endif
 }
 
-static inline int eeprom_addr_length(Channel channel) { return (channel * 2) + 1; }
+static inline Address eeprom_addr_length(Channel channel) { return (channel * 2) + 1; }
 
-static inline int eeprom_addr_density(Channel channel) { return (channel * 2) + 2; }
+static inline Address eeprom_addr_density(Channel channel) { return (channel * 2) + 2; }
 
-static inline int eeprom_addr_offset(Channel channel) { return channel + 7; }
+static inline Address eeprom_addr_offset(Channel channel) { return channel + 7; }
 
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events) {
