@@ -89,7 +89,9 @@ extern TimeoutOnce playhead_flash_timeout;
 /* EXTERNAL */
 
 /// Return the `ParamIdx` for a given a channel and param kind
-ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind);
+inline ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
+	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
+}
 
 /// Wrap the provided value as an occupied optional
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);

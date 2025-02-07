@@ -49,10 +49,6 @@ static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 
 /* EXTERNAL */
 
-ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
-	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
-}
-
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner) {
 	return (EuclideanParamOpt){.inner = inner, .valid = true};
 }
