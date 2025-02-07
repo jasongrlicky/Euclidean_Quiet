@@ -78,7 +78,7 @@ typedef struct ParamsRuntime {
 } ParamsRuntime;
 
 /// Stores the runtime information of the active mode's parameters.
-static ParamsRuntime active_mode_params;
+static ParamsRuntime params;
 
 static Mode active_mode = MODE_EUCLID;
 
@@ -92,6 +92,9 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
+static void active_mode_switch(Mode mode);
+static void active_mode_validate();
+static void euclid_params_validate();
 /// Load state for the active mode into `active_mode_params`.
 static void eeprom_load_tables();
 /// Load state from EEPROM into the given `EuclideanState`
@@ -110,6 +113,7 @@ void setup() {
 
 	led_init();
 	led_sleep_init(now);
+	active_mode_switch(MODE_EUCLID);
 	eeprom_load(&euclidean_state);
 	euclid_validate_state(&euclidean_state);
 	init_serial();
@@ -518,6 +522,41 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	return result;
 }
 
+static void active_mode_switch(Mode mode) {
+	active_mode = mode;
+	eeprom_load_tables();
+	active_mode_validate();
+}
+
+static void active_mode_validate() {
+	switch (active_mode) {
+		case MODE_EUCLID:
+			euclid_params_validate();
+			break;
+	}
+}
+
+static void euclid_params_validate() {
+	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+		ParamIdx idx_length = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_LENGTH);
+		uint8_t length = params.values[idx_length];
+		ParamIdx idx_density = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_DENSITY);
+		uint8_t density = params.values[idx_density];
+		ParamIdx idx_offset = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_OFFSET);
+		uint8_t offset = params.values[idx_offset];
+
+		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
+			params.values[idx_length] = BEAT_LENGTH_DEFAULT;
+		}
+		if (density > BEAT_DENSITY_MAX || density > length) {
+			params.values[idx_density] = BEAT_DENSITY_DEFAULT;
+		}
+		if (offset > BEAT_OFFSET_MAX || offset > length) {
+			params.values[idx_offset] = BEAT_OFFSET_DEFAULT;
+		}
+	}
+}
+
 static void eeprom_load_tables() {
 #if EEPROM_READ
 	Mode mode = active_mode;
@@ -525,11 +564,11 @@ static void eeprom_load_tables() {
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
 		Address addr = param_address(mode, (ParamIdx)idx);
-		active_mode_params.values[idx] = EEPROM.read(addr);
-		active_mode_params.flags[idx] = PARAM_FLAG_NONE;
+		params.values[idx] = EEPROM.read(addr);
+		params.flags[idx] = PARAM_FLAG_NONE;
 	}
 
-	active_mode_params.len = num_params;
+	params.len = num_params;
 #endif
 }
 
