@@ -9,6 +9,11 @@ extern "C" {
 
 #include <stdint.h>
 
+/* Parameters are variables (stored as individual bytes) which are
+ * programmatically tracked, read from and written to EEPROM, and logged. Each
+ * mode has multiple parameters, in addition to its ephemeral state.
+ */
+
 #define NUM_MODES 1
 typedef enum Mode {
 	MODE_EUCLID,
