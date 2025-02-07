@@ -76,6 +76,7 @@ typedef struct ParamsRuntime {
 	uint8_t flags[PARAMS_RUNTIME_MAX];
 } ParamsRuntime;
 
+/// Stores the runtime information of the active mode's parameters.
 static ParamsRuntime params;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
