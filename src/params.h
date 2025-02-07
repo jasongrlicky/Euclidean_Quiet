@@ -7,19 +7,26 @@ extern "C" {
 #include "common/types.h"
 #include "config.h"
 
-#define EUCLID_PARAMS_NUM 9
-#define EUCLID_PARAMS_OFFSET 0
+#include <stdint.h>
 
-#define PARAMS_TOTAL 9
-
+#define NUM_MODES 1
 typedef enum Mode {
 	MODE_EUCLID,
 } Mode;
 
+#define EUCLID_NUM_PARAMS 9
+
+/// How many params this mode has. Indexed by the `Mode` enum.
+static const uint8_t mode_param_count[NUM_MODES] = {
+    EUCLID_NUM_PARAMS, // EUCLID
+};
+
 // clang-format off
 #if LOGGING_ENABLED
+
+#define PARAM_NAME_LEN 3
 /// Table of parameter names for logging
-static const char param_names[PARAMS_TOTAL][3] = {
+static const char param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
 	// Euclid Mode
 	"L1", // Length, Channel 1
 	"D1", // Density, Channel 1
@@ -32,8 +39,12 @@ static const char param_names[PARAMS_TOTAL][3] = {
 	"O3",
 };
 
-void param_name(char *result, Mode mode, ParamIdx idx) {
-	strcpy(result, param_names[idx]);	
+// TODO: This implementation is brittle and will not scale with more modes. 
+bool param_name(char *result, Mode mode, ParamIdx idx) {
+	if (!result) return false;
+
+	memcpy(result, param_names[idx], PARAM_NAME_LEN);	
+	return true;
 }
 
 #endif
