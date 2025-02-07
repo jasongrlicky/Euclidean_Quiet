@@ -109,8 +109,10 @@ static void euclid_params_validate();
 /// Load state for the active mode into `active_mode_params`.
 static void eeprom_load_tables();
 static void eeprom_save_all_needing_write();
+#if !PARAM_TABLES
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
+#endif
 static inline Address eeprom_addr_length(Channel channel);
 static inline Address eeprom_addr_density(Channel channel);
 static inline Address eeprom_addr_offset(Channel channel);
@@ -128,9 +130,12 @@ void setup() {
 
 	led_init();
 	led_sleep_init(now);
+#if PARAM_TABLES
 	active_mode_switch(MODE_EUCLID);
+#else
 	eeprom_load(&euclidean_state);
 	euclid_validate_state(&euclidean_state);
+#endif
 	init_serial();
 	input_init();
 	output_init();
@@ -652,6 +657,7 @@ static void eeprom_save_all_needing_write() {
 #endif
 }
 
+#if !PARAM_TABLES
 static void eeprom_load(EuclideanState *s) {
 	/*
 	EEPROM Schema:
@@ -670,6 +676,7 @@ static void eeprom_load(EuclideanState *s) {
 	}
 #endif
 }
+#endif
 
 static inline Address eeprom_addr_length(Channel channel) { return (channel * 2) + 1; }
 

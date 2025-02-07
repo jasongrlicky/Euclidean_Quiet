@@ -26,6 +26,13 @@ static const uint8_t mode_num_params[NUM_MODES] = {
     EUCLID_NUM_PARAMS, // EUCLID
 };
 
+/*
+Original EEPROM Schema:
+Channel 1: length = 1 density = 2 offset = 7
+Channel 2: length = 3 density = 4 offset = 8
+Channel 3: length = 5 density = 6 offset = 9
+*/
+
 /// EEPROM addresses for Euclidean mode params. The order is this way for
 /// backwards-compatibility with the original Sebsongs Euclidean firmware.
 static const Address euclid_param_addresses[EUCLID_NUM_PARAMS] = {1, 2, 7, 3, 4, 8, 5, 6, 9};
