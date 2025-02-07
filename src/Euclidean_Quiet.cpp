@@ -94,6 +94,7 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
+static inline void param_set(ParamIdx idx, uint8_t value);
 /// Read the bits specified in `mask`
 static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask);
 /// Set the bits specified in `mask` to 1, leaving the others untouched
@@ -214,7 +215,7 @@ void loop() {
 			euclidean_state.channels[channel].density = density;
 
 #if PARAM_TABLES
-			param_flags_set_modified_and_needs_write(density_idx);
+			param_set(density_idx, density);
 #else
 			params_update.density = density;
 			params_update.density_changed = true;
@@ -225,7 +226,7 @@ void loop() {
 			euclidean_state.channels[channel].offset = offset;
 
 #if PARAM_TABLES
-			param_flags_set_modified_and_needs_write(offset_idx);
+			param_set(offset_idx, offset);
 #else
 			params_update.offset = offset;
 			params_update.offset_changed = true;
@@ -241,7 +242,7 @@ void loop() {
 		}
 
 #if PARAM_TABLES
-		param_flags_set_modified_and_needs_write(length_idx);
+		param_set(length_idx, length);
 #else
 		params_update.length = length;
 		params_update.length_changed = true;
@@ -270,7 +271,7 @@ void loop() {
 		euclidean_state.channels[channel].density = density;
 
 #if PARAM_TABLES
-		param_flags_set_modified_and_needs_write(density_idx);
+		param_set(density_idx, density);
 #else
 		params_update.density = density;
 		params_update.density_changed = true;
@@ -299,7 +300,7 @@ void loop() {
 		euclidean_state.channels[channel].offset = offset;
 
 #if PARAM_TABLES
-		param_flags_set_modified_and_needs_write(offset_idx);
+		param_set(offset_idx, offset);
 #else
 		params_update.offset = offset;
 		params_update.offset_changed = true;
@@ -538,6 +539,11 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 			return CHANNEL_OPT_NONE;
 			break;
 	}
+}
+
+static inline void param_set(ParamIdx idx, uint8_t value) {
+	params.values[idx] = value;
+	param_flags_set(idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
 }
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
