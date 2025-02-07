@@ -38,6 +38,7 @@ static Timeout playhead_idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERI
 
 static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME};
 
+#if !PARAM_TABLES
 typedef struct EuclideanChannelUpdate {
 	uint8_t length;
 	uint8_t density;
@@ -55,6 +56,7 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
     .density_changed = false,
     .offset_changed = false,
 };
+#endif
 
 #define PARAM_FLAGS_NONE 0x0
 #define PARAM_FLAG_MODIFIED 0x1
