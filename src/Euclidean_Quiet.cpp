@@ -56,6 +56,7 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
     .offset_changed = false,
 };
 
+#define PARAM_FLAG_NONE 0x0
 #define PARAM_FLAG_MODIFIED 0x1
 #define PARAM_FLAG_NEEDS_WRITE 0x2
 
@@ -79,6 +80,8 @@ typedef struct ParamsRuntime {
 /// Stores the runtime information of the active mode's parameters.
 static ParamsRuntime active_mode_params;
 
+static Mode active_mode = MODE_EUCLID;
+
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;
 static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL};
@@ -89,6 +92,8 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
+/// Load state for the active mode into `active_mode_params`.
+static void eeprom_load_tables();
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
 static inline Address eeprom_addr_length(Channel channel);
@@ -511,6 +516,21 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// Add output min
 	result += 64;
 	return result;
+}
+
+static void eeprom_load_tables() {
+#if EEPROM_READ
+	Mode mode = active_mode;
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		Address addr = param_address(mode, (ParamIdx)idx);
+		active_mode_params.values[idx] = EEPROM.read(addr);
+		active_mode_params.flags[idx] = PARAM_FLAG_NONE;
+	}
+
+	active_mode_params.len = num_params;
+#endif
 }
 
 static void eeprom_load(EuclideanState *s) {
