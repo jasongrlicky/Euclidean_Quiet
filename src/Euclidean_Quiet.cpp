@@ -23,8 +23,6 @@
 
 #include <euclidean.h>
 
-typedef int Address;
-
 /* GLOBALS */
 
 static Milliseconds last_clock_or_reset;
