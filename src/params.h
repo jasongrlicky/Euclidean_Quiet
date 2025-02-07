@@ -21,6 +21,20 @@ static const uint8_t mode_param_num[NUM_MODES] = {
     EUCLID_NUM_PARAMS, // EUCLID
 };
 
+/// EEPROM addresses for Euclidean mode params. The order is this way for
+/// backwards-compatibility with the original Sebsongs Euclidean firmware.
+static const Address euclid_param_addresses[EUCLID_NUM_PARAMS] = {1, 2, 7, 3, 4, 8, 5, 6, 9};
+
+Address param_address(Mode mode, ParamIdx idx) {
+	Address result = 0;
+	switch (mode) {
+		case MODE_EUCLID:
+			result = euclid_param_addresses[idx];
+			break;
+	}
+	return result;
+}
+
 // clang-format off
 #if LOGGING_ENABLED
 
