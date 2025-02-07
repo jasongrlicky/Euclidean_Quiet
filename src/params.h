@@ -17,7 +17,7 @@ typedef enum Mode {
 #define EUCLID_NUM_PARAMS 9
 
 /// How many params this mode has. Indexed by the `Mode` enum.
-static const uint8_t mode_param_count[NUM_MODES] = {
+static const uint8_t mode_param_num[NUM_MODES] = {
     EUCLID_NUM_PARAMS, // EUCLID
 };
 
