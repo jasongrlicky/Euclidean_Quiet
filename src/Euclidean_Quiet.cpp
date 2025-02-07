@@ -77,7 +77,7 @@ typedef struct ParamsRuntime {
 } ParamsRuntime;
 
 /// Stores the runtime information of the active mode's parameters.
-static ParamsRuntime params;
+static ParamsRuntime active_mode_params;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;
