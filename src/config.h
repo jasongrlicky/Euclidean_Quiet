@@ -25,6 +25,7 @@ extern "C" {
 #define INTERNAL_CLOCK_DEFAULT 0 // 0 = Internal clock begins disabled, 1 = begins enabled
 #define EEPROM_READ 1 // 0 = Reading from EEPROM disabled, 1 = enabled
 #define EEPROM_WRITE 1 // 0 = Writing to EEPROM disabled, 1 = enabled
+#define PARAM_TABLES 0 // 0 = Use state structs, 1 = Use param tables
 
 /* DEBUG FEATURES */
 

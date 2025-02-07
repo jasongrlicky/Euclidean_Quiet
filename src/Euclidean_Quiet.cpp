@@ -56,7 +56,7 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
     .offset_changed = false,
 };
 
-#define PARAM_FLAG_NONE 0x0
+#define PARAM_FLAGS_NONE 0x0
 #define PARAM_FLAG_MODIFIED 0x1
 #define PARAM_FLAG_NEEDS_WRITE 0x2
 
@@ -93,16 +93,19 @@ static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 /// Read the bits specified in `mask`
-static inline uint8_t params_flags_get(ParamIdx idx, uint8_t mask);
+static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask);
 /// Set the bits specified in `mask` to 1, leaving the others untouched
-static inline void params_flags_set(ParamIdx idx, uint8_t mask);
+static inline void param_flags_set(ParamIdx idx, uint8_t mask);
 /// Clear the bits specified in `mask` to 0, leaving the others untouched
-static inline void params_flags_clear(ParamIdx idx, uint8_t mask);
+static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
+static inline void param_flags_set_modified_and_needs_write(ParamIdx idx);
+static void param_flags_clear_all_modified();
 static void active_mode_switch(Mode mode);
 static void active_mode_validate();
 static void euclid_params_validate();
 /// Load state for the active mode into `active_mode_params`.
 static void eeprom_load_tables();
+static void eeprom_save_all_needing_write();
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
 static inline Address eeprom_addr_length(Channel channel);
@@ -110,6 +113,9 @@ static inline Address eeprom_addr_density(Channel channel);
 static inline Address eeprom_addr_offset(Channel channel);
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
+#endif
+#if LOGGING_ENABLED && LOGGING_EEPROM && PARAM_TABLES
+static void log_all_modified_params();
 #endif
 
 /* MAIN */
@@ -167,9 +173,15 @@ void loop() {
 	}
 
 	EuclideanParamOpt knob_moved_for_param = EUCLIDEAN_PARAM_OPT_NONE;
-#if EEPROM_WRITE
+#if PARAM_TABLES
+	param_flags_clear_all_modified();
+#else
 	EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
 #endif
+
+	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_LENGTH);
+	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_DENSITY);
+	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_OFFSET);
 
 	// Handle Length Knob Movement
 	int nknob = events_in.enc_move[ENCODER_1];
@@ -199,7 +211,9 @@ void loop() {
 			density += nknob;
 			euclidean_state.channels[channel].density = density;
 
-#if EEPROM_WRITE
+#if PARAM_TABLES
+			param_flags_set_modified_and_needs_write(density_idx);
+#else
 			params_update.density = density;
 			params_update.density_changed = true;
 #endif
@@ -208,7 +222,9 @@ void loop() {
 			offset += nknob;
 			euclidean_state.channels[channel].offset = offset;
 
-#if EEPROM_WRITE
+#if PARAM_TABLES
+			param_flags_set_modified_and_needs_write(offset_idx);
+#else
 			params_update.offset = offset;
 			params_update.offset_changed = true;
 #endif
@@ -222,7 +238,9 @@ void loop() {
 			euclidean_state.channels[channel].position = 0;
 		}
 
-#if EEPROM_WRITE
+#if PARAM_TABLES
+		param_flags_set_modified_and_needs_write(length_idx);
+#else
 		params_update.length = length;
 		params_update.length_changed = true;
 #endif
@@ -249,7 +267,9 @@ void loop() {
 		density += kknob;
 		euclidean_state.channels[channel].density = density;
 
-#if EEPROM_WRITE
+#if PARAM_TABLES
+		param_flags_set_modified_and_needs_write(density_idx);
+#else
 		params_update.density = density;
 		params_update.density_changed = true;
 #endif
@@ -276,7 +296,9 @@ void loop() {
 		offset += oknob;
 		euclidean_state.channels[channel].offset = offset;
 
-#if EEPROM_WRITE
+#if PARAM_TABLES
+		param_flags_set_modified_and_needs_write(offset_idx);
+#else
 		params_update.offset = offset;
 		params_update.offset_changed = true;
 #endif
@@ -436,7 +458,11 @@ void loop() {
 
 	/* EEPROM WRITES */
 
-#if EEPROM_WRITE
+#if PARAM_TABLES
+	eeprom_save_all_needing_write();
+#endif
+
+#if EEPROM_WRITE && !PARAM_TABLES
 	if (params_update.length_changed) {
 		EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
 	}
@@ -448,7 +474,7 @@ void loop() {
 	}
 #endif
 
-#if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE
+#if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE && !PARAM_TABLES
 	if (params_update.length_changed) {
 		Serial.print("EEPROM Write: Length= ");
 		Serial.print(eeprom_addr_length(active_channel));
@@ -480,7 +506,10 @@ void loop() {
 		Serial.println(cycle_time_max);
 		cycle_time_max = 0;
 	}
+#endif
 
+#if LOGGING_ENABLED && LOGGING_EEPROM && PARAM_TABLES
+	log_all_modified_params();
 #endif
 }
 
@@ -528,11 +557,24 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	return result;
 }
 
-static inline uint8_t params_flags_get(ParamIdx idx, uint8_t mask) { return (params.flags[idx] & mask); }
+static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask) { return (params.flags[idx] & mask); }
 
-static inline void params_flags_set(ParamIdx idx, uint8_t mask) { params.flags[idx] |= mask; }
+static inline void param_flags_set(ParamIdx idx, uint8_t mask) { params.flags[idx] |= mask; }
 
-static inline void params_flags_clear(ParamIdx idx, uint8_t mask) { params.flags[idx] &= ~mask; }
+static inline void param_flags_clear(ParamIdx idx, uint8_t mask) { params.flags[idx] &= ~mask; }
+
+static inline void param_flags_set_modified_and_needs_write(ParamIdx idx) {
+	param_flags_set(idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
+}
+
+static void param_flags_clear_all_modified() {
+	Mode mode = active_mode;
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		param_flags_clear(idx, PARAM_FLAG_MODIFIED);
+	}
+}
 
 static void active_mode_switch(Mode mode) {
 	active_mode = mode;
@@ -577,10 +619,28 @@ static void eeprom_load_tables() {
 	for (uint8_t idx = 0; idx < num_params; idx++) {
 		Address addr = param_address(mode, (ParamIdx)idx);
 		params.values[idx] = EEPROM.read(addr);
-		params.flags[idx] = PARAM_FLAG_NONE;
+		params.flags[idx] = PARAM_FLAGS_NONE;
 	}
 
 	params.len = num_params;
+#endif
+}
+
+static void eeprom_save_all_needing_write() {
+#if EEPROM_WRITE
+	Mode mode = active_mode;
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		bool needs_write = param_flags_get(idx, PARAM_FLAG_NEEDS_WRITE);
+		if (!needs_write) continue;
+
+		param_flags_clear(idx, PARAM_FLAG_NEEDS_WRITE);
+
+		uint8_t val = params.values[idx];
+		Address addr = param_address(mode, (ParamIdx)idx);
+		EEPROM.write(addr, val);
+	}
 #endif
 }
 
@@ -628,6 +688,30 @@ static void log_input_events(const InputEvents *events) {
 	if (events->enc_move[ENCODER_3] != 0) {
 		Serial.print("ENC_3: Move ");
 		Serial.println(events->enc_move[ENCODER_3]);
+	}
+}
+#endif
+
+#if LOGGING_ENABLED && LOGGING_EEPROM && PARAM_TABLES
+static void log_all_modified_params() {
+	Mode mode = active_mode;
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		bool modified = param_flags_get(idx, PARAM_FLAG_MODIFIED);
+		if (!modified) continue;
+
+		uint8_t val = params.values[idx];
+		char name[PARAM_NAME_LEN];
+		param_name(name, mode, idx);
+		Address addr = param_address(mode, idx);
+
+		Serial.print("EEPROM Write: ");
+		Serial.print(name);
+		Serial.print(" @");
+		Serial.print(addr);
+		Serial.print(": ");
+		Serial.println(val);
 	}
 }
 #endif
