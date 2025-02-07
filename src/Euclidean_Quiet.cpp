@@ -14,6 +14,7 @@
 #include "hardware/properties.h"
 #include "modes/clock.h"
 #include "modes/euclid.h"
+#include "params.h"
 #include "ui/active_channel.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
@@ -62,7 +63,7 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
 
 /// Maximum size of `ParamsRuntime`'s tables. Must be large enough to store the
 /// `ParamId` type for any mode.
-#define PARAMS_RUNTIME_MAX 10
+#define PARAMS_RUNTIME_MAX 9
 
 /// Parameter properties which need to be modified at runtime. Each table has
 /// the same length (`.len`), and they are indexed by a mode's associated
@@ -77,7 +78,7 @@ typedef struct ParamsRuntime {
 	uint8_t flags[PARAMS_RUNTIME_MAX];
 } ParamsRuntime;
 
-static ParamsRuntime params_runtime;
+static ParamsRuntime params;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;

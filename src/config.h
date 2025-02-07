@@ -28,7 +28,7 @@ extern "C" {
 
 /* DEBUG FEATURES */
 
-#define LOGGING_ENABLED 0 // 0 = Logging over serial disabled, 1 = enabled
+#define LOGGING_ENABLED 1 // 0 = Logging over serial disabled, 1 = enabled
 #define LOGGING_INPUT 0 // 0 = Don't log Input events, 1 = Log input events
 #define LOGGING_CH1_POSITION 0 // 0 = Don't log Channel 1 position updates, 1 = Log position updates
 #define LOGGING_EEPROM 0 // 0 = Don't log EEPROM writes, 1 = Log EEPROM writes

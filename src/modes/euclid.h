@@ -34,20 +34,6 @@ extern "C" {
 
 /* DATA STRUCTURES */
 
-/// A parameter id for the Euclidean rhythm generator mode, which indexes into
-/// parameter tables.
-typedef enum EuclidParamId {
-	EUCLID_PARAM_ID_CH1_LENGTH,
-	EUCLID_PARAM_ID_CH1_DENSITY,
-	EUCLID_PARAM_ID_CH1_OFFSET,
-	EUCLID_PARAM_ID_CH2_LENGTH,
-	EUCLID_PARAM_ID_CH2_DENSITY,
-	EUCLID_PARAM_ID_CH2_OFFSET,
-	EUCLID_PARAM_ID_CH3_LENGTH,
-	EUCLID_PARAM_ID_CH3_DENSITY,
-	EUCLID_PARAM_ID_CH3_OFFSET,
-} EuclidParamId;
-
 /// The kind of a parameter for a channel of the Euclidean rhythm generator
 typedef enum EuclideanParam {
 	EUCLIDEAN_PARAM_LENGTH,
