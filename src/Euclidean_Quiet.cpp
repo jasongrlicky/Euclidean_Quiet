@@ -57,26 +57,27 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
     .offset_changed = false,
 };
 
-#define PARAM_RUNTIME_FLAG_MODIFIED 0x1
-#define PARAM_RUNTIME_FLAG_NEEDS_WRITE 0x2
+#define PARAM_FLAG_MODIFIED 0x1
+#define PARAM_FLAG_NEEDS_WRITE 0x2
 
-/// Properties of parameters that need to be modified at runtime
-typedef struct ParamRuntime {
-	/// The value of the parameter. It is assumed to always be in bounds.
-	uint8_t value;
-	/// Bitflags storing properties about the param, indexed via `PARAM_RUNTIME_FLAG_*` defines.
-	uint8_t flags;
-} ParamRuntime;
-
-static const ParamRuntime PARAM_RUNTIME_DEFAULT = {
-    .value = 0,
-    .flags = 0,
-};
-
-/// Maximum size of `params_runtime` list. Must be large enough to the `ParamId` type for any mode.
+/// Maximum size of `ParamsRuntime`'s tables. Must be large enough to store the
+/// `ParamId` type for any mode.
 #define PARAMS_RUNTIME_MAX 10
-static uint8_t params_runtime_len;
-static ParamRuntime params_runtime[PARAMS_RUNTIME_MAX];
+
+/// Parameter properties which need to be modified at runtime. Each table has
+/// the same length (`.len`), and they are indexed by a mode's associated
+/// `ParamId` type.
+typedef struct ParamsRuntime {
+	/// Number of elements in tables
+	uint8_t len;
+	/// List of parameter values of length `.len`. The values are always assumed to be in bounds.
+	uint8_t values[PARAMS_RUNTIME_MAX];
+	/// List of parameter properties, stored as bitflags, of length `.len`. Bitflags are indexed
+	/// via `PARAM_FLAG_*` defines.
+	uint8_t flags[PARAMS_RUNTIME_MAX];
+} ParamsRuntime;
+
+static ParamsRuntime params_runtime;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;
