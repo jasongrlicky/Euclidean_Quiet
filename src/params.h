@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 
+#include "common/types.h"
 #include "config.h"
 
 #define EUCLID_PARAMS_NUM 9
@@ -11,10 +12,14 @@ extern "C" {
 
 #define PARAMS_TOTAL 9
 
+typedef enum Mode {
+	MODE_EUCLID,
+} Mode;
+
 // clang-format off
 #if LOGGING_ENABLED
 /// Table of parameter names for logging
-static const char params_names[PARAMS_TOTAL][3] = {
+static const char param_names[PARAMS_TOTAL][3] = {
 	// Euclid Mode
 	"L1", // Length, Channel 1
 	"D1", // Density, Channel 1
@@ -26,6 +31,11 @@ static const char params_names[PARAMS_TOTAL][3] = {
 	"D3",
 	"O3",
 };
+
+void param_name(char *result, Mode mode, ParamIdx idx) {
+	strcpy(result, param_names[idx]);	
+}
+
 #endif
 // clang-format on
 
