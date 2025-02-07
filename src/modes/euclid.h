@@ -7,6 +7,7 @@ extern "C" {
 #include "common/events.h"
 #include "common/timeout.h"
 #include "common/types.h"
+#include "params.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -85,12 +86,20 @@ extern EuclideanState euclidean_state;
 extern uint16_t generated_rhythms[NUM_CHANNELS];
 extern AdjustmentDisplayState adjustment_display_state;
 extern TimeoutOnce playhead_flash_timeout;
+extern ParamsRuntime params;
 
 /* EXTERNAL */
 
 /// Return the `ParamIdx` for a given a channel and param kind
 inline ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
 	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
+}
+
+/// Get the value of the specified param. Returns garbage data if Euclidean is
+/// not the active mode.
+inline uint8_t euclid_param_get(Channel channel, EuclideanParam kind) {
+	ParamIdx idx = euclid_param_idx(channel, kind);
+	return params.values[idx];
 }
 
 /// Wrap the provided value as an occupied optional

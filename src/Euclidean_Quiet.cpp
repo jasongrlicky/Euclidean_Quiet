@@ -58,30 +58,6 @@ static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
 };
 #endif
 
-#define PARAM_FLAGS_NONE 0x0
-#define PARAM_FLAG_MODIFIED 0x1
-#define PARAM_FLAG_NEEDS_WRITE 0x2
-
-/// Maximum size of `ParamsRuntime`'s tables. Must be large enough to store the
-/// `ParamId` type for any mode.
-#define PARAMS_RUNTIME_MAX 9
-
-/// Parameter properties which need to be modified at runtime. Each table has
-/// the same length (`.len`), and they are indexed by a mode's associated
-/// `ParamId` type.
-typedef struct ParamsRuntime {
-	/// Number of elements in tables
-	uint8_t len;
-	/// List of parameter values of length `.len`. The values are always assumed to be in bounds.
-	uint8_t values[PARAMS_RUNTIME_MAX];
-	/// List of parameter properties, stored as bitflags, of length `.len`. Bitflags are indexed
-	/// via `PARAM_FLAG_*` defines.
-	uint8_t flags[PARAMS_RUNTIME_MAX];
-} ParamsRuntime;
-
-/// Stores the runtime information of the active mode's parameters.
-static ParamsRuntime params;
-
 static Mode active_mode = MODE_EUCLID;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
@@ -606,10 +582,10 @@ static void active_mode_validate() {
 static void euclid_params_validate() {
 	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
 		ParamIdx idx_length = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_LENGTH);
-		uint8_t length = params.values[idx_length];
 		ParamIdx idx_density = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_DENSITY);
-		uint8_t density = params.values[idx_density];
 		ParamIdx idx_offset = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_OFFSET);
+		uint8_t length = params.values[idx_length];
+		uint8_t density = params.values[idx_density];
 		uint8_t offset = params.values[idx_offset];
 
 		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
