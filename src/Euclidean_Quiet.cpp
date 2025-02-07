@@ -92,6 +92,12 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
+/// Read the bits specified in `mask`
+static inline uint8_t params_flags_get(ParamIdx idx, uint8_t mask);
+/// Set the bits specified in `mask` to 1, leaving the others untouched
+static inline void params_flags_set(ParamIdx idx, uint8_t mask);
+/// Clear the bits specified in `mask` to 0, leaving the others untouched
+static inline void params_flags_clear(ParamIdx idx, uint8_t mask);
 static void active_mode_switch(Mode mode);
 static void active_mode_validate();
 static void euclid_params_validate();
@@ -521,6 +527,12 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	result += 64;
 	return result;
 }
+
+static inline uint8_t params_flags_get(ParamIdx idx, uint8_t mask) { return (params.flags[idx] & mask); }
+
+static inline void params_flags_set(ParamIdx idx, uint8_t mask) { params.flags[idx] |= mask; }
+
+static inline void params_flags_clear(ParamIdx idx, uint8_t mask) { params.flags[idx] &= ~mask; }
 
 static void active_mode_switch(Mode mode) {
 	active_mode = mode;
