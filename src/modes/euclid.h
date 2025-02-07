@@ -14,6 +14,7 @@ extern "C" {
 /* CONSTANTS */
 
 #define NUM_CHANNELS 3
+#define EUCLID_PARAMS_PER_CHANNEL 3
 
 // Bounds for three channel parameters
 // N: Beat Length
@@ -86,6 +87,9 @@ extern AdjustmentDisplayState adjustment_display_state;
 extern TimeoutOnce playhead_flash_timeout;
 
 /* EXTERNAL */
+
+/// Return the `ParamIdx` for a given a channel and param kind
+ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind);
 
 /// Wrap the provided value as an occupied optional
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
