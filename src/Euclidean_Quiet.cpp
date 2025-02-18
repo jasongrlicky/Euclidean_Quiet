@@ -50,16 +50,6 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
-/// Set the param referenced by `idx` to `value`, and set its flags to indicate
-/// that it has been modified and needs to be written to the EEPROM.
-static inline void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value);
-/// Read the bits specified in `mask`
-static inline uint8_t param_flags_get(const Params *params, ParamIdx idx, uint8_t mask);
-/// Set the bits specified in `mask` to 1, leaving the others untouched
-static inline void param_flags_set(Params *params, ParamIdx idx, uint8_t mask);
-/// Clear the bits specified in `mask` to 0, leaving the others untouched
-static inline void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
-static void param_flags_clear_all_modified(Params *params, Mode mode);
 static void active_mode_switch(Mode mode);
 static void params_validate(Params *params, Mode mode);
 /// Load state for the given mode into `params`.
@@ -406,11 +396,6 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 	}
 }
 
-static inline void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value) {
-	params->values[idx] = value;
-	param_flags_set(params, idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
-}
-
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// This is a standard "scale from input range to output range" function, but
 	// it uses specific ranges so that we can avoid multiplication or division by
@@ -428,24 +413,6 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// Add output min
 	result += 64;
 	return result;
-}
-
-static inline uint8_t param_flags_get(const Params *params, ParamIdx idx, uint8_t mask) {
-	return (params->flags[idx] & mask);
-}
-
-static inline void param_flags_set(Params *params, ParamIdx idx, uint8_t mask) { params->flags[idx] |= mask; }
-
-static inline void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask) {
-	params->flags[idx] &= ~mask;
-}
-
-static void param_flags_clear_all_modified(Params *params, Mode mode) {
-	uint8_t num_params = mode_num_params[mode];
-
-	for (uint8_t idx = 0; idx < num_params; idx++) {
-		param_flags_clear(params, idx, PARAM_FLAG_MODIFIED);
-	}
 }
 
 static void active_mode_switch(Mode mode) {

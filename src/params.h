@@ -52,6 +52,18 @@ typedef struct Params {
 /// Static information, such as addresses or names, is stored separately.
 extern Params params;
 
+/// Set the param referenced by `idx` to `value`, and set its flags to indicate
+/// that it has been modified and needs to be written to the EEPROM.
+void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value);
+/// Read the bits specified in `mask`
+uint8_t param_flags_get(const Params *params, ParamIdx idx, uint8_t mask);
+/// Set the bits specified in `mask` to 1, leaving the others untouched
+void param_flags_set(Params *params, ParamIdx idx, uint8_t mask);
+/// Clear the bits specified in `mask` to 0, leaving the others untouched
+void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
+/// Clear `PARAM_FLAG_MODIFIED` for all parameters
+void param_flags_clear_all_modified(Params *params, Mode mode);
+
 Address param_address(Mode mode, ParamIdx idx);
 
 #if LOGGING_ENABLED
