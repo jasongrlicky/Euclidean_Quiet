@@ -121,7 +121,11 @@ static void sequencer_handle_clock() {
 static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
+#ifdef PARAM_TABLES
+		uint8_t length = euclid_param_get(channel, EUCLIDEAN_PARAM_LENGTH);
+#else
 		uint8_t length = channel_state.length;
+#endif
 		uint8_t position = channel_state.position;
 
 		// Move sequencer playhead to next step
