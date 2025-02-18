@@ -15,9 +15,12 @@ bool param_name(char *result, Mode mode, ParamIdx idx) {
 	if (!result) return false;
 
 	switch (mode) {
-		case MODE_EUCLID:
+		case MODE_EUCLID: {
+			if (idx >= EUCLID_NUM_PARAMS) {
+				return false;
+			}
 			memcpy(result, euclid_param_names[idx], PARAM_NAME_LEN);
-			break;
+		} break;
 	}
 
 	return true;
