@@ -79,13 +79,13 @@ static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask);
 static inline void param_flags_set(ParamIdx idx, uint8_t mask);
 /// Clear the bits specified in `mask` to 0, leaving the others untouched
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
-static void param_flags_clear_all_modified();
+static void param_flags_clear_all_modified(Mode mode);
 static void active_mode_switch(Mode mode);
 static void params_validate(Params *params, Mode mode);
 static void euclid_params_validate(Params *params);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Params *params, Mode mode);
-static void eeprom_save_all_needing_write();
+static void eeprom_save_all_needing_write(Mode mode);
 #if !PARAM_TABLES
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
@@ -97,7 +97,7 @@ static inline Address eeprom_addr_offset(Channel channel);
 static void log_input_events(const InputEvents *events);
 #endif
 #if LOGGING_ENABLED && PARAM_TABLES
-static void log_all_modified_params();
+static void log_all_modified_params(Mode mode);
 #endif
 
 /* MAIN */
@@ -167,7 +167,7 @@ void loop() {
 
 	EuclideanParamOpt knob_moved_for_param = EUCLIDEAN_PARAM_OPT_NONE;
 #if PARAM_TABLES
-	param_flags_clear_all_modified();
+	param_flags_clear_all_modified(active_mode);
 #else
 	EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
 #endif
@@ -486,7 +486,7 @@ void loop() {
 	/* EEPROM WRITES */
 
 #if PARAM_TABLES
-	eeprom_save_all_needing_write();
+	eeprom_save_all_needing_write(active_mode);
 #endif
 
 #if EEPROM_WRITE && !PARAM_TABLES
@@ -536,7 +536,7 @@ void loop() {
 #endif
 
 #if LOGGING_ENABLED && PARAM_TABLES
-	log_all_modified_params();
+	log_all_modified_params(active_mode);
 #endif
 }
 
@@ -595,8 +595,7 @@ static inline void param_flags_set(ParamIdx idx, uint8_t mask) { params.flags[id
 
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask) { params.flags[idx] &= ~mask; }
 
-static void param_flags_clear_all_modified() {
-	Mode mode = active_mode;
+static void param_flags_clear_all_modified(Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
@@ -653,9 +652,8 @@ static void eeprom_params_load(Params *params, Mode mode) {
 	params->len = num_params;
 }
 
-static void eeprom_save_all_needing_write() {
+static void eeprom_save_all_needing_write(Mode mode) {
 #if EEPROM_WRITE
-	Mode mode = active_mode;
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
@@ -736,8 +734,7 @@ static void log_input_events(const InputEvents *events) {
 #endif
 
 #if LOGGING_ENABLED && PARAM_TABLES
-static void log_all_modified_params() {
-	Mode mode = active_mode;
+static void log_all_modified_params(Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
