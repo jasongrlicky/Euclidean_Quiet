@@ -646,13 +646,15 @@ static void eeprom_load_tables() {
 	Mode mode = active_mode;
 	uint8_t num_params = mode_num_params[mode];
 
-#if EEPROM_READ
 	for (uint8_t idx = 0; idx < num_params; idx++) {
+#if EEPROM_READ
 		Address addr = param_address(mode, (ParamIdx)idx);
 		params.values[idx] = EEPROM.read(addr);
+#else
+		params.values[idx] = 0;
+#endif
 		params.flags[idx] = PARAM_FLAGS_NONE;
 	}
-#endif
 
 	params.len = num_params;
 }
