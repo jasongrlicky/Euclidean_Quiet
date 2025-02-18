@@ -52,26 +52,11 @@ typedef struct Params {
 /// Static information, such as addresses or names, is stored separately.
 extern Params params;
 
-/*
-Original EEPROM Schema:
-Channel 1: length = 1 density = 2 offset = 7
-Channel 2: length = 3 density = 4 offset = 8
-Channel 3: length = 5 density = 6 offset = 9
-*/
-
-/// EEPROM addresses for Euclidean mode params. The order is this way for
-/// backwards-compatibility with the original Sebsongs Euclidean firmware.
-static const Address euclid_param_addresses[EUCLID_NUM_PARAMS] = {1, 2, 7, 3, 4, 8, 5, 6, 9};
-
 Address param_address(Mode mode, ParamIdx idx);
 
 #if LOGGING_ENABLED
 
 #define PARAM_NAME_LEN 3
-/// Table of parameter names for logging in the Euclid mode
-static const char euclid_param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
-    "L1", "D1", "O1", "L2", "D2", "O2", "L3", "D3", "O3",
-};
 
 /// @brief Retrieve the name for the specified parameter and store that name in
 /// the `result` null-terminated string.
