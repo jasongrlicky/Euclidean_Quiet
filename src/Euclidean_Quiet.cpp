@@ -70,7 +70,9 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
-static inline void param_set(ParamIdx idx, uint8_t value);
+/// Set the param referenced by `idx` to `value`, and set its flags to indicate
+/// that it has been modified and needs to be written to the EEPROM.
+static inline void param_and_flags_set(ParamIdx idx, uint8_t value);
 /// Read the bits specified in `mask`
 static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask);
 /// Set the bits specified in `mask` to 1, leaving the others untouched
@@ -197,7 +199,7 @@ void loop() {
 			euclidean_state.channels[channel].density = density;
 
 #if PARAM_TABLES
-			param_set(density_idx, density);
+			param_and_flags_set(density_idx, density);
 #else
 			params_update.density = density;
 			params_update.density_changed = true;
@@ -208,7 +210,7 @@ void loop() {
 			euclidean_state.channels[channel].offset = offset;
 
 #if PARAM_TABLES
-			param_set(offset_idx, offset);
+			param_and_flags_set(offset_idx, offset);
 #else
 			params_update.offset = offset;
 			params_update.offset_changed = true;
@@ -224,7 +226,7 @@ void loop() {
 		}
 
 #if PARAM_TABLES
-		param_set(length_idx, length);
+		param_and_flags_set(length_idx, length);
 #else
 		params_update.length = length;
 		params_update.length_changed = true;
@@ -253,7 +255,7 @@ void loop() {
 		euclidean_state.channels[channel].density = density;
 
 #if PARAM_TABLES
-		param_set(density_idx, density);
+		param_and_flags_set(density_idx, density);
 #else
 		params_update.density = density;
 		params_update.density_changed = true;
@@ -282,7 +284,7 @@ void loop() {
 		euclidean_state.channels[channel].offset = offset;
 
 #if PARAM_TABLES
-		param_set(offset_idx, offset);
+		param_and_flags_set(offset_idx, offset);
 #else
 		params_update.offset = offset;
 		params_update.offset_changed = true;
@@ -523,7 +525,7 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 	}
 }
 
-static inline void param_set(ParamIdx idx, uint8_t value) {
+static inline void param_and_flags_set(ParamIdx idx, uint8_t value) {
 	params.values[idx] = value;
 	param_flags_set(idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
 }
