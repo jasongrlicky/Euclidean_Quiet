@@ -37,41 +37,41 @@ extern "C" {
 /* DATA STRUCTURES */
 
 /// The kind of a parameter for a channel of the Euclidean rhythm generator
-typedef enum EuclideanParam {
-	EUCLIDEAN_PARAM_LENGTH,
-	EUCLIDEAN_PARAM_DENSITY,
-	EUCLIDEAN_PARAM_OFFSET,
-} EuclideanParam;
+typedef enum EuclidParam {
+	EUCLID_PARAM_LENGTH,
+	EUCLID_PARAM_DENSITY,
+	EUCLID_PARAM_OFFSET,
+} EuclidParam;
 
-/// Euclidean parameter that is wrapped as an optional value
-typedef struct EuclideanParamOpt {
-	EuclideanParam inner;
+/// Parameter for the Euclidean rhythm generator mode that is wrapped as an optional value
+typedef struct EuclidParamOpt {
+	EuclidParam inner;
 	bool valid;
-} EuclideanParamOpt;
+} EuclidParamOpt;
 
-static const EuclideanParamOpt EUCLIDEAN_PARAM_OPT_NONE = {.inner = EUCLIDEAN_PARAM_LENGTH, .valid = false};
+static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGTH, .valid = false};
 
-/// State of the entire Euclidean module
-typedef struct EuclideanState {
+/// State of the entire Euclidean rhythm generator mode
+typedef struct EuclidState {
 	/// Step index representing the playhead position for for each of this mode's
 	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
 	uint8_t channel_positions[NUM_CHANNELS];
 	bool sequencer_running;
-} EuclideanState;
+} EuclidState;
 
 typedef struct AdjustmentDisplayState {
 	/// Which channel is currently showing its adjustment display. Only one
 	/// adjustment display can be visible at a time.
 	Channel channel;
 	/// The parameter that is being displayed in the adjustment display.
-	EuclideanParam parameter;
+	EuclidParam parameter;
 	/// Is the adjustment display showing currently
 	bool visible;
 } AdjustmentDisplayState;
 
 /* GLOBALS */
 
-extern EuclideanState euclidean_state;
+extern EuclidState euclid_state;
 extern uint16_t generated_rhythms[NUM_CHANNELS];
 extern AdjustmentDisplayState adjustment_display_state;
 extern TimeoutOnce playhead_flash_timeout;
@@ -80,41 +80,41 @@ extern Params params;
 /* EXTERNAL */
 
 /// Return the `ParamIdx` for a given a channel and param kind
-inline ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
+inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
 	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
 }
 
-inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclideanParam kind) {
+inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	return params->values[idx];
 }
 
 /// Set the value of the specified param. Do not use if Euclidean is not the
 /// active mode.
-inline void euclid_param_set(Params *params, Channel channel, EuclideanParam kind, uint8_t val) {
+inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	params->values[idx] = val;
 }
 
 /// Do not use if Euclidean is not the active mode.
 inline uint8_t euclid_get_length(const Params *params, Channel channel) {
-	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_LENGTH);
+	return euclid_param_get(params, channel, EUCLID_PARAM_LENGTH);
 }
 
 /// Do not use if Euclidean is not the active mode.
 inline uint8_t euclid_get_density(const Params *params, Channel channel) {
-	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_DENSITY);
+	return euclid_param_get(params, channel, EUCLID_PARAM_DENSITY);
 }
 
 /// Do not use if Euclidean is not the active mode.
 inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
-	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_OFFSET);
+	return euclid_param_get(params, channel, EUCLID_PARAM_OFFSET);
 }
 
 void euclid_params_validate(Params *params);
 
 /// Wrap the provided value as an occupied optional
-EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
+EuclidParamOpt euclid_param_opt(EuclidParam inner);
 
 // Returns bitflags storing which output channels will fire this cycle, indexed
 // by `OutputChannel`.
