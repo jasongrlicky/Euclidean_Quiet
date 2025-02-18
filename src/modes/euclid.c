@@ -43,6 +43,25 @@ static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 
 /* EXTERNAL */
 
+void euclid_params_validate(Params *params) {
+	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+		Channel channel = (Channel)c;
+		uint8_t length = euclid_get_length(params, channel);
+		uint8_t density = euclid_get_density(params, channel);
+		uint8_t offset = euclid_get_offset(params, channel);
+
+		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
+			euclid_param_set(params, channel, EUCLIDEAN_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
+		}
+		if (density > BEAT_DENSITY_MAX || density > length) {
+			euclid_param_set(params, channel, EUCLIDEAN_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
+		}
+		if (offset > BEAT_OFFSET_MAX || offset > length) {
+			euclid_param_set(params, channel, EUCLIDEAN_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
+		}
+	}
+}
+
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner) {
 	return (EuclideanParamOpt){.inner = inner, .valid = true};
 }

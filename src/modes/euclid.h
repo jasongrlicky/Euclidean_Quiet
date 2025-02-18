@@ -111,6 +111,8 @@ inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_OFFSET);
 }
 
+void euclid_params_validate(Params *params);
+
 /// Wrap the provided value as an occupied optional
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
 
