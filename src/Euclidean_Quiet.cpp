@@ -89,10 +89,10 @@ static void eeprom_save_all_needing_write();
 #if !PARAM_TABLES
 /// Load state from EEPROM into the given `EuclideanState`
 static void eeprom_load(EuclideanState *s);
-#endif
 static inline Address eeprom_addr_length(Channel channel);
 static inline Address eeprom_addr_density(Channel channel);
 static inline Address eeprom_addr_offset(Channel channel);
+#endif
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
 #endif
@@ -705,11 +705,13 @@ static void eeprom_load(EuclideanState *s) {
 }
 #endif
 
+#if !PARAM_TABLES
 static inline Address eeprom_addr_length(Channel channel) { return (channel * 2) + 1; }
 
 static inline Address eeprom_addr_density(Channel channel) { return (channel * 2) + 2; }
 
 static inline Address eeprom_addr_offset(Channel channel) { return channel + 7; }
+#endif
 
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events) {
