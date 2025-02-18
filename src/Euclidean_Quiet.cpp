@@ -72,14 +72,14 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 /// Set the param referenced by `idx` to `value`, and set its flags to indicate
 /// that it has been modified and needs to be written to the EEPROM.
-static inline void param_and_flags_set(ParamIdx idx, uint8_t value);
+static inline void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value);
 /// Read the bits specified in `mask`
-static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask);
+static inline uint8_t param_flags_get(const Params *params, ParamIdx idx, uint8_t mask);
 /// Set the bits specified in `mask` to 1, leaving the others untouched
-static inline void param_flags_set(ParamIdx idx, uint8_t mask);
+static inline void param_flags_set(Params *params, ParamIdx idx, uint8_t mask);
 /// Clear the bits specified in `mask` to 0, leaving the others untouched
-static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
-static void param_flags_clear_all_modified(Mode mode);
+static inline void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
+static void param_flags_clear_all_modified(Params *params, Mode mode);
 static void active_mode_switch(Mode mode);
 static void params_validate(Params *params, Mode mode);
 static void euclid_params_validate(Params *params);
@@ -167,7 +167,7 @@ void loop() {
 
 	EuclideanParamOpt knob_moved_for_param = EUCLIDEAN_PARAM_OPT_NONE;
 #if PARAM_TABLES
-	param_flags_clear_all_modified(active_mode);
+	param_flags_clear_all_modified(&params, active_mode);
 #else
 	EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
 #endif
@@ -213,7 +213,7 @@ void loop() {
 			density += nknob;
 
 #if PARAM_TABLES
-			param_and_flags_set(density_idx, density);
+			param_and_flags_set(&params, density_idx, density);
 #else
 			euclidean_state.channels[channel].density = density;
 
@@ -225,7 +225,7 @@ void loop() {
 			offset += nknob;
 
 #if PARAM_TABLES
-			param_and_flags_set(offset_idx, offset);
+			param_and_flags_set(&params, offset_idx, offset);
 #else
 			euclidean_state.channels[channel].offset = offset;
 
@@ -237,7 +237,7 @@ void loop() {
 		length += nknob;
 
 #if PARAM_TABLES
-		param_and_flags_set(length_idx, length);
+		param_and_flags_set(&params, length_idx, length);
 #else
 		euclidean_state.channels[channel].length = length;
 
@@ -281,7 +281,7 @@ void loop() {
 		density += kknob;
 
 #if PARAM_TABLES
-		param_and_flags_set(density_idx, density);
+		param_and_flags_set(&params, density_idx, density);
 #else
 		euclidean_state.channels[channel].density = density;
 
@@ -316,7 +316,7 @@ void loop() {
 		offset += oknob;
 
 #if PARAM_TABLES
-		param_and_flags_set(offset_idx, offset);
+		param_and_flags_set(&params, offset_idx, offset);
 #else
 		euclidean_state.channels[channel].offset = offset;
 
@@ -565,9 +565,9 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 	}
 }
 
-static inline void param_and_flags_set(ParamIdx idx, uint8_t value) {
-	params.values[idx] = value;
-	param_flags_set(idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
+static inline void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value) {
+	params->values[idx] = value;
+	param_flags_set(params, idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
 }
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
@@ -589,17 +589,21 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	return result;
 }
 
-static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask) { return (params.flags[idx] & mask); }
+static inline uint8_t param_flags_get(const Params *params, ParamIdx idx, uint8_t mask) {
+	return (params->flags[idx] & mask);
+}
 
-static inline void param_flags_set(ParamIdx idx, uint8_t mask) { params.flags[idx] |= mask; }
+static inline void param_flags_set(Params *params, ParamIdx idx, uint8_t mask) { params->flags[idx] |= mask; }
 
-static inline void param_flags_clear(ParamIdx idx, uint8_t mask) { params.flags[idx] &= ~mask; }
+static inline void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask) {
+	params->flags[idx] &= ~mask;
+}
 
-static void param_flags_clear_all_modified(Mode mode) {
+static void param_flags_clear_all_modified(Params *params, Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
-		param_flags_clear(idx, PARAM_FLAG_MODIFIED);
+		param_flags_clear(params, idx, PARAM_FLAG_MODIFIED);
 	}
 }
 
@@ -657,10 +661,10 @@ static void eeprom_save_all_needing_write(Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
-		bool needs_write = param_flags_get(idx, PARAM_FLAG_NEEDS_WRITE);
+		bool needs_write = param_flags_get(&params, idx, PARAM_FLAG_NEEDS_WRITE);
 		if (!needs_write) continue;
 
-		param_flags_clear(idx, PARAM_FLAG_NEEDS_WRITE);
+		param_flags_clear(&params, idx, PARAM_FLAG_NEEDS_WRITE);
 
 		uint8_t val = params.values[idx];
 		Address addr = param_address(mode, (ParamIdx)idx);
@@ -738,7 +742,7 @@ static void log_all_modified_params(Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
-		bool modified = param_flags_get(idx, PARAM_FLAG_MODIFIED);
+		bool modified = param_flags_get(&params, idx, PARAM_FLAG_MODIFIED);
 		if (!modified) continue;
 
 		uint8_t val = params.values[idx];
