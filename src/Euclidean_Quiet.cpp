@@ -301,10 +301,16 @@ void loop() {
 	// Update Generated Rhythms Based On Parameter Changes
 	if (knob_moved_for_param.valid) {
 		Channel channel = active_channel;
+#if PARAM_TABLES
+		uint8_t length = euclid_param_get_length(channel);
+		uint8_t density = euclid_param_get_density(channel);
+		uint8_t offset = euclid_param_get_offset(channel);
+#else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		uint8_t length = channel_state.length;
 		uint8_t density = channel_state.density;
 		uint8_t offset = channel_state.offset;
+#endif
 
 		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
