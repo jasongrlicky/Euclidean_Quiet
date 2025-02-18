@@ -582,20 +582,21 @@ static void active_mode_validate() {
 
 static void euclid_params_validate() {
 	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-		ParamIdx idx_length = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_LENGTH);
-		ParamIdx idx_density = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_DENSITY);
-		ParamIdx idx_offset = euclid_param_idx((Channel)c, EUCLIDEAN_PARAM_OFFSET);
-		uint8_t length = params.values[idx_length];
-		uint8_t density = params.values[idx_density];
-		uint8_t offset = params.values[idx_offset];
+		Channel channel = (Channel)c;
+		uint8_t length = euclid_param_get(channel, EUCLIDEAN_PARAM_LENGTH);
+		uint8_t density = euclid_param_get(channel, EUCLIDEAN_PARAM_DENSITY);
+		uint8_t offset = euclid_param_get(channel, EUCLIDEAN_PARAM_OFFSET);
 
 		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
+			ParamIdx idx_length = euclid_param_idx(channel, EUCLIDEAN_PARAM_LENGTH);
 			params.values[idx_length] = BEAT_LENGTH_DEFAULT;
 		}
 		if (density > BEAT_DENSITY_MAX || density > length) {
+			ParamIdx idx_density = euclid_param_idx(channel, EUCLIDEAN_PARAM_DENSITY);
 			params.values[idx_density] = BEAT_DENSITY_DEFAULT;
 		}
 		if (offset > BEAT_OFFSET_MAX || offset > length) {
+			ParamIdx idx_offset = euclid_param_idx(channel, EUCLIDEAN_PARAM_OFFSET);
 			params.values[idx_offset] = BEAT_OFFSET_DEFAULT;
 		}
 	}
