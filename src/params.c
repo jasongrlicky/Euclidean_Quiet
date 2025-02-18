@@ -30,9 +30,11 @@ static const char euclid_param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
 Address param_address(Mode mode, ParamIdx idx) {
 	Address result = 0;
 	switch (mode) {
-		case MODE_EUCLID:
-			result = euclid_param_addresses[idx];
-			break;
+		case MODE_EUCLID: {
+			if (idx < EUCLID_NUM_PARAMS) {
+				result = euclid_param_addresses[idx];
+			}
+		} break;
 	}
 	return result;
 }
