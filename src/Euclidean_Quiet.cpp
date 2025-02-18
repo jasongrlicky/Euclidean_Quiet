@@ -79,7 +79,6 @@ static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask);
 static inline void param_flags_set(ParamIdx idx, uint8_t mask);
 /// Clear the bits specified in `mask` to 0, leaving the others untouched
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
-static inline void param_flags_set_modified_and_needs_write(ParamIdx idx);
 static void param_flags_clear_all_modified();
 static void active_mode_switch(Mode mode);
 static void active_mode_validate();
@@ -595,10 +594,6 @@ static inline uint8_t param_flags_get(ParamIdx idx, uint8_t mask) { return (para
 static inline void param_flags_set(ParamIdx idx, uint8_t mask) { params.flags[idx] |= mask; }
 
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask) { params.flags[idx] &= ~mask; }
-
-static inline void param_flags_set_modified_and_needs_write(ParamIdx idx) {
-	param_flags_set(idx, (PARAM_FLAG_MODIFIED | PARAM_FLAG_NEEDS_WRITE));
-}
 
 static void param_flags_clear_all_modified() {
 	Mode mode = active_mode;
