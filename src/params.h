@@ -48,8 +48,8 @@ typedef struct ParamsRuntime {
 	uint8_t flags[PARAMS_RUNTIME_MAX];
 } ParamsRuntime;
 
-/// Stores the runtime information of the active mode's parameters.
-ParamsRuntime params;
+/// Stores the runtime information for the active mode's parameters.
+extern ParamsRuntime params;
 
 /*
 Original EEPROM Schema:

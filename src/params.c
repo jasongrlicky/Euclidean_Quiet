@@ -1,6 +1,13 @@
 #include "params.h"
+/* CONSTANTS */
 
 static const char name_not_found[PARAM_NAME_LEN] = "??";
+
+/* GLBOALS */
+
+ParamsRuntime params;
+
+/* EXTERNAL */
 
 Address param_address(Mode mode, ParamIdx idx) {
 	Address result = 0;
