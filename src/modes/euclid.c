@@ -6,6 +6,12 @@
 /* GLOBALS */
 
 // clang-format off
+#if PARAM_TABLES
+EuclideanState euclidean_state = {
+  .channel_positions = { 0, 0, 0 },
+  .sequencer_running = false,
+};
+#else
 EuclideanState euclidean_state = {
   .channels = {
     { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
@@ -14,6 +20,7 @@ EuclideanState euclidean_state = {
   },
   .sequencer_running = false,
 };
+#endif
 // clang-format on
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
@@ -78,6 +85,7 @@ void euclid_draw_channels(void) {
 	}
 }
 
+#if !PARAM_TABLES
 void euclid_validate_state(EuclideanState *s) {
 	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
 		if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
@@ -94,13 +102,18 @@ void euclid_validate_state(EuclideanState *s) {
 		}
 	}
 }
+#endif
 
 /* INTERNAL */
 
 static void sequencer_handle_reset() {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+#if PARAM_TABLES
+		euclidean_state.channel_positions[channel] = 0;
+#else
 		euclidean_state.channels[channel].position = 0;
+#endif
 	}
 
 	// Stop the sequencer
@@ -120,20 +133,25 @@ static void sequencer_handle_clock() {
 
 static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 #if PARAM_TABLES
+		uint8_t position = euclidean_state.channel_positions[channel];
 		uint8_t length = euclid_param_get_length(channel);
 #else
+		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		uint8_t length = channel_state.length;
-#endif
 		uint8_t position = channel_state.position;
+#endif
 
 		// Move sequencer playhead to next step
 		position++;
 		if (position >= length) {
 			position = 0;
 		}
+#if PARAM_TABLES
+		euclidean_state.channel_positions[channel] = position;
+#else
 		euclidean_state.channels[channel].position = position;
+#endif
 
 #if LOGGING_ENABLED && LOGGING_POSITION
 		if (channel == 0) {
@@ -148,13 +166,14 @@ static uint8_t sequencer_read_current_step() {
 	uint8_t out_channels_firing = 0;
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 #if PARAM_TABLES
 		uint8_t length = euclid_param_get_length(channel);
+		uint8_t position = euclidean_state.channel_positions[channel];
 #else
+		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		uint8_t length = channel_state.length;
-#endif
 		uint8_t position = channel_state.position;
+#endif
 		uint16_t pattern = generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
@@ -173,13 +192,14 @@ static uint8_t sequencer_read_current_step() {
 }
 
 static inline void draw_channel(Channel channel) {
-	EuclideanChannelState channel_state = euclidean_state.channels[channel];
 #if PARAM_TABLES
 	uint8_t length = euclid_param_get_length(channel);
+	uint8_t position = euclidean_state.channel_positions[channel];
 #else
+	EuclideanChannelState channel_state = euclidean_state.channels[channel];
 	uint8_t length = channel_state.length;
-#endif
 	uint8_t position = channel_state.position;
+#endif
 	uint16_t pattern = generated_rhythms[channel];
 
 	// Clear rows

@@ -173,9 +173,11 @@ void loop() {
 	EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
 #endif
 
+#if PARAM_TABLES
 	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_LENGTH);
 	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_DENSITY);
 	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_OFFSET);
+#endif
 
 	// Handle Length Knob Movement
 	int nknob = events_in.enc_move[ENCODER_1];
@@ -183,17 +185,18 @@ void loop() {
 		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_LENGTH);
 
 		Channel channel = active_channel;
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 #if PARAM_TABLES
 		int length = euclid_param_get_length(channel);
 		uint8_t density = euclid_param_get_density(channel);
 		uint8_t offset = euclid_param_get_offset(channel);
+		uint8_t position = euclidean_state.channel_positions[channel];
 #else
+		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		int length = channel_state.length;
 		uint8_t density = channel_state.density;
 		uint8_t offset = channel_state.offset;
-#endif
 		uint8_t position = channel_state.position;
+#endif
 
 		// Keep length in bounds
 		if (length >= BEAT_LENGTH_MAX) {
@@ -209,40 +212,47 @@ void loop() {
 		// Reduce density and offset to remain in line with the new length if necessary
 		if ((density >= (length + nknob)) && (density > 1)) {
 			density += nknob;
-			euclidean_state.channels[channel].density = density;
 
 #if PARAM_TABLES
 			param_and_flags_set(density_idx, density);
 #else
+			euclidean_state.channels[channel].density = density;
+
 			params_update.density = density;
 			params_update.density_changed = true;
 #endif
 		}
 		if ((offset >= (length + nknob)) && (offset < 16)) {
 			offset += nknob;
-			euclidean_state.channels[channel].offset = offset;
 
 #if PARAM_TABLES
 			param_and_flags_set(offset_idx, offset);
 #else
+			euclidean_state.channels[channel].offset = offset;
+
 			params_update.offset = offset;
 			params_update.offset_changed = true;
 #endif
 		}
 
 		length += nknob;
-		euclidean_state.channels[channel].length = length;
 
 #if PARAM_TABLES
 		param_and_flags_set(length_idx, length);
 #else
+		euclidean_state.channels[channel].length = length;
+
 		params_update.length = length;
 		params_update.length_changed = true;
 #endif
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
+#if PARAM_TABLES
+			euclidean_state.channel_positions[channel] = 0;
+#else
 			euclidean_state.channels[channel].position = 0;
+#endif
 		}
 	}
 
@@ -270,11 +280,12 @@ void loop() {
 		}
 
 		density += kknob;
-		euclidean_state.channels[channel].density = density;
 
 #if PARAM_TABLES
 		param_and_flags_set(density_idx, density);
 #else
+		euclidean_state.channels[channel].density = density;
+
 		params_update.density = density;
 		params_update.density_changed = true;
 #endif
@@ -304,11 +315,12 @@ void loop() {
 		}
 
 		offset += oknob;
-		euclidean_state.channels[channel].offset = offset;
 
 #if PARAM_TABLES
 		param_and_flags_set(offset_idx, offset);
 #else
+		euclidean_state.channels[channel].offset = offset;
+
 		params_update.offset = offset;
 		params_update.offset_changed = true;
 #endif
