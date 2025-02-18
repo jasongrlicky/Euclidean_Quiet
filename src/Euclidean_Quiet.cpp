@@ -38,26 +38,6 @@ static Timeout playhead_idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERI
 
 static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME};
 
-#if !PARAM_TABLES
-typedef struct EuclideanChannelUpdate {
-	uint8_t length;
-	uint8_t density;
-	uint8_t offset;
-	bool length_changed;
-	bool density_changed;
-	bool offset_changed;
-} EuclideanChannelUpdate;
-
-static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
-    .length = 0,
-    .density = 0,
-    .offset = 0,
-    .length_changed = false,
-    .density_changed = false,
-    .offset_changed = false,
-};
-#endif
-
 static Mode active_mode = MODE_EUCLID;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
@@ -86,17 +66,10 @@ static void euclid_params_validate(Params *params);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Params *params, Mode mode);
 static void eeprom_save_all_needing_write(Params *params, Mode mode);
-#if !PARAM_TABLES
-/// Load state from EEPROM into the given `EuclideanState`
-static void eeprom_load(EuclideanState *s);
-static inline Address eeprom_addr_length(Channel channel);
-static inline Address eeprom_addr_density(Channel channel);
-static inline Address eeprom_addr_offset(Channel channel);
-#endif
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
 #endif
-#if LOGGING_ENABLED && PARAM_TABLES
+#if LOGGING_ENABLED
 static void log_all_modified_params(const Params *params, Mode mode);
 #endif
 
@@ -107,28 +80,17 @@ void setup() {
 
 	led_init();
 	led_sleep_init(now);
-#if PARAM_TABLES
 	active_mode_switch(MODE_EUCLID);
-#else
-	eeprom_load(&euclidean_state);
-	euclid_validate_state(&euclidean_state);
-#endif
 	init_serial();
 	input_init();
 	output_init();
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
-#if PARAM_TABLES
 		Channel channel = (Channel)a;
 		uint8_t length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
-#else
-		uint8_t length = euclidean_state.channels[a].length;
-		uint8_t density = euclidean_state.channels[a].density;
-		uint8_t offset = euclidean_state.channels[a].offset;
-#endif
 		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
@@ -166,17 +128,11 @@ void loop() {
 	}
 
 	EuclideanParamOpt knob_moved_for_param = EUCLIDEAN_PARAM_OPT_NONE;
-#if PARAM_TABLES
 	param_flags_clear_all_modified(&params, active_mode);
-#else
-	EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
-#endif
 
-#if PARAM_TABLES
 	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_LENGTH);
 	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_DENSITY);
 	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLIDEAN_PARAM_OFFSET);
-#endif
 
 	// Handle Length Knob Movement
 	int nknob = events_in.enc_move[ENCODER_1];
@@ -184,18 +140,10 @@ void loop() {
 		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_LENGTH);
 
 		Channel channel = active_channel;
-#if PARAM_TABLES
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
 		uint8_t position = euclidean_state.channel_positions[channel];
-#else
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		int length = channel_state.length;
-		uint8_t density = channel_state.density;
-		uint8_t offset = channel_state.offset;
-		uint8_t position = channel_state.position;
-#endif
 
 		// Keep length in bounds
 		if (length >= BEAT_LENGTH_MAX) {
@@ -212,46 +160,21 @@ void loop() {
 		if ((density >= (length + nknob)) && (density > 1)) {
 			density += nknob;
 
-#if PARAM_TABLES
 			param_and_flags_set(&params, density_idx, density);
-#else
-			euclidean_state.channels[channel].density = density;
-
-			params_update.density = density;
-			params_update.density_changed = true;
-#endif
 		}
 		if ((offset >= (length + nknob)) && (offset < 16)) {
 			offset += nknob;
 
-#if PARAM_TABLES
 			param_and_flags_set(&params, offset_idx, offset);
-#else
-			euclidean_state.channels[channel].offset = offset;
-
-			params_update.offset = offset;
-			params_update.offset_changed = true;
-#endif
 		}
 
 		length += nknob;
 
-#if PARAM_TABLES
 		param_and_flags_set(&params, length_idx, length);
-#else
-		euclidean_state.channels[channel].length = length;
-
-		params_update.length = length;
-		params_update.length_changed = true;
-#endif
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
-#if PARAM_TABLES
 			euclidean_state.channel_positions[channel] = 0;
-#else
-			euclidean_state.channels[channel].position = 0;
-#endif
 		}
 	}
 
@@ -261,14 +184,8 @@ void loop() {
 		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_DENSITY);
 
 		Channel channel = active_channel;
-#if PARAM_TABLES
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
-#else
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		int length = channel_state.length;
-		int density = channel_state.density;
-#endif
 
 		// Keep density in bounds
 		if (density + kknob > length) {
@@ -280,14 +197,7 @@ void loop() {
 
 		density += kknob;
 
-#if PARAM_TABLES
 		param_and_flags_set(&params, density_idx, density);
-#else
-		euclidean_state.channels[channel].density = density;
-
-		params_update.density = density;
-		params_update.density_changed = true;
-#endif
 	}
 
 	// Handle Offset Knob Movement
@@ -296,14 +206,8 @@ void loop() {
 		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_OFFSET);
 
 		Channel channel = active_channel;
-#if PARAM_TABLES
 		int length = euclid_get_length(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
-#else
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		int length = channel_state.length;
-		int offset = channel_state.offset;
-#endif
 
 		// Keep offset in bounds
 		if (offset + oknob > length - 1) {
@@ -315,44 +219,17 @@ void loop() {
 
 		offset += oknob;
 
-#if PARAM_TABLES
 		param_and_flags_set(&params, offset_idx, offset);
-#else
-		euclidean_state.channels[channel].offset = offset;
-
-		params_update.offset = offset;
-		params_update.offset_changed = true;
-#endif
 	}
 
 	// Update Generated Rhythms Based On Parameter Changes
 	if (knob_moved_for_param.valid) {
 		Channel channel = active_channel;
-#if PARAM_TABLES
 		uint8_t length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
-#else
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		uint8_t length = channel_state.length;
-		uint8_t density = channel_state.density;
-		uint8_t offset = channel_state.offset;
-#endif
 
 		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
-
-#if !PARAM_TABLES && LOGGING_ENABLED
-		if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_LENGTH) {
-			Serial.print("length: ");
-			Serial.println(length);
-		} else if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_DENSITY) {
-			Serial.print("density: ");
-			Serial.println(density);
-		} else {
-			Serial.print("offset: ");
-			Serial.println(offset);
-		}
-#endif
 	}
 
 	/* UPDATE INTERNAL CLOCK */
@@ -485,42 +362,7 @@ void loop() {
 
 	/* EEPROM WRITES */
 
-#if PARAM_TABLES
 	eeprom_save_all_needing_write(&params, active_mode);
-#endif
-
-#if EEPROM_WRITE && !PARAM_TABLES
-	if (params_update.length_changed) {
-		EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
-	}
-	if (params_update.density_changed) {
-		EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
-	}
-	if (params_update.offset_changed) {
-		EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
-	}
-#endif
-
-#if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE && !PARAM_TABLES
-	if (params_update.length_changed) {
-		Serial.print("EEPROM Write: Length= ");
-		Serial.print(eeprom_addr_length(active_channel));
-		Serial.print(" ");
-		Serial.println(params_update.length);
-	}
-	if (params_update.density_changed) {
-		Serial.print("EEPROM Write: Density= ");
-		Serial.print(eeprom_addr_density(active_channel));
-		Serial.print(" ");
-		Serial.println(params_update.density);
-	}
-	if (params_update.offset_changed) {
-		Serial.print("EEPROM Write: Offset= ");
-		Serial.print(eeprom_addr_offset(active_channel));
-		Serial.print(" ");
-		Serial.println(params_update.offset);
-	}
-#endif
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 	Microseconds cycle_time = micros() - cycle_time_start;
@@ -535,7 +377,7 @@ void loop() {
 	}
 #endif
 
-#if LOGGING_ENABLED && PARAM_TABLES
+#if LOGGING_ENABLED
 	log_all_modified_params(&params, active_mode);
 #endif
 }
@@ -685,35 +527,6 @@ static void eeprom_save_all_needing_write(Params *params, Mode mode) {
 #endif
 }
 
-#if !PARAM_TABLES
-static void eeprom_load(EuclideanState *s) {
-	/*
-	EEPROM Schema:
-	Channel 1: length = 1 density = 2 offset = 7
-	Channel 2: length = 3 density = 4 offset = 8
-	Channel 3: length = 5 density = 6 offset = 9
-	*/
-
-#if EEPROM_READ
-	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-		Channel channel = (Channel)c;
-		s->channels[c].length = EEPROM.read(eeprom_addr_length(channel));
-		s->channels[c].density = EEPROM.read(eeprom_addr_density(channel));
-		s->channels[c].offset = EEPROM.read(eeprom_addr_offset(channel));
-		s->channels[c].position = 0;
-	}
-#endif
-}
-#endif
-
-#if !PARAM_TABLES
-static inline Address eeprom_addr_length(Channel channel) { return (channel * 2) + 1; }
-
-static inline Address eeprom_addr_density(Channel channel) { return (channel * 2) + 2; }
-
-static inline Address eeprom_addr_offset(Channel channel) { return channel + 7; }
-#endif
-
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events) {
 	if (events->reset) {
@@ -737,7 +550,7 @@ static void log_input_events(const InputEvents *events) {
 }
 #endif
 
-#if LOGGING_ENABLED && PARAM_TABLES
+#if LOGGING_ENABLED
 static void log_all_modified_params(const Params *params, Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 

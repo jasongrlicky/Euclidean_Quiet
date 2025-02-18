@@ -51,30 +51,11 @@ typedef struct EuclideanParamOpt {
 
 static const EuclideanParamOpt EUCLIDEAN_PARAM_OPT_NONE = {.inner = EUCLIDEAN_PARAM_LENGTH, .valid = false};
 
-#if !PARAM_TABLES
-/// State of the Euclidean rhythm generator and sequencer for a single channel
-typedef struct EuclideanChannelState {
-	/// Number of steps in the Euclidean rhythm, 1-16
-	uint8_t length;
-	/// Number of active steps in the Euclidean rhythm, 1-16
-	uint8_t density;
-	/// Number of steps to rotate the Euclidean rhythm to the right, 1-16
-	uint8_t offset;
-	/// Step index representing the playhead position for this channel's sequencer, 0-15
-	uint8_t position;
-} EuclideanChannelState;
-#endif
-
 /// State of the entire Euclidean module
 typedef struct EuclideanState {
-#if PARAM_TABLES
 	/// Step index representing the playhead position for for each of this mode's
 	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
 	uint8_t channel_positions[NUM_CHANNELS];
-#else
-	/// State for each of this module's channels, indexed by `Channel` enum.
-	EuclideanChannelState channels[NUM_CHANNELS];
-#endif
 	bool sequencer_running;
 } EuclideanState;
 
@@ -138,12 +119,6 @@ EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
 uint8_t euclid_update(const InputEvents *events);
 
 void euclid_draw_channels(void);
-
-#if !PARAM_TABLES
-/// Keep the data in the state in bounds. Bounds excursions can happen when
-/// loading from the EEPROM.
-void euclid_validate_state(EuclideanState *s);
-#endif
 
 #ifdef __cplusplus
 }
