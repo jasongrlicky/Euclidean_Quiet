@@ -97,7 +97,7 @@ static inline Address eeprom_addr_offset(Channel channel);
 static void log_input_events(const InputEvents *events);
 #endif
 #if LOGGING_ENABLED && PARAM_TABLES
-static void log_all_modified_params(Mode mode);
+static void log_all_modified_params(const Params *params, Mode mode);
 #endif
 
 /* MAIN */
@@ -536,7 +536,7 @@ void loop() {
 #endif
 
 #if LOGGING_ENABLED && PARAM_TABLES
-	log_all_modified_params(active_mode);
+	log_all_modified_params(&params, active_mode);
 #endif
 }
 
@@ -738,14 +738,14 @@ static void log_input_events(const InputEvents *events) {
 #endif
 
 #if LOGGING_ENABLED && PARAM_TABLES
-static void log_all_modified_params(Mode mode) {
+static void log_all_modified_params(const Params *params, Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
-		bool modified = param_flags_get(&params, idx, PARAM_FLAG_MODIFIED);
+		bool modified = param_flags_get(params, idx, PARAM_FLAG_MODIFIED);
 		if (!modified) continue;
 
-		uint8_t val = params.values[idx];
+		uint8_t val = params->values[idx];
 		char name[PARAM_NAME_LEN];
 		param_name(name, mode, idx);
 
