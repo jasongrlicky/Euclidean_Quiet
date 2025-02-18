@@ -81,8 +81,8 @@ static inline void param_flags_set(ParamIdx idx, uint8_t mask);
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
 static void param_flags_clear_all_modified();
 static void active_mode_switch(Mode mode);
-static void params_validate(Mode mode);
-static void euclid_params_validate();
+static void params_validate(ParamsRuntime *params, Mode mode);
+static void euclid_params_validate(ParamsRuntime *params);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Mode mode);
 static void eeprom_save_all_needing_write();
@@ -607,32 +607,32 @@ static void param_flags_clear_all_modified() {
 static void active_mode_switch(Mode mode) {
 	active_mode = mode;
 	eeprom_params_load(mode);
-	params_validate(mode);
+	params_validate(&params, mode);
 }
 
-static void params_validate(Mode mode) {
+static void params_validate(ParamsRuntime *params, Mode mode) {
 	switch (mode) {
 		case MODE_EUCLID:
-			euclid_params_validate();
+			euclid_params_validate(params);
 			break;
 	}
 }
 
-static void euclid_params_validate() {
+static void euclid_params_validate(ParamsRuntime *params) {
 	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
 		Channel channel = (Channel)c;
-		uint8_t length = euclid_get_length(&params, channel);
-		uint8_t density = euclid_get_density(&params, channel);
-		uint8_t offset = euclid_get_offset(&params, channel);
+		uint8_t length = euclid_get_length(params, channel);
+		uint8_t density = euclid_get_density(params, channel);
+		uint8_t offset = euclid_get_offset(params, channel);
 
 		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
-			euclid_param_set(&params, channel, EUCLIDEAN_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
+			euclid_param_set(params, channel, EUCLIDEAN_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
 		}
 		if (density > BEAT_DENSITY_MAX || density > length) {
-			euclid_param_set(&params, channel, EUCLIDEAN_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
+			euclid_param_set(params, channel, EUCLIDEAN_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
 		}
 		if (offset > BEAT_OFFSET_MAX || offset > length) {
-			euclid_param_set(&params, channel, EUCLIDEAN_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
+			euclid_param_set(params, channel, EUCLIDEAN_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
 		}
 	}
 }
