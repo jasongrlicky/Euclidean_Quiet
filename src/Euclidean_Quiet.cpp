@@ -97,7 +97,7 @@ static inline Address eeprom_addr_offset(Channel channel);
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
 #endif
-#if LOGGING_ENABLED && LOGGING_EEPROM && PARAM_TABLES
+#if LOGGING_ENABLED && PARAM_TABLES
 static void log_all_modified_params();
 #endif
 
@@ -536,7 +536,7 @@ void loop() {
 	}
 #endif
 
-#if LOGGING_ENABLED && LOGGING_EEPROM && PARAM_TABLES
+#if LOGGING_ENABLED && PARAM_TABLES
 	log_all_modified_params();
 #endif
 }
@@ -671,6 +671,18 @@ static void eeprom_save_all_needing_write() {
 		uint8_t val = params.values[idx];
 		Address addr = param_address(mode, (ParamIdx)idx);
 		EEPROM.write(addr, val);
+
+#if LOGGING_ENABLED && LOGGING_EEPROM
+		char name[PARAM_NAME_LEN];
+		param_name(name, mode, idx);
+
+		Serial.print("EEPROM Write: ");
+		Serial.print(name);
+		Serial.print(" @");
+		Serial.print(addr);
+		Serial.print(": ");
+		Serial.println(val);
+#endif
 	}
 #endif
 }
@@ -725,7 +737,7 @@ static void log_input_events(const InputEvents *events) {
 }
 #endif
 
-#if LOGGING_ENABLED && LOGGING_EEPROM && PARAM_TABLES
+#if LOGGING_ENABLED && PARAM_TABLES
 static void log_all_modified_params() {
 	Mode mode = active_mode;
 	uint8_t num_params = mode_num_params[mode];
@@ -737,12 +749,9 @@ static void log_all_modified_params() {
 		uint8_t val = params.values[idx];
 		char name[PARAM_NAME_LEN];
 		param_name(name, mode, idx);
-		Address addr = param_address(mode, idx);
 
-		Serial.print("EEPROM Write: ");
+		Serial.print("Param ");
 		Serial.print(name);
-		Serial.print(" @");
-		Serial.print(addr);
 		Serial.print(": ");
 		Serial.println(val);
 	}
