@@ -184,9 +184,15 @@ void loop() {
 
 		Channel channel = active_channel;
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
+#if PARAM_TABLES
+		int length = euclid_param_get_length(channel);
+		uint8_t density = euclid_param_get_density(channel);
+		uint8_t offset = euclid_param_get_offset(channel);
+#else
 		int length = channel_state.length;
 		uint8_t density = channel_state.density;
 		uint8_t offset = channel_state.offset;
+#endif
 		uint8_t position = channel_state.position;
 
 		// Keep length in bounds
@@ -227,17 +233,17 @@ void loop() {
 		length += nknob;
 		euclidean_state.channels[channel].length = length;
 
-		// Reset position if length has been reduced past it
-		if (position >= length) {
-			euclidean_state.channels[channel].position = 0;
-		}
-
 #if PARAM_TABLES
 		param_and_flags_set(length_idx, length);
 #else
 		params_update.length = length;
 		params_update.length_changed = true;
 #endif
+
+		// Reset position if length has been reduced past it
+		if (position >= length) {
+			euclidean_state.channels[channel].position = 0;
+		}
 	}
 
 	// Handle Density Knob Movement
@@ -246,9 +252,14 @@ void loop() {
 		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_DENSITY);
 
 		Channel channel = active_channel;
+#if PARAM_TABLES
+		int length = euclid_param_get_length(channel);
+		uint8_t density = euclid_param_get_density(channel);
+#else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		int length = channel_state.length;
 		int density = channel_state.density;
+#endif
 
 		// Keep density in bounds
 		if (density + kknob > length) {
@@ -275,9 +286,14 @@ void loop() {
 		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_OFFSET);
 
 		Channel channel = active_channel;
+#if PARAM_TABLES
+		int length = euclid_param_get_length(channel);
+		uint8_t offset = euclid_param_get_offset(channel);
+#else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		int length = channel_state.length;
 		int offset = channel_state.offset;
+#endif
 
 		// Keep offset in bounds
 		if (offset + oknob > length - 1) {
