@@ -16,7 +16,7 @@ bool param_name(char *result, Mode mode, ParamIdx idx) {
 
 	switch (mode) {
 		case MODE_EUCLID:
-			memcpy(result, param_names[idx], PARAM_NAME_LEN);
+			memcpy(result, euclid_param_names[idx], PARAM_NAME_LEN);
 			break;
 	}
 

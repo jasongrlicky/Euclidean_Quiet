@@ -68,9 +68,8 @@ Address param_address(Mode mode, ParamIdx idx);
 #if LOGGING_ENABLED
 
 #define PARAM_NAME_LEN 3
-/// Table of parameter names for logging
-static const char param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
-	// Euclid Mode
+/// Table of parameter names for logging in the Euclid mode
+static const char euclid_param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
 	"L1", // Length, Channel 1
 	"D1", // Density, Channel 1
 	"O1", // Offset, Channel 1
@@ -82,7 +81,6 @@ static const char param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
 	"O3",
 };
 
-// TODO: This implementation is brittle and will not scale with more modes. 
 bool param_name(char *result, Mode mode, ParamIdx idx);
 
 #endif
