@@ -120,9 +120,16 @@ void setup() {
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
+#if PARAM_TABLES
+		Channel channel = (Channel)a;
+		uint8_t length = euclid_param_get(channel, EUCLIDEAN_PARAM_LENGTH);
+		uint8_t density = euclid_param_get(channel, EUCLIDEAN_PARAM_DENSITY);
+		uint8_t offset = euclid_param_get(channel, EUCLIDEAN_PARAM_OFFSET);
+#else
 		uint8_t length = euclidean_state.channels[a].length;
 		uint8_t density = euclidean_state.channels[a].density;
 		uint8_t offset = euclidean_state.channels[a].offset;
+#endif
 		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
