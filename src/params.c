@@ -1,5 +1,7 @@
 #include "params.h"
 
+static const char name_not_found[PARAM_NAME_LEN] = "??";
+
 Address param_address(Mode mode, ParamIdx idx) {
 	Address result = 0;
 	switch (mode) {
@@ -11,18 +13,15 @@ Address param_address(Mode mode, ParamIdx idx) {
 }
 
 #if LOGGING_ENABLED
-bool param_name(char *result, Mode mode, ParamIdx idx) {
-	if (!result) return false;
+void param_name(char *result, Mode mode, ParamIdx idx) {
+	// Early return - null pointer
+	if (!result) return;
 
 	switch (mode) {
 		case MODE_EUCLID: {
-			if (idx >= EUCLID_NUM_PARAMS) {
-				return false;
-			}
-			memcpy(result, euclid_param_names[idx], PARAM_NAME_LEN);
+			const char *name_source = (idx < EUCLID_NUM_PARAMS) ? euclid_param_names[idx] : name_not_found;
+			memcpy(result, name_source, PARAM_NAME_LEN);
 		} break;
 	}
-
-	return true;
 }
 #endif

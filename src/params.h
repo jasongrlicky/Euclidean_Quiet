@@ -64,33 +64,24 @@ static const Address euclid_param_addresses[EUCLID_NUM_PARAMS] = {1, 2, 7, 3, 4,
 
 Address param_address(Mode mode, ParamIdx idx);
 
-// clang-format off
 #if LOGGING_ENABLED
 
 #define PARAM_NAME_LEN 3
 /// Table of parameter names for logging in the Euclid mode
 static const char euclid_param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
-	"L1", // Length, Channel 1
-	"D1", // Density, Channel 1
-	"O1", // Offset, Channel 1
-	"L2",
-	"D2",
-	"O2",
-	"L3",
-	"D3",
-	"O3",
+    "L1", "D1", "O1", "L2", "D2", "O2", "L3", "D3", "O3",
 };
 
-/// @brief Calculate or look up the name for the specified parameter and store
-/// that name in the `result` null-terminated string.
-/// @param result A `char` array that can hold at least `PARAM_NAME_LEN` elements.
+/// @brief Retrieve the name for the specified parameter and store that name in
+/// the `result` null-terminated string.
+/// @param result A `char` array that can hold at least `PARAM_NAME_LEN`
+/// elements. Will have the parameter name stored in it as a null-terminated
+/// string, or a placeholder if the param name can't be found.
 /// @param mode The mode for the parameter
 /// @param idx The index of the parameter in the parameter tables
-/// @return `true` if the name for the parameter was found 
-bool param_name(char *result, Mode mode, ParamIdx idx);
+void param_name(char *result, Mode mode, ParamIdx idx);
 
 #endif
-// clang-format on
 
 #ifdef __cplusplus
 }
