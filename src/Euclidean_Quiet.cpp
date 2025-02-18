@@ -81,8 +81,8 @@ static inline void param_flags_set(ParamIdx idx, uint8_t mask);
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
 static void param_flags_clear_all_modified();
 static void active_mode_switch(Mode mode);
-static void params_validate(ParamsRuntime *params, Mode mode);
-static void euclid_params_validate(ParamsRuntime *params);
+static void params_validate(Params *params, Mode mode);
+static void euclid_params_validate(Params *params);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Mode mode);
 static void eeprom_save_all_needing_write();
@@ -610,7 +610,7 @@ static void active_mode_switch(Mode mode) {
 	params_validate(&params, mode);
 }
 
-static void params_validate(ParamsRuntime *params, Mode mode) {
+static void params_validate(Params *params, Mode mode) {
 	switch (mode) {
 		case MODE_EUCLID:
 			euclid_params_validate(params);
@@ -618,7 +618,7 @@ static void params_validate(ParamsRuntime *params, Mode mode) {
 	}
 }
 
-static void euclid_params_validate(ParamsRuntime *params) {
+static void euclid_params_validate(Params *params) {
 	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
 		Channel channel = (Channel)c;
 		uint8_t length = euclid_get_length(params, channel);

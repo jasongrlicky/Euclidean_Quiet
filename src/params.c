@@ -5,7 +5,7 @@ static const char name_not_found[PARAM_NAME_LEN] = "??";
 
 /* GLBOALS */
 
-ParamsRuntime params;
+Params params;
 
 /* EXTERNAL */
 

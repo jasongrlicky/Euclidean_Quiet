@@ -31,25 +31,26 @@ static const uint8_t mode_num_params[NUM_MODES] = {
 #define PARAM_FLAG_MODIFIED 0x1
 #define PARAM_FLAG_NEEDS_WRITE 0x2
 
-/// Maximum size of `ParamsRuntime`'s tables. Must be large enough to store the
+/// Maximum size of `Params`'s tables. Must be large enough to store the
 /// `ParamId` type for any mode.
-#define PARAMS_RUNTIME_MAX 9
+#define PARAMS_MAX 9
 
 /// Parameter properties which need to be modified at runtime. Each table has
 /// the same length (`.len`), and they are indexed by a mode's associated
 /// `ParamId` type.
-typedef struct ParamsRuntime {
+typedef struct Params {
 	/// Number of elements in tables
 	uint8_t len;
 	/// List of parameter values of length `.len`. The values are always assumed to be in bounds.
-	uint8_t values[PARAMS_RUNTIME_MAX];
+	uint8_t values[PARAMS_MAX];
 	/// List of parameter properties, stored as bitflags, of length `.len`. Bitflags are indexed
 	/// via `PARAM_FLAG_*` defines.
-	uint8_t flags[PARAMS_RUNTIME_MAX];
-} ParamsRuntime;
+	uint8_t flags[PARAMS_MAX];
+} Params;
 
-/// Stores the runtime information for the active mode's parameters.
-extern ParamsRuntime params;
+/// Stores the runtime-modifiable information for the active mode's parameters.
+/// Static information, such as addresses or names, is stored separately.
+extern Params params;
 
 /*
 Original EEPROM Schema:

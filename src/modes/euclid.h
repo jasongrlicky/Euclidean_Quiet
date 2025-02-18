@@ -94,7 +94,7 @@ extern EuclideanState euclidean_state;
 extern uint16_t generated_rhythms[NUM_CHANNELS];
 extern AdjustmentDisplayState adjustment_display_state;
 extern TimeoutOnce playhead_flash_timeout;
-extern ParamsRuntime params;
+extern Params params;
 
 /* EXTERNAL */
 
@@ -103,30 +103,30 @@ inline ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
 	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
 }
 
-inline uint8_t euclid_param_get(const ParamsRuntime *params, Channel channel, EuclideanParam kind) {
+inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclideanParam kind) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	return params->values[idx];
 }
 
 /// Set the value of the specified param. Do not use if Euclidean is not the
 /// active mode.
-inline void euclid_param_set(ParamsRuntime *params, Channel channel, EuclideanParam kind, uint8_t val) {
+inline void euclid_param_set(Params *params, Channel channel, EuclideanParam kind, uint8_t val) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	params->values[idx] = val;
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_get_length(const ParamsRuntime *params, Channel channel) {
+inline uint8_t euclid_get_length(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_LENGTH);
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_get_density(const ParamsRuntime *params, Channel channel) {
+inline uint8_t euclid_get_density(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_DENSITY);
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_get_offset(const ParamsRuntime *params, Channel channel) {
+inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_OFFSET);
 }
 
