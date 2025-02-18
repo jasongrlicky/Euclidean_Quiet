@@ -342,7 +342,7 @@ void loop() {
 
 		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 
-#if LOGGING_ENABLED
+#if !PARAM_TABLES && LOGGING_ENABLED
 		if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_LENGTH) {
 			Serial.print("length: ");
 			Serial.println(length);
