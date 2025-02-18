@@ -6,7 +6,7 @@
 /* GLOBALS */
 
 EuclidState euclid_state = {
-    .channel_positions = {0, 0, 0},
+    .sequencer_positions = {0, 0, 0},
     .sequencer_running = false,
 };
 
@@ -96,7 +96,7 @@ void euclid_draw_channels(void) {
 static void sequencer_handle_reset() {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		euclid_state.channel_positions[channel] = 0;
+		euclid_state.sequencer_positions[channel] = 0;
 	}
 
 	// Stop the sequencer
@@ -116,7 +116,7 @@ static void sequencer_handle_clock() {
 
 static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		uint8_t position = euclid_state.channel_positions[channel];
+		uint8_t position = euclid_state.sequencer_positions[channel];
 		uint8_t length = euclid_get_length(&params, channel);
 
 		// Move sequencer playhead to next step
@@ -124,7 +124,7 @@ static void sequencer_advance() {
 		if (position >= length) {
 			position = 0;
 		}
-		euclid_state.channel_positions[channel] = position;
+		euclid_state.sequencer_positions[channel] = position;
 
 #if LOGGING_ENABLED && LOGGING_POSITION
 		if (channel == 0) {
@@ -140,7 +140,7 @@ static uint8_t sequencer_read_current_step() {
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		uint8_t length = euclid_get_length(&params, channel);
-		uint8_t position = euclid_state.channel_positions[channel];
+		uint8_t position = euclid_state.sequencer_positions[channel];
 		uint16_t pattern = generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
@@ -160,7 +160,7 @@ static uint8_t sequencer_read_current_step() {
 
 static inline void draw_channel(Channel channel) {
 	uint8_t length = euclid_get_length(&params, channel);
-	uint8_t position = euclid_state.channel_positions[channel];
+	uint8_t position = euclid_state.sequencer_positions[channel];
 	uint16_t pattern = generated_rhythms[channel];
 
 	// Clear rows

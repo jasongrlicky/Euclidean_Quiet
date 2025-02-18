@@ -132,7 +132,7 @@ void loop() {
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
-		uint8_t position = euclid_state.channel_positions[channel];
+		uint8_t position = euclid_state.sequencer_positions[channel];
 
 		// Keep length in bounds
 		if (length >= BEAT_LENGTH_MAX) {
@@ -163,7 +163,7 @@ void loop() {
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
-			euclid_state.channel_positions[channel] = 0;
+			euclid_state.sequencer_positions[channel] = 0;
 		}
 	}
 

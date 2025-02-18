@@ -55,7 +55,7 @@ static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGT
 typedef struct EuclidState {
 	/// Step index representing the playhead position for for each of this mode's
 	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
-	uint8_t channel_positions[NUM_CHANNELS];
+	uint8_t sequencer_positions[NUM_CHANNELS];
 	bool sequencer_running;
 } EuclidState;
 
