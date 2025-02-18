@@ -10,9 +10,11 @@ Address param_address(Mode mode, ParamIdx idx) {
 	return result;
 }
 
+#if LOGGING_ENABLED
 bool param_name(char *result, Mode mode, ParamIdx idx) {
 	if (!result) return false;
 
 	memcpy(result, param_names[idx], PARAM_NAME_LEN);
 	return true;
 }
+#endif
