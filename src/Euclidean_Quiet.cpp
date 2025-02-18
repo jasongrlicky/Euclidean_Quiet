@@ -84,7 +84,7 @@ static void active_mode_switch(Mode mode);
 static void params_validate(Params *params, Mode mode);
 static void euclid_params_validate(Params *params);
 /// Load state for the given mode into `params`.
-static void eeprom_params_load(Mode mode);
+static void eeprom_params_load(Params *params, Mode mode);
 static void eeprom_save_all_needing_write();
 #if !PARAM_TABLES
 /// Load state from EEPROM into the given `EuclideanState`
@@ -606,7 +606,7 @@ static void param_flags_clear_all_modified() {
 
 static void active_mode_switch(Mode mode) {
 	active_mode = mode;
-	eeprom_params_load(mode);
+	eeprom_params_load(&params, mode);
 	params_validate(&params, mode);
 }
 
@@ -637,20 +637,20 @@ static void euclid_params_validate(Params *params) {
 	}
 }
 
-static void eeprom_params_load(Mode mode) {
+static void eeprom_params_load(Params *params, Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
 #if EEPROM_READ
 		Address addr = param_address(mode, (ParamIdx)idx);
-		params.values[idx] = EEPROM.read(addr);
+		params->values[idx] = EEPROM.read(addr);
 #else
 		params.values[idx] = 0;
 #endif
-		params.flags[idx] = PARAM_FLAGS_NONE;
+		params->flags[idx] = PARAM_FLAGS_NONE;
 	}
 
-	params.len = num_params;
+	params->len = num_params;
 }
 
 static void eeprom_save_all_needing_write() {
