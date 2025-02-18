@@ -118,9 +118,10 @@ void setup() {
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
-		generated_rhythms[a] =
-		    euclidean_pattern_rotate(euclidean_state.channels[a].length, euclidean_state.channels[a].density,
-		                             euclidean_state.channels[a].offset);
+		uint8_t length = euclidean_state.channels[a].length;
+		uint8_t density = euclidean_state.channels[a].density;
+		uint8_t offset = euclidean_state.channels[a].offset;
+		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
 	led_wake();
