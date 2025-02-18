@@ -149,7 +149,11 @@ static uint8_t sequencer_read_current_step() {
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
+#ifdef PARAM_TABLES
+		uint8_t length = euclid_param_get_length(channel);
+#else
 		uint8_t length = channel_state.length;
+#endif
 		uint8_t position = channel_state.position;
 		uint16_t pattern = generated_rhythms[channel];
 
