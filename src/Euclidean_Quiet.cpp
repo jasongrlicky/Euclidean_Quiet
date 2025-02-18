@@ -643,18 +643,18 @@ static void euclid_params_validate() {
 }
 
 static void eeprom_load_tables() {
-#if EEPROM_READ
 	Mode mode = active_mode;
 	uint8_t num_params = mode_num_params[mode];
 
+#if EEPROM_READ
 	for (uint8_t idx = 0; idx < num_params; idx++) {
 		Address addr = param_address(mode, (ParamIdx)idx);
 		params.values[idx] = EEPROM.read(addr);
 		params.flags[idx] = PARAM_FLAGS_NONE;
 	}
+#endif
 
 	params.len = num_params;
-#endif
 }
 
 static void eeprom_save_all_needing_write() {
