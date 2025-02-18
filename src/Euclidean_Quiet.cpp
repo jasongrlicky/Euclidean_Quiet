@@ -81,10 +81,10 @@ static inline void param_flags_set(ParamIdx idx, uint8_t mask);
 static inline void param_flags_clear(ParamIdx idx, uint8_t mask);
 static void param_flags_clear_all_modified();
 static void active_mode_switch(Mode mode);
-static void active_mode_validate(Mode mode);
+static void params_validate(Mode mode);
 static void euclid_params_validate();
 /// Load state for the given mode into `params`.
-static void eeprom_load_tables(Mode mode);
+static void eeprom_params_load(Mode mode);
 static void eeprom_save_all_needing_write();
 #if !PARAM_TABLES
 /// Load state from EEPROM into the given `EuclideanState`
@@ -606,11 +606,11 @@ static void param_flags_clear_all_modified() {
 
 static void active_mode_switch(Mode mode) {
 	active_mode = mode;
-	eeprom_load_tables(mode);
-	active_mode_validate(mode);
+	eeprom_params_load(mode);
+	params_validate(mode);
 }
 
-static void active_mode_validate(Mode mode) {
+static void params_validate(Mode mode) {
 	switch (mode) {
 		case MODE_EUCLID:
 			euclid_params_validate();
@@ -637,7 +637,7 @@ static void euclid_params_validate() {
 	}
 }
 
-static void eeprom_load_tables(Mode mode) {
+static void eeprom_params_load(Mode mode) {
 	uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
