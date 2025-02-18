@@ -588,16 +588,13 @@ static void euclid_params_validate() {
 		uint8_t offset = euclid_param_get(channel, EUCLIDEAN_PARAM_OFFSET);
 
 		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
-			ParamIdx idx_length = euclid_param_idx(channel, EUCLIDEAN_PARAM_LENGTH);
-			params.values[idx_length] = BEAT_LENGTH_DEFAULT;
+			euclid_param_set(channel, EUCLIDEAN_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
 		}
 		if (density > BEAT_DENSITY_MAX || density > length) {
-			ParamIdx idx_density = euclid_param_idx(channel, EUCLIDEAN_PARAM_DENSITY);
-			params.values[idx_density] = BEAT_DENSITY_DEFAULT;
+			euclid_param_set(channel, EUCLIDEAN_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
 		}
 		if (offset > BEAT_OFFSET_MAX || offset > length) {
-			ParamIdx idx_offset = euclid_param_idx(channel, EUCLIDEAN_PARAM_OFFSET);
-			params.values[idx_offset] = BEAT_OFFSET_DEFAULT;
+			euclid_param_set(channel, EUCLIDEAN_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
 		}
 	}
 }
