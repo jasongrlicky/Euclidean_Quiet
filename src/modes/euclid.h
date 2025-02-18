@@ -103,33 +103,31 @@ inline ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
 	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
 }
 
-/// Get the value of the specified param. Do not use if Euclidean is not the
-/// active mode.
-inline uint8_t euclid_param_get(Channel channel, EuclideanParam kind) {
+inline uint8_t euclid_param_get(const ParamsRuntime *params, Channel channel, EuclideanParam kind) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
-	return params.values[idx];
+	return params->values[idx];
 }
 
 /// Set the value of the specified param. Do not use if Euclidean is not the
 /// active mode.
-inline void euclid_param_set(Channel channel, EuclideanParam kind, uint8_t val) {
+inline void euclid_param_set(ParamsRuntime *params, Channel channel, EuclideanParam kind, uint8_t val) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
-	params.values[idx] = val;
+	params->values[idx] = val;
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_param_get_length(Channel channel) {
-	return euclid_param_get(channel, EUCLIDEAN_PARAM_LENGTH);
+inline uint8_t euclid_get_length(const ParamsRuntime *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_LENGTH);
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_param_get_density(Channel channel) {
-	return euclid_param_get(channel, EUCLIDEAN_PARAM_DENSITY);
+inline uint8_t euclid_get_density(const ParamsRuntime *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_DENSITY);
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_param_get_offset(Channel channel) {
-	return euclid_param_get(channel, EUCLIDEAN_PARAM_OFFSET);
+inline uint8_t euclid_get_offset(const ParamsRuntime *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLIDEAN_PARAM_OFFSET);
 }
 
 /// Wrap the provided value as an occupied optional

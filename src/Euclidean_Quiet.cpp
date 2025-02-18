@@ -121,9 +121,9 @@ void setup() {
 	for (int a = 0; a < NUM_CHANNELS; a++) {
 #if PARAM_TABLES
 		Channel channel = (Channel)a;
-		uint8_t length = euclid_param_get_length(channel);
-		uint8_t density = euclid_param_get_density(channel);
-		uint8_t offset = euclid_param_get_offset(channel);
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 #else
 		uint8_t length = euclidean_state.channels[a].length;
 		uint8_t density = euclidean_state.channels[a].density;
@@ -185,9 +185,9 @@ void loop() {
 
 		Channel channel = active_channel;
 #if PARAM_TABLES
-		int length = euclid_param_get_length(channel);
-		uint8_t density = euclid_param_get_density(channel);
-		uint8_t offset = euclid_param_get_offset(channel);
+		int length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 		uint8_t position = euclidean_state.channel_positions[channel];
 #else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -262,8 +262,8 @@ void loop() {
 
 		Channel channel = active_channel;
 #if PARAM_TABLES
-		int length = euclid_param_get_length(channel);
-		uint8_t density = euclid_param_get_density(channel);
+		int length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
 #else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		int length = channel_state.length;
@@ -297,8 +297,8 @@ void loop() {
 
 		Channel channel = active_channel;
 #if PARAM_TABLES
-		int length = euclid_param_get_length(channel);
-		uint8_t offset = euclid_param_get_offset(channel);
+		int length = euclid_get_length(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 #else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		int length = channel_state.length;
@@ -329,9 +329,9 @@ void loop() {
 	if (knob_moved_for_param.valid) {
 		Channel channel = active_channel;
 #if PARAM_TABLES
-		uint8_t length = euclid_param_get_length(channel);
-		uint8_t density = euclid_param_get_density(channel);
-		uint8_t offset = euclid_param_get_offset(channel);
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 #else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		uint8_t length = channel_state.length;
@@ -621,18 +621,18 @@ static void params_validate(Mode mode) {
 static void euclid_params_validate() {
 	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
 		Channel channel = (Channel)c;
-		uint8_t length = euclid_param_get_length(channel);
-		uint8_t density = euclid_param_get_density(channel);
-		uint8_t offset = euclid_param_get_offset(channel);
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 
 		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
-			euclid_param_set(channel, EUCLIDEAN_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
+			euclid_param_set(&params, channel, EUCLIDEAN_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
 		}
 		if (density > BEAT_DENSITY_MAX || density > length) {
-			euclid_param_set(channel, EUCLIDEAN_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
+			euclid_param_set(&params, channel, EUCLIDEAN_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
 		}
 		if (offset > BEAT_OFFSET_MAX || offset > length) {
-			euclid_param_set(channel, EUCLIDEAN_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
+			euclid_param_set(&params, channel, EUCLIDEAN_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
 		}
 	}
 }

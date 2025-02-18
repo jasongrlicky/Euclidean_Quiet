@@ -135,7 +135,7 @@ static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 #if PARAM_TABLES
 		uint8_t position = euclidean_state.channel_positions[channel];
-		uint8_t length = euclid_param_get_length(channel);
+		uint8_t length = euclid_get_length(&params, channel);
 #else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
 		uint8_t length = channel_state.length;
@@ -167,7 +167,7 @@ static uint8_t sequencer_read_current_step() {
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 #if PARAM_TABLES
-		uint8_t length = euclid_param_get_length(channel);
+		uint8_t length = euclid_get_length(&params, channel);
 		uint8_t position = euclidean_state.channel_positions[channel];
 #else
 		EuclideanChannelState channel_state = euclidean_state.channels[channel];
@@ -193,7 +193,7 @@ static uint8_t sequencer_read_current_step() {
 
 static inline void draw_channel(Channel channel) {
 #if PARAM_TABLES
-	uint8_t length = euclid_param_get_length(channel);
+	uint8_t length = euclid_get_length(&params, channel);
 	uint8_t position = euclidean_state.channel_positions[channel];
 #else
 	EuclideanChannelState channel_state = euclidean_state.channels[channel];
