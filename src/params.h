@@ -81,6 +81,12 @@ static const char euclid_param_names[EUCLID_NUM_PARAMS][PARAM_NAME_LEN] = {
 	"O3",
 };
 
+/// @brief Calculate or look up the name for the specified parameter and store
+/// that name in the `result` null-terminated string.
+/// @param result A `char` array that can hold at least `PARAM_NAME_LEN` elements.
+/// @param mode The mode for the parameter
+/// @param idx The index of the parameter in the parameter tables
+/// @return `true` if the name for the parameter was found 
 bool param_name(char *result, Mode mode, ParamIdx idx);
 
 #endif
