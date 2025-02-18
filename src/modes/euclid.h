@@ -95,11 +95,18 @@ inline ParamIdx euclid_param_idx(Channel channel, EuclideanParam kind) {
 	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
 }
 
-/// Get the value of the specified param. Returns garbage data if Euclidean is
-/// not the active mode.
+/// Get the value of the specified param. Do not use if Euclidean is not the
+/// active mode.
 inline uint8_t euclid_param_get(Channel channel, EuclideanParam kind) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	return params.values[idx];
+}
+
+/// Set the value of the specified param. Do not use if Euclidean is not the
+/// active mode.
+inline void euclid_param_set(Channel channel, EuclideanParam kind, uint8_t val) {
+	ParamIdx idx = euclid_param_idx(channel, kind);
+	params.values[idx] = val;
 }
 
 /// Wrap the provided value as an occupied optional
