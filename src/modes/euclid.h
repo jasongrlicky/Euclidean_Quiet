@@ -109,6 +109,21 @@ inline void euclid_param_set(Channel channel, EuclideanParam kind, uint8_t val) 
 	params.values[idx] = val;
 }
 
+/// Do not use if Euclidean is not the active mode.
+inline uint8_t euclid_param_get_length(Channel channel) {
+	return euclid_param_get(channel, EUCLIDEAN_PARAM_LENGTH);
+}
+
+/// Do not use if Euclidean is not the active mode.
+inline uint8_t euclid_param_get_density(Channel channel) {
+	return euclid_param_get(channel, EUCLIDEAN_PARAM_DENSITY);
+}
+
+/// Do not use if Euclidean is not the active mode.
+inline uint8_t euclid_param_get_offset(Channel channel) {
+	return euclid_param_get(channel, EUCLIDEAN_PARAM_OFFSET);
+}
+
 /// Wrap the provided value as an occupied optional
 EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
 
