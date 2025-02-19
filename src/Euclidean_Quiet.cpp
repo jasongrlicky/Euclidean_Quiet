@@ -116,10 +116,12 @@ void loop() {
 		active_channel = active_channel_new.inner;
 	}
 
-	EuclidParamOpt knob_moved_for_param = EUCLID_PARAM_OPT_NONE;
+	// Note the param associated with a knob that was moved so we can show the
+	// adjustment display and re-generate the Euclidean rhythms.
+	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
 	for (uint8_t enc_idx = 0; enc_idx < NUM_ENCODERS; enc_idx++) {
 		if (events_in.enc_move[(EncoderIdx)enc_idx] != 0) {
-			knob_moved_for_param = euclid_param_for_encoder((EncoderIdx)enc_idx);
+			param_knob_moved = euclid_param_for_encoder((EncoderIdx)enc_idx);
 		}
 	}
 
@@ -212,7 +214,7 @@ void loop() {
 	}
 
 	// Update Generated Rhythms Based On Parameter Changes
-	if (knob_moved_for_param.valid) {
+	if (param_knob_moved.valid) {
 		Channel channel = active_channel;
 		uint8_t length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
@@ -308,10 +310,10 @@ void loop() {
 	// Tracks if the screen needs to be redrawn.
 	bool needs_redraw = sequencers_updated || playhead_flash_updated;
 
-	if (knob_moved_for_param.valid) {
+	if (param_knob_moved.valid) {
 		// If parameters have changed, reset the adjustment display timeout and state
 		adjustment_display_state.channel = active_channel;
-		adjustment_display_state.parameter = knob_moved_for_param.inner;
+		adjustment_display_state.parameter = param_knob_moved.inner;
 		adjustment_display_state.visible = true;
 		timeout_reset(&adjustment_display_timeout, now);
 
