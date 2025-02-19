@@ -6,6 +6,7 @@
 /* GLOBALS */
 
 EuclidState euclid_state = {
+    .active_channel = CHANNEL_1,
     .sequencer_positions = {0, 0, 0},
     .sequencer_running = false,
 };
