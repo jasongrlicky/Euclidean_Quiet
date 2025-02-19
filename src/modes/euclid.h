@@ -7,6 +7,7 @@ extern "C" {
 #include "common/events.h"
 #include "common/timeout.h"
 #include "common/types.h"
+#include "params.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,6 +15,7 @@ extern "C" {
 /* CONSTANTS */
 
 #define NUM_CHANNELS 3
+#define EUCLID_PARAMS_PER_CHANNEL 3
 
 // Bounds for three channel parameters
 // N: Beat Length
@@ -34,71 +36,91 @@ extern "C" {
 
 /* DATA STRUCTURES */
 
-/// A parameter of the Euclidean rhythm generator
-typedef enum EuclideanParam {
-	EUCLIDEAN_PARAM_LENGTH,
-	EUCLIDEAN_PARAM_DENSITY,
-	EUCLIDEAN_PARAM_OFFSET,
-} EuclideanParam;
+/// The kind of a parameter for a channel of the Euclidean rhythm generator
+typedef enum EuclidParam {
+	EUCLID_PARAM_LENGTH,
+	EUCLID_PARAM_DENSITY,
+	EUCLID_PARAM_OFFSET,
+} EuclidParam;
 
-/// Euclidean parameter that is wrapped as an optional value
-typedef struct EuclideanParamOpt {
-	EuclideanParam inner;
+/// Parameter for the Euclidean rhythm generator mode that is wrapped as an optional value
+typedef struct EuclidParamOpt {
+	EuclidParam inner;
 	bool valid;
-} EuclideanParamOpt;
+} EuclidParamOpt;
 
-static const EuclideanParamOpt EUCLIDEAN_PARAM_OPT_NONE = {.inner = EUCLIDEAN_PARAM_LENGTH, .valid = false};
+static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGTH, .valid = false};
 
-/// State of the Euclidean rhythm generator and sequencer for a single channel
-typedef struct EuclideanChannelState {
-	/// Number of steps in the Euclidean rhythm, 1-16
-	uint8_t length;
-	/// Number of active steps in the Euclidean rhythm, 1-16
-	uint8_t density;
-	/// Number of steps to rotate the Euclidean rhythm to the right, 1-16
-	uint8_t offset;
-	/// Step index representing the playhead position for this channel's sequencer, 0-15
-	uint8_t position;
-} EuclideanChannelState;
-
-/// State of the entire Euclidean module
-typedef struct EuclideanState {
-	/// State for each of this module's channels, indexed by `Channel` enum.
-	EuclideanChannelState channels[NUM_CHANNELS];
+/// State of the entire Euclidean rhythm generator mode
+typedef struct EuclidState {
+	/// Step index representing the playhead position for for each of this mode's
+	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
+	uint8_t sequencer_positions[NUM_CHANNELS];
 	bool sequencer_running;
-} EuclideanState;
+} EuclidState;
 
 typedef struct AdjustmentDisplayState {
 	/// Which channel is currently showing its adjustment display. Only one
 	/// adjustment display can be visible at a time.
 	Channel channel;
 	/// The parameter that is being displayed in the adjustment display.
-	EuclideanParam parameter;
+	EuclidParam parameter;
 	/// Is the adjustment display showing currently
 	bool visible;
 } AdjustmentDisplayState;
 
 /* GLOBALS */
 
-extern EuclideanState euclidean_state;
+extern EuclidState euclid_state;
 extern uint16_t generated_rhythms[NUM_CHANNELS];
 extern AdjustmentDisplayState adjustment_display_state;
 extern TimeoutOnce playhead_flash_timeout;
+extern Params params;
 
 /* EXTERNAL */
 
-/// Wrap the provided value as an occupied optional
-EuclideanParamOpt euclidean_param_opt(EuclideanParam inner);
+/// Return the `ParamIdx` for a given a channel and param kind
+inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
+	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
+}
 
-// Returns bitflags storing which output channels will fire this cycle, indexed 
+inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind) {
+	ParamIdx idx = euclid_param_idx(channel, kind);
+	return params->values[idx];
+}
+
+/// Set the value of the specified param. Do not use if Euclidean is not the
+/// active mode.
+inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
+	ParamIdx idx = euclid_param_idx(channel, kind);
+	params->values[idx] = val;
+}
+
+/// Do not use if Euclidean is not the active mode.
+inline uint8_t euclid_get_length(const Params *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLID_PARAM_LENGTH);
+}
+
+/// Do not use if Euclidean is not the active mode.
+inline uint8_t euclid_get_density(const Params *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLID_PARAM_DENSITY);
+}
+
+/// Do not use if Euclidean is not the active mode.
+inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLID_PARAM_OFFSET);
+}
+
+void euclid_params_validate(Params *params);
+
+/// Wrap the provided value as an occupied optional
+EuclidParamOpt euclid_param_opt(EuclidParam inner);
+
+// Returns bitflags storing which output channels will fire this cycle, indexed
 // by `OutputChannel`.
 uint8_t euclid_update(const InputEvents *events);
 
 void euclid_draw_channels(void);
-
-/// Keep the data in the state in bounds. Bounds excursions can happen when
-/// loading from the EEPROM.
-void euclid_validate_state(EuclideanState *s);
 
 #ifdef __cplusplus
 }

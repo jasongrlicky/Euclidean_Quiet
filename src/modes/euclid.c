@@ -5,23 +5,17 @@
 
 /* GLOBALS */
 
-// clang-format off
-EuclideanState euclidean_state = {
-  .channels = {
-    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
-    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 },
-    { .length = BEAT_LENGTH_DEFAULT, .density = BEAT_DENSITY_DEFAULT, .offset = BEAT_OFFSET_DEFAULT, .position = 0 }
-  },
-  .sequencer_running = false,
+EuclidState euclid_state = {
+    .sequencer_positions = {0, 0, 0},
+    .sequencer_running = false,
 };
-// clang-format on
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 uint16_t generated_rhythms[NUM_CHANNELS];
 
 AdjustmentDisplayState adjustment_display_state = {
     .channel = CHANNEL_1,
-    .parameter = EUCLIDEAN_PARAM_LENGTH,
+    .parameter = EUCLID_PARAM_LENGTH,
     .visible = false,
 };
 
@@ -49,8 +43,27 @@ static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 
 /* EXTERNAL */
 
-EuclideanParamOpt euclidean_param_opt(EuclideanParam inner) {
-	return (EuclideanParamOpt){.inner = inner, .valid = true};
+void euclid_params_validate(Params *params) {
+	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
+		Channel channel = (Channel)c;
+		uint8_t length = euclid_get_length(params, channel);
+		uint8_t density = euclid_get_density(params, channel);
+		uint8_t offset = euclid_get_offset(params, channel);
+
+		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
+			euclid_param_set(params, channel, EUCLID_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
+		}
+		if (density > BEAT_DENSITY_MAX || density > length) {
+			euclid_param_set(params, channel, EUCLID_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
+		}
+		if (offset > BEAT_OFFSET_MAX || offset > length) {
+			euclid_param_set(params, channel, EUCLID_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
+		}
+	}
+}
+
+EuclidParamOpt euclid_param_opt(EuclidParam inner) {
+	return (EuclidParamOpt){.inner = inner, .valid = true};
 }
 
 uint8_t euclid_update(const InputEvents *events) {
@@ -78,58 +91,40 @@ void euclid_draw_channels(void) {
 	}
 }
 
-void euclid_validate_state(EuclideanState *s) {
-	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-		if ((s->channels[c].length > BEAT_LENGTH_MAX) || (s->channels[c].length < BEAT_LENGTH_MIN)) {
-			s->channels[c].length = BEAT_LENGTH_DEFAULT;
-		}
-		if (s->channels[c].density > BEAT_DENSITY_MAX) {
-			s->channels[c].density = BEAT_DENSITY_DEFAULT;
-		}
-		if (s->channels[c].offset > BEAT_OFFSET_MAX) {
-			s->channels[c].offset = BEAT_OFFSET_DEFAULT;
-		}
-		if (s->channels[c].position > BEAT_POSITION_MAX) {
-			s->channels[c].position = BEAT_POSITION_DEFAULT;
-		}
-	}
-}
-
 /* INTERNAL */
 
 static void sequencer_handle_reset() {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		euclidean_state.channels[channel].position = 0;
+		euclid_state.sequencer_positions[channel] = 0;
 	}
 
 	// Stop the sequencer
-	euclidean_state.sequencer_running = false;
+	euclid_state.sequencer_running = false;
 }
 
 static void sequencer_handle_clock() {
 	// Advance sequencer if it is running
-	if (euclidean_state.sequencer_running) {
+	if (euclid_state.sequencer_running) {
 		// Only advance if sequencer is running
 		sequencer_advance();
 	} else {
 		// If sequencer is stopped, start it so that the next clock advances
-		euclidean_state.sequencer_running = true;
+		euclid_state.sequencer_running = true;
 	}
 }
 
 static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		uint8_t length = channel_state.length;
-		uint8_t position = channel_state.position;
+		uint8_t position = euclid_state.sequencer_positions[channel];
+		uint8_t length = euclid_get_length(&params, channel);
 
 		// Move sequencer playhead to next step
 		position++;
 		if (position >= length) {
 			position = 0;
 		}
-		euclidean_state.channels[channel].position = position;
+		euclid_state.sequencer_positions[channel] = position;
 
 #if LOGGING_ENABLED && LOGGING_POSITION
 		if (channel == 0) {
@@ -144,9 +139,8 @@ static uint8_t sequencer_read_current_step() {
 	uint8_t out_channels_firing = 0;
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		uint8_t length = channel_state.length;
-		uint8_t position = channel_state.position;
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t position = euclid_state.sequencer_positions[channel];
 		uint16_t pattern = generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
@@ -165,9 +159,8 @@ static uint8_t sequencer_read_current_step() {
 }
 
 static inline void draw_channel(Channel channel) {
-	EuclideanChannelState channel_state = euclidean_state.channels[channel];
-	uint8_t length = channel_state.length;
-	uint8_t position = channel_state.position;
+	uint8_t length = euclid_get_length(&params, channel);
+	uint8_t position = euclid_state.sequencer_positions[channel];
 	uint16_t pattern = generated_rhythms[channel];
 
 	// Clear rows
@@ -177,7 +170,7 @@ static inline void draw_channel(Channel channel) {
 
 	bool showing_length_display = (adjustment_display_state.visible) &&
 	                              (channel == adjustment_display_state.channel) &&
-	                              (adjustment_display_state.parameter == EUCLIDEAN_PARAM_LENGTH);
+	                              (adjustment_display_state.parameter == EUCLID_PARAM_LENGTH);
 	if (showing_length_display) {
 		draw_channel_length(channel, pattern, length);
 	}

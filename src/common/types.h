@@ -5,9 +5,16 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef unsigned long Milliseconds;
 typedef unsigned long Microseconds;
+
+/// Index into parameter tables.
+typedef uint8_t ParamIdx;
+
+/// Index into EEPROM memory
+typedef int Address;
 
 /// References one of the three channels
 typedef enum Channel {

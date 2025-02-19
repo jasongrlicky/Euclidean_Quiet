@@ -14,6 +14,7 @@
 #include "hardware/properties.h"
 #include "modes/clock.h"
 #include "modes/euclid.h"
+#include "params.h"
 #include "ui/active_channel.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
@@ -21,8 +22,6 @@
 #include "ui/led_sleep.h"
 
 #include <euclidean.h>
-
-typedef int Address;
 
 /* GLOBALS */
 
@@ -39,23 +38,7 @@ static Timeout playhead_idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERI
 
 static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME};
 
-typedef struct EuclideanChannelUpdate {
-	uint8_t length;
-	uint8_t density;
-	uint8_t offset;
-	bool length_changed;
-	bool density_changed;
-	bool offset_changed;
-} EuclideanChannelUpdate;
-
-static const EuclideanChannelUpdate EUCLIDEAN_UPDATE_EMPTY = {
-    .length = 0,
-    .density = 0,
-    .offset = 0,
-    .length_changed = false,
-    .density_changed = false,
-    .offset_changed = false,
-};
+static Mode active_mode = MODE_EUCLID;
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 Microseconds cycle_time_max;
@@ -67,13 +50,16 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 static void init_serial(void);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
-/// Load state from EEPROM into the given `EuclideanState`
-static void eeprom_load(EuclideanState *s);
-static inline Address eeprom_addr_length(Channel channel);
-static inline Address eeprom_addr_density(Channel channel);
-static inline Address eeprom_addr_offset(Channel channel);
+static void active_mode_switch(Mode mode);
+static void params_validate(Params *params, Mode mode);
+/// Load state for the given mode into `params`.
+static void eeprom_params_load(Params *params, Mode mode);
+static void eeprom_save_all_needing_write(Params *params, Mode mode);
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
+#endif
+#if LOGGING_ENABLED
+static void log_all_modified_params(const Params *params, Mode mode);
 #endif
 
 /* MAIN */
@@ -83,17 +69,18 @@ void setup() {
 
 	led_init();
 	led_sleep_init(now);
-	eeprom_load(&euclidean_state);
-	euclid_validate_state(&euclidean_state);
+	active_mode_switch(MODE_EUCLID);
 	init_serial();
 	input_init();
 	output_init();
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
-		generated_rhythms[a] =
-		    euclidean_pattern_rotate(euclidean_state.channels[a].length, euclidean_state.channels[a].density,
-		                             euclidean_state.channels[a].offset);
+		Channel channel = (Channel)a;
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
+		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
 	led_wake();
@@ -129,22 +116,23 @@ void loop() {
 		active_channel = active_channel_new.inner;
 	}
 
-	EuclideanParamOpt knob_moved_for_param = EUCLIDEAN_PARAM_OPT_NONE;
-#if EEPROM_WRITE
-	EuclideanChannelUpdate params_update = EUCLIDEAN_UPDATE_EMPTY;
-#endif
+	EuclidParamOpt knob_moved_for_param = EUCLID_PARAM_OPT_NONE;
+	param_flags_clear_all_modified(&params, active_mode);
+
+	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
+	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
+	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);
 
 	// Handle Length Knob Movement
 	int nknob = events_in.enc_move[ENCODER_1];
 	if (nknob != 0) {
-		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_LENGTH);
+		knob_moved_for_param = euclid_param_opt(EUCLID_PARAM_LENGTH);
 
 		Channel channel = active_channel;
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		int length = channel_state.length;
-		uint8_t density = channel_state.density;
-		uint8_t offset = channel_state.offset;
-		uint8_t position = channel_state.position;
+		int length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
+		uint8_t position = euclid_state.sequencer_positions[channel];
 
 		// Keep length in bounds
 		if (length >= BEAT_LENGTH_MAX) {
@@ -160,46 +148,33 @@ void loop() {
 		// Reduce density and offset to remain in line with the new length if necessary
 		if ((density >= (length + nknob)) && (density > 1)) {
 			density += nknob;
-			euclidean_state.channels[channel].density = density;
 
-#if EEPROM_WRITE
-			params_update.density = density;
-			params_update.density_changed = true;
-#endif
+			param_and_flags_set(&params, density_idx, density);
 		}
 		if ((offset >= (length + nknob)) && (offset < 16)) {
 			offset += nknob;
-			euclidean_state.channels[channel].offset = offset;
 
-#if EEPROM_WRITE
-			params_update.offset = offset;
-			params_update.offset_changed = true;
-#endif
+			param_and_flags_set(&params, offset_idx, offset);
 		}
 
 		length += nknob;
-		euclidean_state.channels[channel].length = length;
+
+		param_and_flags_set(&params, length_idx, length);
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
-			euclidean_state.channels[channel].position = 0;
+			euclid_state.sequencer_positions[channel] = 0;
 		}
-
-#if EEPROM_WRITE
-		params_update.length = length;
-		params_update.length_changed = true;
-#endif
 	}
 
 	// Handle Density Knob Movement
 	int kknob = events_in.enc_move[ENCODER_2];
 	if (kknob != 0) {
-		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_DENSITY);
+		knob_moved_for_param = euclid_param_opt(EUCLID_PARAM_DENSITY);
 
 		Channel channel = active_channel;
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		int length = channel_state.length;
-		int density = channel_state.density;
+		int length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
 
 		// Keep density in bounds
 		if (density + kknob > length) {
@@ -210,23 +185,18 @@ void loop() {
 		}
 
 		density += kknob;
-		euclidean_state.channels[channel].density = density;
 
-#if EEPROM_WRITE
-		params_update.density = density;
-		params_update.density_changed = true;
-#endif
+		param_and_flags_set(&params, density_idx, density);
 	}
 
 	// Handle Offset Knob Movement
 	int oknob = events_in.enc_move[ENCODER_3];
 	if (oknob != 0) {
-		knob_moved_for_param = euclidean_param_opt(EUCLIDEAN_PARAM_OFFSET);
+		knob_moved_for_param = euclid_param_opt(EUCLID_PARAM_OFFSET);
 
 		Channel channel = active_channel;
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		int length = channel_state.length;
-		int offset = channel_state.offset;
+		int length = euclid_get_length(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 
 		// Keep offset in bounds
 		if (offset + oknob > length - 1) {
@@ -237,36 +207,18 @@ void loop() {
 		}
 
 		offset += oknob;
-		euclidean_state.channels[channel].offset = offset;
 
-#if EEPROM_WRITE
-		params_update.offset = offset;
-		params_update.offset_changed = true;
-#endif
+		param_and_flags_set(&params, offset_idx, offset);
 	}
 
 	// Update Generated Rhythms Based On Parameter Changes
 	if (knob_moved_for_param.valid) {
 		Channel channel = active_channel;
-		EuclideanChannelState channel_state = euclidean_state.channels[channel];
-		uint8_t length = channel_state.length;
-		uint8_t density = channel_state.density;
-		uint8_t offset = channel_state.offset;
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
 
 		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
-
-#if LOGGING_ENABLED
-		if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_LENGTH) {
-			Serial.print("length: ");
-			Serial.println(length);
-		} else if (knob_moved_for_param.inner == EUCLIDEAN_PARAM_DENSITY) {
-			Serial.print("density: ");
-			Serial.println(density);
-		} else {
-			Serial.print("offset: ");
-			Serial.println(offset);
-		}
-#endif
 	}
 
 	/* UPDATE INTERNAL CLOCK */
@@ -399,38 +351,7 @@ void loop() {
 
 	/* EEPROM WRITES */
 
-#if EEPROM_WRITE
-	if (params_update.length_changed) {
-		EEPROM.update(eeprom_addr_length(active_channel), params_update.length);
-	}
-	if (params_update.density_changed) {
-		EEPROM.update(eeprom_addr_density(active_channel), params_update.density);
-	}
-	if (params_update.offset_changed) {
-		EEPROM.update(eeprom_addr_offset(active_channel), params_update.offset);
-	}
-#endif
-
-#if LOGGING_ENABLED && LOGGING_EEPROM && EEPROM_WRITE
-	if (params_update.length_changed) {
-		Serial.print("EEPROM Write: Length= ");
-		Serial.print(eeprom_addr_length(active_channel));
-		Serial.print(" ");
-		Serial.println(params_update.length);
-	}
-	if (params_update.density_changed) {
-		Serial.print("EEPROM Write: Density= ");
-		Serial.print(eeprom_addr_density(active_channel));
-		Serial.print(" ");
-		Serial.println(params_update.density);
-	}
-	if (params_update.offset_changed) {
-		Serial.print("EEPROM Write: Offset= ");
-		Serial.print(eeprom_addr_offset(active_channel));
-		Serial.print(" ");
-		Serial.println(params_update.offset);
-	}
-#endif
+	eeprom_save_all_needing_write(&params, active_mode);
 
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
 	Microseconds cycle_time = micros() - cycle_time_start;
@@ -443,7 +364,10 @@ void loop() {
 		Serial.println(cycle_time_max);
 		cycle_time_max = 0;
 	}
+#endif
 
+#if LOGGING_ENABLED
+	log_all_modified_params(&params, active_mode);
 #endif
 }
 
@@ -491,30 +415,64 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	return result;
 }
 
-static void eeprom_load(EuclideanState *s) {
-	/*
-	EEPROM Schema:
-	Channel 1: length = 1 density = 2 offset = 7
-	Channel 2: length = 3 density = 4 offset = 8
-	Channel 3: length = 5 density = 6 offset = 9
-	*/
+static void active_mode_switch(Mode mode) {
+	active_mode = mode;
+	eeprom_params_load(&params, mode);
+	params_validate(&params, mode);
+}
 
+static void params_validate(Params *params, Mode mode) {
+	switch (mode) {
+		case MODE_EUCLID:
+			euclid_params_validate(params);
+			break;
+	}
+}
+
+static void eeprom_params_load(Params *params, Mode mode) {
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
 #if EEPROM_READ
-	for (uint8_t c = 0; c < NUM_CHANNELS; c++) {
-		Channel channel = (Channel)c;
-		s->channels[c].length = EEPROM.read(eeprom_addr_length(channel));
-		s->channels[c].density = EEPROM.read(eeprom_addr_density(channel));
-		s->channels[c].offset = EEPROM.read(eeprom_addr_offset(channel));
-		s->channels[c].position = 0;
+		Address addr = param_address(mode, (ParamIdx)idx);
+		params->values[idx] = EEPROM.read(addr);
+#else
+		params.values[idx] = 0;
+#endif
+		params->flags[idx] = PARAM_FLAGS_NONE;
+	}
+
+	params->len = num_params;
+}
+
+static void eeprom_save_all_needing_write(Params *params, Mode mode) {
+#if EEPROM_WRITE
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		bool needs_write = param_flags_get(params, idx, PARAM_FLAG_NEEDS_WRITE);
+		if (!needs_write) continue;
+
+		param_flags_clear(params, idx, PARAM_FLAG_NEEDS_WRITE);
+
+		uint8_t val = params->values[idx];
+		Address addr = param_address(mode, (ParamIdx)idx);
+		EEPROM.write(addr, val);
+
+#if LOGGING_ENABLED && LOGGING_EEPROM
+		char name[PARAM_NAME_LEN];
+		param_name(name, mode, idx);
+
+		Serial.print("EEPROM Write: ");
+		Serial.print(name);
+		Serial.print(" @");
+		Serial.print(addr);
+		Serial.print(": ");
+		Serial.println(val);
+#endif
 	}
 #endif
 }
-
-static inline Address eeprom_addr_length(Channel channel) { return (channel * 2) + 1; }
-
-static inline Address eeprom_addr_density(Channel channel) { return (channel * 2) + 2; }
-
-static inline Address eeprom_addr_offset(Channel channel) { return channel + 7; }
 
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events) {
@@ -535,6 +493,26 @@ static void log_input_events(const InputEvents *events) {
 	if (events->enc_move[ENCODER_3] != 0) {
 		Serial.print("ENC_3: Move ");
 		Serial.println(events->enc_move[ENCODER_3]);
+	}
+}
+#endif
+
+#if LOGGING_ENABLED
+static void log_all_modified_params(const Params *params, Mode mode) {
+	uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		bool modified = param_flags_get(params, idx, PARAM_FLAG_MODIFIED);
+		if (!modified) continue;
+
+		uint8_t val = params->values[idx];
+		char name[PARAM_NAME_LEN];
+		param_name(name, mode, idx);
+
+		Serial.print("Param ");
+		Serial.print(name);
+		Serial.print(": ");
+		Serial.println(val);
 	}
 }
 #endif
