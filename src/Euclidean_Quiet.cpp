@@ -47,7 +47,6 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 /* DECLARATIONS */
 
 static void init_serial(void);
-static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static void active_mode_switch(Mode mode);
 static void params_validate(Params *params, Mode mode);
@@ -109,11 +108,7 @@ void loop() {
 
 	/* HANDLE INPUT */
 
-	// Handle Encoder Pushes
-	ChannelOpt active_channel_new = channel_for_encoder(events_in.enc_push);
-	if (active_channel_new.valid) {
-		euclid_state.active_channel = active_channel_new.inner;
-	}
+	euclid_handle_encoder_push(events_in.enc_push);
 
 	// Note the param associated with a knob that was moved so we can show the
 	// adjustment display and re-generate the Euclidean rhythms.
@@ -379,23 +374,6 @@ static void init_serial(void) {
 #if LOGGING_ENABLED
 	Serial.begin(9600);
 #endif
-}
-
-static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
-	switch (enc_idx) {
-		case ENCODER_1:
-			return {.inner = CHANNEL_2, .valid = true};
-			break;
-		case ENCODER_2:
-			return {.inner = CHANNEL_3, .valid = true};
-			break;
-		case ENCODER_3:
-			return {.inner = CHANNEL_1, .valid = true};
-			break;
-		default:
-			return CHANNEL_OPT_NONE;
-			break;
-	}
 }
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {

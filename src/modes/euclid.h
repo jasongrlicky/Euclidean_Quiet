@@ -121,6 +121,8 @@ EuclidParamOpt euclid_param_opt(EuclidParam inner);
 /// Given an `EncoderIdx`, return the associated Euclidean parameter
 EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
 
+void euclid_handle_encoder_push(EncoderIdx enc_idx);
+
 // Returns bitflags storing which output channels will fire this cycle, indexed
 // by `OutputChannel`.
 uint8_t euclid_update(const InputEvents *events);

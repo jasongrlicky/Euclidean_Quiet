@@ -41,6 +41,7 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 /// @param position The step at which to read. Must be < `length`.
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
+static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 
 /* EXTERNAL */
 
@@ -79,6 +80,13 @@ EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx) {
 		default:
 			return EUCLID_PARAM_OPT_NONE;
 			break;
+	}
+}
+
+void euclid_handle_encoder_push(EncoderIdx enc_idx) {
+	ChannelOpt active_channel_new = channel_for_encoder(enc_idx);
+	if (active_channel_new.valid) {
+		euclid_state.active_channel = active_channel_new.inner;
 	}
 }
 
@@ -230,4 +238,21 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
 	uint8_t idx = length - position - 1;
 	return (pattern >> idx) & 0x01;
+}
+
+static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
+	switch (enc_idx) {
+		case ENCODER_1:
+			return (ChannelOpt){.inner = CHANNEL_2, .valid = true};
+			break;
+		case ENCODER_2:
+			return (ChannelOpt){.inner = CHANNEL_3, .valid = true};
+			break;
+		case ENCODER_3:
+			return (ChannelOpt){.inner = CHANNEL_1, .valid = true};
+			break;
+		default:
+			return CHANNEL_OPT_NONE;
+			break;
+	}
 }
