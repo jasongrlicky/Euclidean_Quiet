@@ -140,13 +140,6 @@ static void sequencer_advance() {
 			position = 0;
 		}
 		euclid_state.sequencer_positions[channel] = position;
-
-#if LOGGING_ENABLED && LOGGING_POSITION
-		if (channel == 0) {
-			Serial.print("> CH_1 Position: ");
-			Serial.println(position);
-		}
-#endif
 	}
 }
 
