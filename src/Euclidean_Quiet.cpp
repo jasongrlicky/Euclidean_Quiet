@@ -27,7 +27,6 @@
 
 static Milliseconds last_clock_or_reset;
 
-static Channel active_channel; // Channel that is currently active
 static TimeoutOnce output_pulse_timeout = {
     .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
 
@@ -86,11 +85,11 @@ void setup() {
 	led_wake();
 
 	// Select first channel on startup
-	active_channel = CHANNEL_1;
+	euclid_state.active_channel = CHANNEL_1;
 
 	// Draw initial UI
 	euclid_draw_channels();
-	active_channel_display_draw(active_channel);
+	active_channel_display_draw(euclid_state.active_channel);
 }
 
 void loop() {
@@ -113,7 +112,7 @@ void loop() {
 	// Handle Encoder Pushes
 	ChannelOpt active_channel_new = channel_for_encoder(events_in.enc_push);
 	if (active_channel_new.valid) {
-		active_channel = active_channel_new.inner;
+		euclid_state.active_channel = active_channel_new.inner;
 	}
 
 	// Note the param associated with a knob that was moved so we can show the
@@ -127,6 +126,7 @@ void loop() {
 
 	param_flags_clear_all_modified(&params, active_mode);
 
+	Channel active_channel = euclid_state.active_channel;
 	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
 	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
 	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);

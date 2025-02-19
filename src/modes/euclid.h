@@ -53,6 +53,8 @@ static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGT
 
 /// State of the entire Euclidean rhythm generator mode
 typedef struct EuclidState {
+	/// The sequencer channel that is currently selected
+	Channel active_channel;
 	/// Step index representing the playhead position for for each of this mode's
 	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
 	uint8_t sequencer_positions[NUM_CHANNELS];
