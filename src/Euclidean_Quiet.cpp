@@ -108,6 +108,8 @@ void loop() {
 
 	/* HANDLE INPUT */
 
+	param_flags_clear_all_modified(&params, active_mode);
+
 	euclid_handle_encoder_push(events_in.enc_push);
 
 	// Note the param associated with a knob that was moved so we can show the
@@ -118,8 +120,6 @@ void loop() {
 			param_knob_moved = euclid_param_for_encoder((EncoderIdx)enc_idx);
 		}
 	}
-
-	param_flags_clear_all_modified(&params, active_mode);
 
 	Channel active_channel = euclid_state.active_channel;
 	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
