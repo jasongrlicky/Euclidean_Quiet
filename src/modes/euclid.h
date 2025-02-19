@@ -122,6 +122,7 @@ EuclidParamOpt euclid_param_opt(EuclidParam inner);
 EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
 
 void euclid_handle_encoder_push(EncoderIdx enc_idx);
+void euclid_handle_encoder_move(const int16_t *enc_move);
 
 // Returns bitflags storing which output channels will fire this cycle, indexed
 // by `OutputChannel`.

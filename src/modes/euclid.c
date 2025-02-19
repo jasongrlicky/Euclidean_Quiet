@@ -90,6 +90,95 @@ void euclid_handle_encoder_push(EncoderIdx enc_idx) {
 	}
 }
 
+void euclid_handle_encoder_move(const int16_t *enc_move) {
+	Channel active_channel = euclid_state.active_channel;
+	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
+	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
+	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);
+
+	// Handle Length Knob Movement
+	int nknob = enc_move[ENCODER_1];
+	if (nknob != 0) {
+		Channel channel = active_channel;
+		int length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
+		uint8_t position = euclid_state.sequencer_positions[channel];
+
+		// Keep length in bounds
+		if (length >= BEAT_LENGTH_MAX) {
+			length = BEAT_LENGTH_MAX;
+		}
+		if (length + nknob > BEAT_LENGTH_MAX) {
+			nknob = 0;
+		}
+		if (length + nknob < BEAT_LENGTH_MIN) {
+			nknob = 0;
+		}
+
+		// Reduce density and offset to remain in line with the new length if necessary
+		if ((density >= (length + nknob)) && (density > 1)) {
+			density += nknob;
+
+			param_and_flags_set(&params, density_idx, density);
+		}
+		if ((offset >= (length + nknob)) && (offset < 16)) {
+			offset += nknob;
+
+			param_and_flags_set(&params, offset_idx, offset);
+		}
+
+		length += nknob;
+
+		param_and_flags_set(&params, length_idx, length);
+
+		// Reset position if length has been reduced past it
+		if (position >= length) {
+			euclid_state.sequencer_positions[channel] = 0;
+		}
+	}
+
+	// Handle Density Knob Movement
+	int kknob = enc_move[ENCODER_2];
+	if (kknob != 0) {
+		Channel channel = active_channel;
+		int length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+
+		// Keep density in bounds
+		if (density + kknob > length) {
+			kknob = 0;
+		}
+		if (density + kknob < BEAT_DENSITY_MIN) {
+			kknob = 0;
+		}
+
+		density += kknob;
+
+		param_and_flags_set(&params, density_idx, density);
+	}
+
+	// Handle Offset Knob Movement
+	int oknob = enc_move[ENCODER_3];
+	if (oknob != 0) {
+		Channel channel = active_channel;
+		int length = euclid_get_length(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
+
+		// Keep offset in bounds
+		if (offset + oknob > length - 1) {
+			oknob = 0;
+		}
+		if (offset + oknob < BEAT_OFFSET_MIN) {
+			oknob = 0;
+		}
+
+		offset += oknob;
+
+		param_and_flags_set(&params, offset_idx, offset);
+	}
+}
+
 uint8_t euclid_update(const InputEvents *events) {
 	// Clock ticks merge the internal and external clocks
 	bool clock_tick = events->trig || events->internal_clock_tick;
