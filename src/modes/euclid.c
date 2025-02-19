@@ -62,8 +62,23 @@ void euclid_params_validate(Params *params) {
 	}
 }
 
-EuclidParamOpt euclid_param_opt(EuclidParam inner) {
-	return (EuclidParamOpt){.inner = inner, .valid = true};
+EuclidParamOpt euclid_param_opt(EuclidParam inner) { return (EuclidParamOpt){.inner = inner, .valid = true}; }
+
+EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx) {
+	switch (enc_idx) {
+		case ENCODER_1:
+			return (EuclidParamOpt){.inner = EUCLID_PARAM_LENGTH, .valid = true};
+			break;
+		case ENCODER_2:
+			return (EuclidParamOpt){.inner = EUCLID_PARAM_DENSITY, .valid = true};
+			break;
+		case ENCODER_3:
+			return (EuclidParamOpt){.inner = EUCLID_PARAM_OFFSET, .valid = true};
+			break;
+		default:
+			return EUCLID_PARAM_OPT_NONE;
+			break;
+	}
 }
 
 uint8_t euclid_update(const InputEvents *events) {
