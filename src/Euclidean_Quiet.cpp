@@ -314,11 +314,7 @@ static void eeprom_save_all_needing_write(Params *params, Mode mode) {
 		Address addr = param_address(mode, (ParamIdx)idx);
 		EEPROM.write(addr, val);
 
-#if LOGGING_ENABLED && LOGGING_EEPROM
-		char name[PARAM_NAME_LEN];
-		param_name(name, mode, idx);
-		log_eeprom_write(name, addr, val);
-#endif
+		log_eeprom_write(mode, idx, addr, val);
 	}
 #endif
 }

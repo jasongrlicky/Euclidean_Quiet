@@ -41,8 +41,11 @@ void log_cycle_time_end(Milliseconds now) {
 #endif
 }
 
-void log_eeprom_write(char *name, Address addr, uint8_t val) {
+void log_eeprom_write(Mode mode, ParamIdx idx, Address addr, uint8_t val) {
 #if LOGGING_ENABLED && LOGGING_EEPROM
+	char name[PARAM_NAME_LEN];
+	param_name(name, mode, idx);
+
 	Serial.print("EEPROM Write: ");
 	Serial.print(name);
 	Serial.print(" @");
