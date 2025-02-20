@@ -150,14 +150,6 @@ void loop() {
 		output_clear_all();
 	}
 
-	/* DRAWING - INDICATORS */
-
-	indicators_input_update(&events_in, now);
-
-	if (sequencers_updated) {
-		indicators_output_draw_latching(out_channels_firing);
-	}
-
 	/* DRAWING - ACTIVE CHANNEL DISPLAY */
 
 	if (events_in.enc_push != ENCODER_NONE) {
@@ -221,6 +213,14 @@ void loop() {
 
 	if (needs_redraw) {
 		euclid_draw_channels();
+	}
+
+	/* DRAWING - INDICATORS */
+
+	indicators_input_update(&events_in, now);
+
+	if (sequencers_updated) {
+		indicators_output_draw_latching(out_channels_firing);
 	}
 
 	/* UPDATE LED DISPLAY */
