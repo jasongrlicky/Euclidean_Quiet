@@ -40,11 +40,6 @@ static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME
 
 static Mode active_mode = MODE_EUCLID;
 
-#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
-Microseconds cycle_time_max;
-static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL};
-#endif
-
 /* DECLARATIONS */
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
@@ -88,9 +83,7 @@ void setup() {
 void loop() {
 	Milliseconds now = millis();
 
-#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
-	Microseconds cycle_time_start = micros();
-#endif
+	log_cycle_time_begin();
 
 	/* INPUT EVENTS */
 
@@ -251,18 +244,7 @@ void loop() {
 
 	eeprom_save_all_needing_write(&params, active_mode);
 
-#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
-	Microseconds cycle_time = micros() - cycle_time_start;
-	if (cycle_time > cycle_time_max) {
-		cycle_time_max = cycle_time;
-	}
-
-	if (timeout_loop(&log_cycle_time_timeout, now)) {
-		Serial.print("Max Cycle Time: ");
-		Serial.println(cycle_time_max);
-		cycle_time_max = 0;
-	}
-#endif
+	log_cycle_time_end(now);
 
 	log_all_modified_params(&params, active_mode);
 }

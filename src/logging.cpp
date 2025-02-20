@@ -1,10 +1,43 @@
 #include "logging.h"
 
+#include "common/timeout.h"
+
 #include <Arduino.h>
+
+/* GLOBALS */
+
+#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+static Microseconds cycle_time_start;
+static Microseconds cycle_time_max;
+static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL};
+#endif
+
+/* EXTERNAL */
 
 void logging_init() {
 #if LOGGING_ENABLED
 	Serial.begin(9600);
+#endif
+}
+
+void log_cycle_time_begin() {
+#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+	cycle_time_start = micros();
+#endif
+}
+
+void log_cycle_time_end(Milliseconds now) {
+#if LOGGING_ENABLED && LOGGING_CYCLE_TIME
+	Microseconds cycle_time = micros() - cycle_time_start;
+	if (cycle_time > cycle_time_max) {
+		cycle_time_max = cycle_time;
+	}
+
+	if (timeout_loop(&log_cycle_time_timeout, now)) {
+		Serial.print("Max Cycle Time: ");
+		Serial.println(cycle_time_max);
+		cycle_time_max = 0;
+	}
 #endif
 }
 

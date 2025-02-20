@@ -10,6 +10,8 @@ extern "C" {
 #include "params.h"
 
 void logging_init();
+void log_cycle_time_begin();
+void log_cycle_time_end(Milliseconds now);
 void log_eeprom_write(char *name, Address addr, uint8_t val);
 void log_input_events(const InputEvents *events);
 void log_all_modified_params(const Params *params, Mode mode);
