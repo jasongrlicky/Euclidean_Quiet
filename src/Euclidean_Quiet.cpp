@@ -53,6 +53,9 @@ static void params_validate(Params *params, Mode mode);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Params *params, Mode mode);
 static void eeprom_save_all_needing_write(Params *params, Mode mode);
+#if LOGGING_ENABLED && LOGGING_EEPROM
+static void log_eeprom_write(char *name, Address addr, uint8_t val);
+#endif
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events);
 #endif
@@ -351,17 +354,22 @@ static void eeprom_save_all_needing_write(Params *params, Mode mode) {
 #if LOGGING_ENABLED && LOGGING_EEPROM
 		char name[PARAM_NAME_LEN];
 		param_name(name, mode, idx);
-
-		Serial.print("EEPROM Write: ");
-		Serial.print(name);
-		Serial.print(" @");
-		Serial.print(addr);
-		Serial.print(": ");
-		Serial.println(val);
+		log_eeprom_write(name, addr, val);
 #endif
 	}
 #endif
 }
+
+#if LOGGING_ENABLED && LOGGING_EEPROM
+static void log_eeprom_write(char *name, Address addr, uint8_t val) {
+	Serial.print("EEPROM Write: ");
+	Serial.print(name);
+	Serial.print(" @");
+	Serial.print(addr);
+	Serial.print(": ");
+	Serial.println(val);
+}
+#endif
 
 #if LOGGING_ENABLED && LOGGING_INPUT
 static void log_input_events(const InputEvents *events) {
