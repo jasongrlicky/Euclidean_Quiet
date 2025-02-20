@@ -70,14 +70,14 @@ void setup() {
 		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
-	led_wake();
-
 	// Select first channel on startup
 	euclid_state.active_channel = CHANNEL_1;
 
 	// Draw initial UI
 	euclid_draw_channels();
 	active_channel_display_draw(euclid_state.active_channel);
+
+	led_wake();
 }
 
 void loop() {
