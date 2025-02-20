@@ -90,7 +90,9 @@ void euclid_handle_encoder_push(EncoderIdx enc_idx) {
 	}
 }
 
-void euclid_handle_encoder_move(const int16_t *enc_move) {
+EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
+	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
+
 	Channel active_channel = euclid_state.active_channel;
 	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
 	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
@@ -99,6 +101,8 @@ void euclid_handle_encoder_move(const int16_t *enc_move) {
 	// Handle Length Knob Movement
 	int nknob = enc_move[ENCODER_1];
 	if (nknob != 0) {
+		param_knob_moved = euclid_param_opt(EUCLID_PARAM_LENGTH);
+
 		Channel channel = active_channel;
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
@@ -141,6 +145,8 @@ void euclid_handle_encoder_move(const int16_t *enc_move) {
 	// Handle Density Knob Movement
 	int kknob = enc_move[ENCODER_2];
 	if (kknob != 0) {
+		param_knob_moved = euclid_param_opt(EUCLID_PARAM_DENSITY);
+
 		Channel channel = active_channel;
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
@@ -161,6 +167,8 @@ void euclid_handle_encoder_move(const int16_t *enc_move) {
 	// Handle Offset Knob Movement
 	int oknob = enc_move[ENCODER_3];
 	if (oknob != 0) {
+		param_knob_moved = euclid_param_opt(EUCLID_PARAM_OFFSET);
+
 		Channel channel = active_channel;
 		int length = euclid_get_length(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
@@ -177,6 +185,8 @@ void euclid_handle_encoder_move(const int16_t *enc_move) {
 
 		param_and_flags_set(&params, offset_idx, offset);
 	}
+
+	return param_knob_moved;
 }
 
 uint8_t euclid_update(const InputEvents *events) {

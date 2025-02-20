@@ -112,16 +112,9 @@ void loop() {
 
 	euclid_handle_encoder_push(events_in.enc_push);
 
-	// Note the param associated with a knob that was moved so we can show the
-	// adjustment display and re-generate the Euclidean rhythms.
-	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
-	for (uint8_t enc_idx = 0; enc_idx < NUM_ENCODERS; enc_idx++) {
-		if (events_in.enc_move[(EncoderIdx)enc_idx] != 0) {
-			param_knob_moved = euclid_param_for_encoder((EncoderIdx)enc_idx);
-		}
-	}
-
-	euclid_handle_encoder_move(events_in.enc_move);
+	// Note the param associated with a knob that was moved so we can re-generate
+	// the Euclidean rhythms and show the adjustment display.
+	EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(events_in.enc_move);
 
 	// Update Generated Rhythms Based On Parameter Changes
 	Channel active_channel = euclid_state.active_channel;
