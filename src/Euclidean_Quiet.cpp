@@ -12,6 +12,7 @@
 #include "hardware/led.h"
 #include "hardware/output.h"
 #include "hardware/properties.h"
+#include "logging.h"
 #include "modes/clock.h"
 #include "modes/euclid.h"
 #include "params.h"
@@ -53,15 +54,6 @@ static void params_validate(Params *params, Mode mode);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Params *params, Mode mode);
 static void eeprom_save_all_needing_write(Params *params, Mode mode);
-#if LOGGING_ENABLED && LOGGING_EEPROM
-static void log_eeprom_write(char *name, Address addr, uint8_t val);
-#endif
-#if LOGGING_ENABLED && LOGGING_INPUT
-static void log_input_events(const InputEvents *events);
-#endif
-#if LOGGING_ENABLED
-static void log_all_modified_params(const Params *params, Mode mode);
-#endif
 
 /* MAIN */
 
@@ -105,9 +97,7 @@ void loop() {
 
 	InputEvents events_in = INPUT_EVENTS_EMPTY;
 	input_update(&events_in, now);
-#if LOGGING_ENABLED && LOGGING_INPUT
 	log_input_events(&events_in);
-#endif
 
 	/* HANDLE INPUT */
 
@@ -275,9 +265,7 @@ void loop() {
 	}
 #endif
 
-#if LOGGING_ENABLED
 	log_all_modified_params(&params, active_mode);
-#endif
 }
 
 /* INTERNAL */
@@ -359,57 +347,3 @@ static void eeprom_save_all_needing_write(Params *params, Mode mode) {
 	}
 #endif
 }
-
-#if LOGGING_ENABLED && LOGGING_EEPROM
-static void log_eeprom_write(char *name, Address addr, uint8_t val) {
-	Serial.print("EEPROM Write: ");
-	Serial.print(name);
-	Serial.print(" @");
-	Serial.print(addr);
-	Serial.print(": ");
-	Serial.println(val);
-}
-#endif
-
-#if LOGGING_ENABLED && LOGGING_INPUT
-static void log_input_events(const InputEvents *events) {
-	if (events->reset) {
-		Serial.println("INPUT: Reset");
-	}
-	if (events->trig) {
-		Serial.println("INPUT: Trigger");
-	}
-	if (events->enc_move[ENCODER_1] != 0) {
-		Serial.print("ENC_1: Move ");
-		Serial.println(events->enc_move[ENCODER_1]);
-	}
-	if (events->enc_move[ENCODER_2] != 0) {
-		Serial.print("ENC_2: Move ");
-		Serial.println(events->enc_move[ENCODER_2]);
-	}
-	if (events->enc_move[ENCODER_3] != 0) {
-		Serial.print("ENC_3: Move ");
-		Serial.println(events->enc_move[ENCODER_3]);
-	}
-}
-#endif
-
-#if LOGGING_ENABLED
-static void log_all_modified_params(const Params *params, Mode mode) {
-	uint8_t num_params = mode_num_params[mode];
-
-	for (uint8_t idx = 0; idx < num_params; idx++) {
-		bool modified = param_flags_get(params, idx, PARAM_FLAG_MODIFIED);
-		if (!modified) continue;
-
-		uint8_t val = params->values[idx];
-		char name[PARAM_NAME_LEN];
-		param_name(name, mode, idx);
-
-		Serial.print("Param ");
-		Serial.print(name);
-		Serial.print(": ");
-		Serial.println(val);
-	}
-}
-#endif

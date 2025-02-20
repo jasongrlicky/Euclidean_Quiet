@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 
+#include "config.h"
 #include "hardware/properties.h"
 
 #include <stdbool.h>
