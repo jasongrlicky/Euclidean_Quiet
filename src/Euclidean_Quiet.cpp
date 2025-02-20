@@ -91,6 +91,10 @@ void loop() {
 	input_update(&events_in, now);
 	log_input_events(&events_in);
 
+	/* UPDATE INTERNAL CLOCK */
+
+	internal_clock_update(&events_in, now);
+
 	/* HANDLE INPUT */
 
 	param_flags_clear_all_modified(&params, active_mode);
@@ -111,10 +115,6 @@ void loop() {
 
 		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 	}
-
-	/* UPDATE INTERNAL CLOCK */
-
-	internal_clock_update(&events_in, now);
 
 	/* UPDATE SEQUENCER */
 
