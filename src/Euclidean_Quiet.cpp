@@ -47,7 +47,6 @@ static Timeout log_cycle_time_timeout = {.duration = LOGGING_CYCLE_TIME_INTERVAL
 
 /* DECLARATIONS */
 
-static void init_serial(void);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static void active_mode_switch(Mode mode);
 static void params_validate(Params *params, Mode mode);
@@ -60,10 +59,10 @@ static void eeprom_save_all_needing_write(Params *params, Mode mode);
 void setup() {
 	Milliseconds now = millis();
 
+	logging_init();
 	led_init();
 	led_sleep_init(now);
 	active_mode_switch(MODE_EUCLID);
-	init_serial();
 	input_init();
 	output_init();
 
@@ -269,12 +268,6 @@ void loop() {
 }
 
 /* INTERNAL */
-
-static void init_serial(void) {
-#if LOGGING_ENABLED
-	Serial.begin(9600);
-#endif
-}
 
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// This is a standard "scale from input range to output range" function, but

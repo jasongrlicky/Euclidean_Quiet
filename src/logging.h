@@ -9,6 +9,7 @@ extern "C" {
 #include "config.h"
 #include "params.h"
 
+void logging_init();
 void log_eeprom_write(char *name, Address addr, uint8_t val);
 void log_input_events(const InputEvents *events);
 void log_all_modified_params(const Params *params, Mode mode);

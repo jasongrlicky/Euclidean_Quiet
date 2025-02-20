@@ -2,6 +2,12 @@
 
 #include <Arduino.h>
 
+void logging_init() {
+#if LOGGING_ENABLED
+	Serial.begin(9600);
+#endif
+}
+
 void log_eeprom_write(char *name, Address addr, uint8_t val) {
 #if LOGGING_ENABLED && LOGGING_EEPROM
 	Serial.print("EEPROM Write: ");
