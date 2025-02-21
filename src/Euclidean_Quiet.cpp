@@ -55,7 +55,7 @@ void loop() {
 	internal_clock_update(&events_in, now);
 
 	// Update Mode
-	param_flags_clear_all_modified(&params, active_mode);
+	mode_params_flags_clear_all_modified(&params, active_mode);
 	mode_update(active_mode, &events_in, now);
 	log_all_modified_params(&params, active_mode);
 

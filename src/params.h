@@ -56,8 +56,6 @@ uint8_t param_flags_get(const Params *params, ParamIdx idx, uint8_t mask);
 void param_flags_set(Params *params, ParamIdx idx, uint8_t mask);
 /// Clear the bits specified in `mask` to 0, leaving the others untouched
 void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
-/// Clear `PARAM_FLAG_MODIFIED` for all parameters
-void param_flags_clear_all_modified(Params *params, Mode mode);
 
 #if LOGGING_ENABLED
 

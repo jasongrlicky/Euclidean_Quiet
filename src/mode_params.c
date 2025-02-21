@@ -36,3 +36,11 @@ Address mode_param_address(Mode mode, ParamIdx idx) {
 	}
 	return result;
 }
+
+void mode_params_flags_clear_all_modified(Params *params, Mode mode) {
+	const uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		param_flags_clear(params, idx, PARAM_FLAG_MODIFIED);
+	}
+}
