@@ -1,6 +1,7 @@
 #include "logging.h"
 
 #include "common/timeout.h"
+#include "mode_params.h"
 
 #include <Arduino.h>
 
@@ -44,7 +45,7 @@ void log_cycle_time_end(Milliseconds now) {
 void log_eeprom_write(Mode mode, ParamIdx idx, Address addr, uint8_t val) {
 #if LOGGING_ENABLED && LOGGING_EEPROM
 	char name[PARAM_NAME_LEN];
-	param_name(name, mode, idx);
+	mode_param_name(name, mode, idx);
 
 	Serial.print("EEPROM Write: ");
 	Serial.print(name);
@@ -88,7 +89,7 @@ void log_all_modified_params(const Params *params, Mode mode) {
 
 		uint8_t val = params->values[idx];
 		char name[PARAM_NAME_LEN];
-		param_name(name, mode, idx);
+		mode_param_name(name, mode, idx);
 
 		Serial.print("Param ");
 		Serial.print(name);

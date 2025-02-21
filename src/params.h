@@ -51,21 +51,6 @@ void param_flags_set(Params *params, ParamIdx idx, uint8_t mask);
 /// Clear the bits specified in `mask` to 0, leaving the others untouched
 void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
 
-#if LOGGING_ENABLED
-
-#define PARAM_NAME_LEN 3
-
-/// @brief Retrieve the name for the specified parameter and store that name in
-/// the `result` null-terminated string.
-/// @param result A `char` array that can hold at least `PARAM_NAME_LEN`
-/// elements. Will have the parameter name stored in it as a null-terminated
-/// string, or a placeholder if the param name can't be found.
-/// @param mode The mode for the parameter
-/// @param idx The index of the parameter in the parameter tables
-void param_name(char *result, Mode mode, ParamIdx idx);
-
-#endif
-
 #ifdef __cplusplus
 }
 #endif
