@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-// #include "common/types.h"
+#include "common/types.h"
 #include "hardware/eeprom.h"
 #include "hardware/input.h"
 #include "hardware/led.h"
