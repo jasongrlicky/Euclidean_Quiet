@@ -26,7 +26,7 @@ static Mode active_mode = MODE_EUCLID;
 
 static void active_mode_switch(Mode mode);
 /// Clear `PARAM_FLAG_MODIFIED` for all parameters
-static void mode_params_flags_clear_all_modified(Params *params, Mode mode);
+static void params_reset_modified_flag(Params *params, Mode mode);
 
 /* MAIN */
 
@@ -56,7 +56,7 @@ void loop() {
 	internal_clock_update(&events_in, now);
 
 	// Update Mode
-	mode_params_flags_clear_all_modified(&params, active_mode);
+	params_reset_modified_flag(&params, active_mode);
 	mode_update(active_mode, &events_in, now);
 	log_all_modified_params(&params, active_mode);
 
@@ -88,7 +88,7 @@ static void active_mode_switch(Mode mode) {
 	mode_init(mode);
 }
 
-void mode_params_flags_clear_all_modified(Params *params, Mode mode) {
+void params_reset_modified_flag(Params *params, Mode mode) {
 	const uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
