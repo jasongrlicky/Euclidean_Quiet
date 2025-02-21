@@ -58,31 +58,25 @@ void loop() {
 	log_cycle_time_begin();
 
 	/* INPUT EVENTS */
-
 	InputEvents events_in = INPUT_EVENTS_EMPTY;
 	input_update(&events_in, now);
 	log_input_events(&events_in);
 
 	/* UPDATE INTERNAL CLOCK */
-
 	internal_clock_update(&events_in, now);
 
 	/* UPDATE MODE */
-
 	param_flags_clear_all_modified(&params, active_mode);
 	mode_update(active_mode, &events_in, now);
 
 	/* DRAWING - INPUT INDICATORS */
-
 	indicators_input_update(&events_in, now);
 
 	/* UPDATE LED DISPLAY */
-
 	framebuffer_update_color_animations(now);
 	framebuffer_copy_row_to_display();
 
 	/* UPDATE LED SLEEP */
-
 	bool postpone_sleep = input_events_contains_any_external(&events_in);
 	LedSleepUpdate sleep_update = led_sleep_update(postpone_sleep, now);
 	if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
@@ -94,11 +88,9 @@ void loop() {
 	}
 
 	/* EEPROM WRITES */
-
 	eeprom_save_all_needing_write(&params, active_mode);
 
 	log_cycle_time_end(now);
-
 	log_all_modified_params(&params, active_mode);
 }
 
