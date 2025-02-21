@@ -1,7 +1,6 @@
 #include "eeprom.h"
 
 #include "logging.h"
-#include "mode_params.h"
 
 #if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>

@@ -10,7 +10,6 @@
 #include "hardware/properties.h"
 #include "logging.h"
 #include "mode.h"
-#include "mode_params.h"
 #include "modes/clock.h"
 #include "modes/euclid.h"
 #include "params.h"

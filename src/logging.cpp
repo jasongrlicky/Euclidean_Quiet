@@ -1,7 +1,6 @@
 #include "logging.h"
 
 #include "common/timeout.h"
-#include "mode_params.h"
 
 #include <Arduino.h>
 
