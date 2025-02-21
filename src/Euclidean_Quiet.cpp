@@ -69,14 +69,7 @@ void loop() {
 
 	// Update LED Sleep
 	const bool postpone_sleep = input_events_contains_any_external(&events_in);
-	const LedSleepUpdate sleep_update = led_sleep_decide(postpone_sleep, now);
-	if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
-		led_wake();
-	} else if (sleep_update == LED_SLEEP_UPDATE_DIM) {
-		led_dim();
-	} else if (sleep_update == LED_SLEEP_UPDATE_SLEEP) {
-		led_sleep();
-	}
+	led_sleep_update(postpone_sleep, now);
 
 	// EEPROM Writes
 	eeprom_save_all_needing_write(&params, active_mode);

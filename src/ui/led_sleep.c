@@ -2,6 +2,7 @@
 
 #include "common/timeout.h"
 #include "config.h"
+#include "hardware/led.h"
 
 typedef enum LedSleepState {
 	LED_SLEEP_STATE_WAKE,
@@ -21,6 +22,17 @@ void led_sleep_init(Milliseconds now) {
 }
 
 // cppcheck-suppress unusedFunction
+void led_sleep_update(bool postpone_sleep, Milliseconds now) {
+	const LedSleepUpdate sleep_update = led_sleep_decide(postpone_sleep, now);
+	if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
+		led_wake();
+	} else if (sleep_update == LED_SLEEP_UPDATE_DIM) {
+		led_dim();
+	} else if (sleep_update == LED_SLEEP_UPDATE_SLEEP) {
+		led_sleep();
+	}
+}
+
 LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now) {
 	// Handle transition to wake state
 	if (postpone_sleep) {

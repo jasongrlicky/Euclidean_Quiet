@@ -16,6 +16,7 @@ typedef enum LedSleepUpdate {
 } LedSleepUpdate;
 
 void led_sleep_init(Milliseconds now);
+void led_sleep_update(bool postpone_sleep, Milliseconds now);
 LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now);
 
 #ifdef __cplusplus
