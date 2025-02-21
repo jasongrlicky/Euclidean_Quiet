@@ -128,38 +128,13 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 /// Wrap the provided value as an occupied optional
 static EuclidParamOpt euclid_param_opt(EuclidParam inner);
-
 /// Return the `ParamIdx` for a given a channel and param kind
-static inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
-	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
-}
-
-static inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind) {
-	ParamIdx idx = euclid_param_idx(channel, kind);
-	return params->values[idx];
-}
-
-/// Set the value of the specified param. Do not use if Euclidean is not the
-/// active mode.
-static inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
-	ParamIdx idx = euclid_param_idx(channel, kind);
-	params->values[idx] = val;
-}
-
-/// Do not use if Euclidean is not the active mode.
-static inline uint8_t euclid_get_length(const Params *params, Channel channel) {
-	return euclid_param_get(params, channel, EUCLID_PARAM_LENGTH);
-}
-
-/// Do not use if Euclidean is not the active mode.
-static inline uint8_t euclid_get_density(const Params *params, Channel channel) {
-	return euclid_param_get(params, channel, EUCLID_PARAM_DENSITY);
-}
-
-/// Do not use if Euclidean is not the active mode.
-static inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
-	return euclid_param_get(params, channel, EUCLID_PARAM_OFFSET);
-}
+static inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind);
+static inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind);
+static inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val);
+static inline uint8_t euclid_get_length(const Params *params, Channel channel);
+static inline uint8_t euclid_get_density(const Params *params, Channel channel);
+static inline uint8_t euclid_get_offset(const Params *params, Channel channel);
 
 /* EXTERNAL */
 
@@ -619,4 +594,30 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 
 static EuclidParamOpt euclid_param_opt(EuclidParam inner) {
 	return (EuclidParamOpt){.inner = inner, .valid = true};
+}
+
+static inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
+	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
+}
+
+static inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind) {
+	ParamIdx idx = euclid_param_idx(channel, kind);
+	return params->values[idx];
+}
+
+static inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
+	ParamIdx idx = euclid_param_idx(channel, kind);
+	params->values[idx] = val;
+}
+
+static inline uint8_t euclid_get_length(const Params *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLID_PARAM_LENGTH);
+}
+
+static inline uint8_t euclid_get_density(const Params *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLID_PARAM_DENSITY);
+}
+
+static inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
+	return euclid_param_get(params, channel, EUCLID_PARAM_OFFSET);
 }
