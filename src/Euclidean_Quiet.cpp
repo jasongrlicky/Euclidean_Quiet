@@ -48,21 +48,7 @@ void setup() {
 	input_init();
 	output_init();
 
-	// Initialise generated rhythms
-	for (int a = 0; a < NUM_CHANNELS; a++) {
-		Channel channel = (Channel)a;
-		uint8_t length = euclid_get_length(&params, channel);
-		uint8_t density = euclid_get_density(&params, channel);
-		uint8_t offset = euclid_get_offset(&params, channel);
-		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
-	}
-
-	// Select first channel on startup
-	euclid_state.active_channel = CHANNEL_1;
-
-	// Draw initial UI
-	euclid_draw_channels();
-	active_channel_display_draw(euclid_state.active_channel);
+	euclid_init();
 
 	led_wake();
 }
