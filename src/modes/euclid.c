@@ -157,10 +157,10 @@ void euclid_params_validate(Params *params) {
 void euclid_init(void) {
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
-		Channel channel = (Channel)a;
-		uint8_t length = euclid_get_length(&params, channel);
-		uint8_t density = euclid_get_density(&params, channel);
-		uint8_t offset = euclid_get_offset(&params, channel);
+		const Channel channel = (Channel)a;
+		const uint8_t length = euclid_get_length(&params, channel);
+		const uint8_t density = euclid_get_density(&params, channel);
+		const uint8_t offset = euclid_get_offset(&params, channel);
 		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
@@ -177,15 +177,15 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 
 	// Note the param associated with a knob that was moved so we can re-generate
 	// the Euclidean rhythms and show the adjustment display.
-	EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(events->enc_move);
+	const EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(events->enc_move);
 
 	// Update Generated Rhythms Based On Parameter Changes
 	Channel active_channel = euclid_state.active_channel;
 	if (param_knob_moved.valid) {
-		Channel channel = active_channel;
-		uint8_t length = euclid_get_length(&params, channel);
-		uint8_t density = euclid_get_density(&params, channel);
-		uint8_t offset = euclid_get_offset(&params, channel);
+		const Channel channel = active_channel;
+		const uint8_t length = euclid_get_length(&params, channel);
+		const uint8_t density = euclid_get_density(&params, channel);
+		const uint8_t offset = euclid_get_offset(&params, channel);
 
 		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 	}
@@ -193,19 +193,19 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 	/* UPDATE SEQUENCER */
 
 	// Clock ticks merge the internal and external clocks
-	bool clock_tick = events->trig || events->internal_clock_tick;
+	const bool clock_tick = events->trig || events->internal_clock_tick;
 
 	// Tracks if any of the sequencers' states have been updated this cycle
-	bool sequencers_updated = (clock_tick || events->reset);
+	const bool sequencers_updated = (clock_tick || events->reset);
 
 	// Bitflags storing which output channels will fire this cycle, indexed by
 	// `OutputChannel`.
-	uint8_t out_channels_firing = euclid_update_sequencers(events);
+	const uint8_t out_channels_firing = euclid_update_sequencers(events);
 
 	/* OUTPUT */
 
 	for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-		bool should_fire = out_channels_firing & (0x01 << out_channel);
+		const bool should_fire = out_channels_firing & (0x01 << out_channel);
 		if (should_fire) {
 			output_set_high((OutputChannel)out_channel);
 		}
@@ -213,8 +213,8 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 
 	if (sequencers_updated) {
 		// Update output pulse length and timeout
-		Milliseconds time_since_last = now - output_pulse_timeout.inner.start;
-		Milliseconds pulse_length = CONSTRAIN(time_since_last / 5, 2, 5);
+		const Milliseconds time_since_last = now - output_pulse_timeout.inner.start;
+		const Milliseconds pulse_length = CONSTRAIN(time_since_last / 5, 2, 5);
 		output_pulse_timeout.inner.duration = pulse_length;
 
 		timeout_once_reset(&output_pulse_timeout, now);
@@ -236,7 +236,7 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 	if (sequencers_updated) {
 		// Update playhead flash duration based on the last interval between two
 		// clock or reset signals received.
-		Milliseconds previous_period = now - last_clock_or_reset;
+		const Milliseconds previous_period = now - last_clock_or_reset;
 		playhead_flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
 		last_clock_or_reset = now;
 
@@ -300,7 +300,7 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 /* INTERNAL */
 
 static void euclid_handle_encoder_push(EncoderIdx enc_idx) {
-	ChannelOpt active_channel_new = channel_for_encoder(enc_idx);
+	const ChannelOpt active_channel_new = channel_for_encoder(enc_idx);
 	if (active_channel_new.valid) {
 		euclid_state.active_channel = active_channel_new.inner;
 	}
@@ -309,21 +309,21 @@ static void euclid_handle_encoder_push(EncoderIdx enc_idx) {
 static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
 
-	Channel active_channel = euclid_state.active_channel;
-	ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
-	ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
-	ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);
+	const Channel active_channel = euclid_state.active_channel;
+	const ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
+	const ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
+	const ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);
 
 	// Handle Length Knob Movement
 	int nknob = enc_move[ENCODER_1];
 	if (nknob != 0) {
 		param_knob_moved = euclid_param_opt(EUCLID_PARAM_LENGTH);
 
-		Channel channel = active_channel;
+		const Channel channel = active_channel;
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
-		uint8_t position = euclid_state.sequencer_positions[channel];
+		const uint8_t position = euclid_state.sequencer_positions[channel];
 
 		// Keep length in bounds
 		if (length >= PARAM_LENGTH_MAX) {
@@ -363,8 +363,8 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	if (kknob != 0) {
 		param_knob_moved = euclid_param_opt(EUCLID_PARAM_DENSITY);
 
-		Channel channel = active_channel;
-		int length = euclid_get_length(&params, channel);
+		const Channel channel = active_channel;
+		const int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 
 		// Keep density in bounds
@@ -385,8 +385,8 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	if (oknob != 0) {
 		param_knob_moved = euclid_param_opt(EUCLID_PARAM_OFFSET);
 
-		Channel channel = active_channel;
-		int length = euclid_get_length(&params, channel);
+		const Channel channel = active_channel;
+		const int length = euclid_get_length(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
 
 		// Keep offset in bounds
@@ -407,7 +407,7 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 
 static uint8_t euclid_update_sequencers(const InputEvents *events) {
 	// Clock ticks merge the internal and external clocks
-	bool clock_tick = events->trig || events->internal_clock_tick;
+	const bool clock_tick = events->trig || events->internal_clock_tick;
 
 	uint8_t out_channels_firing = 0;
 
@@ -454,7 +454,7 @@ static void sequencer_handle_clock() {
 static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		uint8_t position = euclid_state.sequencer_positions[channel];
-		uint8_t length = euclid_get_length(&params, channel);
+		const uint8_t length = euclid_get_length(&params, channel);
 
 		// Move sequencer playhead to next step
 		position++;
@@ -469,9 +469,9 @@ static uint8_t sequencer_read_current_step() {
 	uint8_t out_channels_firing = 0;
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		uint8_t length = euclid_get_length(&params, channel);
-		uint8_t position = euclid_state.sequencer_positions[channel];
-		uint16_t pattern = generated_rhythms[channel];
+		const uint8_t length = euclid_get_length(&params, channel);
+		const uint8_t position = euclid_state.sequencer_positions[channel];
+		const uint16_t pattern = generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
 		bool step_is_active = pattern_read(pattern, length, position);
@@ -489,18 +489,18 @@ static uint8_t sequencer_read_current_step() {
 }
 
 static inline void draw_channel(Channel channel) {
-	uint8_t length = euclid_get_length(&params, channel);
-	uint8_t position = euclid_state.sequencer_positions[channel];
-	uint16_t pattern = generated_rhythms[channel];
+	const uint8_t length = euclid_get_length(&params, channel);
+	const uint8_t position = euclid_state.sequencer_positions[channel];
+	const uint16_t pattern = generated_rhythms[channel];
 
 	// Clear rows
-	uint8_t row = channel * 2;
+	const uint8_t row = channel * 2;
 	framebuffer_row_off(row);
 	framebuffer_row_off(row + 1);
 
-	bool showing_length_display = (adjustment_display_state.visible) &&
-	                              (channel == adjustment_display_state.channel) &&
-	                              (adjustment_display_state.parameter == EUCLID_PARAM_LENGTH);
+	const bool showing_length_display = (adjustment_display_state.visible) &&
+	                                    (channel == adjustment_display_state.channel) &&
+	                                    (adjustment_display_state.parameter == EUCLID_PARAM_LENGTH);
 	if (showing_length_display) {
 		draw_channel_length(channel, pattern, length);
 	}
@@ -508,7 +508,7 @@ static inline void draw_channel(Channel channel) {
 }
 
 static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length) {
-	uint8_t row = channel * 2;
+	const uint8_t row = channel * 2;
 
 	for (uint8_t step = length; step < 16; step++) {
 		uint8_t x = step;
@@ -523,7 +523,7 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
 }
 
 static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
-	uint8_t row = channel * 2;
+	const uint8_t row = channel * 2;
 
 	for (uint8_t step = 0; step < length; step++) {
 		uint8_t x = step;
@@ -549,7 +549,7 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
-	uint8_t idx = length - position - 1;
+	const uint8_t idx = length - position - 1;
 	return (pattern >> idx) & 0x01;
 }
 
@@ -563,7 +563,7 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// 1280-256 = an input range of 1024, or 2^10
 	clock_period = CONSTRAIN(clock_period, 256, 1280);
 	// Subtract input min
-	Milliseconds delta = clock_period - 256;
+	const Milliseconds delta = clock_period - 256;
 	// (delta / input range) * output range. Input range is 2^10, output range is
 	// 2^7, so just divide by 2^3.
 	Milliseconds result = delta >> 3;
@@ -603,7 +603,7 @@ static inline uint8_t euclid_param_get(const Params *params, Channel channel, Eu
 }
 
 static inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
-	ParamIdx idx = euclid_param_idx(channel, kind);
+	const ParamIdx idx = euclid_param_idx(channel, kind);
 	params->values[idx] = val;
 }
 
