@@ -123,14 +123,6 @@ EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
 
 void euclid_init(void);
 void euclid_update(const InputEvents *events, Milliseconds now);
-void euclid_handle_encoder_push(EncoderIdx enc_idx);
-EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move);
-
-// Returns bitflags storing which output channels will fire this cycle, indexed
-// by `OutputChannel`.
-uint8_t euclid_update_sequencers(const InputEvents *events);
-
-void euclid_draw_channels(void);
 
 #ifdef __cplusplus
 }

@@ -42,6 +42,12 @@ static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME
 
 /* DECLARATIONS */
 
+static void euclid_handle_encoder_push(EncoderIdx enc_idx);
+static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move);
+// Returns bitflags storing which output channels will fire this cycle, indexed
+// by `OutputChannel`.
+static uint8_t euclid_update_sequencers(const InputEvents *events);
+static void euclid_draw_channels(void);
 static void sequencer_handle_reset();
 static void sequencer_handle_clock();
 static void sequencer_advance();
@@ -244,14 +250,16 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 	}
 }
 
-void euclid_handle_encoder_push(EncoderIdx enc_idx) {
+/* INTERNAL */
+
+static void euclid_handle_encoder_push(EncoderIdx enc_idx) {
 	ChannelOpt active_channel_new = channel_for_encoder(enc_idx);
 	if (active_channel_new.valid) {
 		euclid_state.active_channel = active_channel_new.inner;
 	}
 }
 
-EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
+static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
 
 	Channel active_channel = euclid_state.active_channel;
@@ -350,7 +358,7 @@ EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	return param_knob_moved;
 }
 
-uint8_t euclid_update_sequencers(const InputEvents *events) {
+static uint8_t euclid_update_sequencers(const InputEvents *events) {
 	// Clock ticks merge the internal and external clocks
 	bool clock_tick = events->trig || events->internal_clock_tick;
 
@@ -369,13 +377,11 @@ uint8_t euclid_update_sequencers(const InputEvents *events) {
 	return out_channels_firing;
 }
 
-void euclid_draw_channels(void) {
+static void euclid_draw_channels(void) {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		draw_channel((Channel)channel);
 	}
 }
-
-/* INTERNAL */
 
 static void sequencer_handle_reset() {
 	// Go to the first step for each channel
