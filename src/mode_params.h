@@ -9,6 +9,8 @@ extern "C" {
 
 void mode_params_validate(Params *params, Mode mode);
 
+Address mode_param_address(Mode mode, ParamIdx idx);
+
 #ifdef __cplusplus
 }
 #endif

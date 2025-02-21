@@ -59,8 +59,6 @@ void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
 /// Clear `PARAM_FLAG_MODIFIED` for all parameters
 void param_flags_clear_all_modified(Params *params, Mode mode);
 
-Address param_address(Mode mode, ParamIdx idx);
-
 #if LOGGING_ENABLED
 
 #define PARAM_NAME_LEN 3

@@ -1,6 +1,7 @@
 #include "eeprom.h"
 
 #include "logging.h"
+#include "mode_params.h"
 
 #if EEPROM_READ || EEPROM_WRITE
 #include <EEPROM.h>
@@ -11,7 +12,7 @@ void eeprom_params_load(Params *params, Mode mode) {
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
 #if EEPROM_READ
-		const Address addr = param_address(mode, (ParamIdx)idx);
+		const Address addr = mode_param_address(mode, (ParamIdx)idx);
 		params->values[idx] = EEPROM.read(addr);
 #else
 		params.values[idx] = 0;
@@ -33,7 +34,7 @@ void eeprom_save_all_needing_write(Params *params, Mode mode) {
 		param_flags_clear(params, idx, PARAM_FLAG_NEEDS_WRITE);
 
 		const uint8_t val = params->values[idx];
-		const Address addr = param_address(mode, (ParamIdx)idx);
+		const Address addr = mode_param_address(mode, (ParamIdx)idx);
 		EEPROM.write(addr, val);
 
 		log_eeprom_write(mode, idx, addr, val);
