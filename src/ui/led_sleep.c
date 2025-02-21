@@ -21,7 +21,7 @@ void led_sleep_init(Milliseconds now) {
 }
 
 // cppcheck-suppress unusedFunction
-LedSleepUpdate led_sleep_update(bool postpone_sleep, Milliseconds now) {
+LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now) {
 	// Handle transition to wake state
 	if (postpone_sleep) {
 		timeout_reset(&dim_timeout, now);
