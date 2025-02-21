@@ -121,6 +121,7 @@ EuclidParamOpt euclid_param_opt(EuclidParam inner);
 /// Given an `EncoderIdx`, return the associated Euclidean parameter
 EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
 
+void euclid_update(const InputEvents *events, Milliseconds now);
 void euclid_handle_encoder_push(EncoderIdx enc_idx);
 EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move);
 

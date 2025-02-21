@@ -1,7 +1,13 @@
 #include "euclid.h"
 
+#include "common/math.h"
 #include "config.h"
+#include "hardware/output.h"
+#include "ui/active_channel.h"
 #include "ui/framebuffer.h"
+#include "ui/indicators.h"
+
+#include <euclidean.h>
 
 /* GLOBALS */
 
@@ -20,8 +26,19 @@ AdjustmentDisplayState adjustment_display_state = {
     .visible = false,
 };
 
+static Milliseconds last_clock_or_reset;
+
+static TimeoutOnce output_pulse_timeout = {
+    .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
+
 // Tracks the playhead flash itself
 TimeoutOnce playhead_flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}};
+// Track the time since the playhead has moved so we can make it flash in its idle loop
+static Timeout playhead_idle_timeout = {.duration = PLAYHEAD_IDLE_TIME};
+// Loop for making the playhead flash periodically after it is idle
+static Timeout playhead_idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERIOD};
+
+static Timeout adjustment_display_timeout = {.duration = ADJUSTMENT_DISPLAY_TIME};
 
 /* DECLARATIONS */
 
@@ -41,6 +58,7 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 /// @param position The step at which to read. Must be < `length`.
 /// @return `true` if there is an active step at this position, `false` otherwise.
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
+static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 
 /* EXTERNAL */
@@ -80,6 +98,131 @@ EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx) {
 		default:
 			return EUCLID_PARAM_OPT_NONE;
 			break;
+	}
+}
+
+void euclid_update(const InputEvents *events, Milliseconds now) {
+	euclid_handle_encoder_push(events->enc_push);
+
+	// Note the param associated with a knob that was moved so we can re-generate
+	// the Euclidean rhythms and show the adjustment display.
+	EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(events->enc_move);
+
+	// Update Generated Rhythms Based On Parameter Changes
+	Channel active_channel = euclid_state.active_channel;
+	if (param_knob_moved.valid) {
+		Channel channel = active_channel;
+		uint8_t length = euclid_get_length(&params, channel);
+		uint8_t density = euclid_get_density(&params, channel);
+		uint8_t offset = euclid_get_offset(&params, channel);
+
+		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
+	}
+
+	/* UPDATE SEQUENCER */
+
+	// Clock ticks merge the internal and external clocks
+	bool clock_tick = events->trig || events->internal_clock_tick;
+
+	// Tracks if any of the sequencers' states have been updated this cycle
+	bool sequencers_updated = (clock_tick || events->reset);
+
+	// Bitflags storing which output channels will fire this cycle, indexed by
+	// `OutputChannel`.
+	uint8_t out_channels_firing = euclid_update_sequencers(events);
+
+	/* OUTPUT */
+
+	for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
+		bool should_fire = out_channels_firing & (0x01 << out_channel);
+		if (should_fire) {
+			output_set_high((OutputChannel)out_channel);
+		}
+	}
+
+	if (sequencers_updated) {
+		// Update output pulse length and timeout
+		Milliseconds time_since_last = now - output_pulse_timeout.inner.start;
+		Milliseconds pulse_length = CONSTRAIN(time_since_last / 5, 2, 5);
+		output_pulse_timeout.inner.duration = pulse_length;
+
+		timeout_once_reset(&output_pulse_timeout, now);
+	}
+
+	// FINISH ANY PULSES THAT ARE ACTIVE
+	if (timeout_once_fired(&output_pulse_timeout, now)) {
+		output_clear_all();
+	}
+
+	/* DRAWING - ACTIVE CHANNEL DISPLAY */
+
+	if (events->enc_push != ENCODER_NONE) {
+		active_channel_display_draw(active_channel);
+	}
+
+	/* DRAWING - CHANNELS */
+
+	if (sequencers_updated) {
+		// Update playhead flash duration based on the last interval between two
+		// clock or reset signals received.
+		Milliseconds previous_period = now - last_clock_or_reset;
+		playhead_flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
+		last_clock_or_reset = now;
+
+		// Reset playhead flash
+		timeout_once_reset(&playhead_flash_timeout, now);
+
+		// Reset playhead idle
+		timeout_reset(&playhead_idle_timeout, now);
+	}
+
+	// Update playhead idle - Make playhead flash periodically when it hasn't
+	// moved in a certain amount of time
+	bool playhead_flash_updated = false;
+	if (timeout_fired(&playhead_idle_timeout, now)) {
+		if (timeout_loop(&playhead_idle_loop_timeout, now)) {
+			playhead_flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
+			timeout_once_reset(&playhead_flash_timeout, now);
+			playhead_flash_updated = true;
+		}
+	}
+
+	// Update playhead flash
+	if (timeout_once_fired(&playhead_flash_timeout, now)) {
+		playhead_flash_updated = true;
+	}
+
+	// Tracks if the screen needs to be redrawn.
+	bool needs_redraw = sequencers_updated || playhead_flash_updated;
+
+	if (param_knob_moved.valid) {
+		// If parameters have changed, reset the adjustment display timeout and state
+		adjustment_display_state.channel = active_channel;
+		adjustment_display_state.parameter = param_knob_moved.inner;
+		adjustment_display_state.visible = true;
+		timeout_reset(&adjustment_display_timeout, now);
+
+		needs_redraw = true;
+	} else {
+		// If no parameters have changed, check if the adjustment display still
+		// needs to be shown, and hide it if it doesn't
+		if (adjustment_display_state.visible) {
+			bool should_be_hidden = timeout_fired(&adjustment_display_timeout, now);
+			if (should_be_hidden) {
+				adjustment_display_state.visible = false;
+				needs_redraw = true;
+			}
+		}
+	}
+
+	if (needs_redraw) {
+		euclid_draw_channels();
+	}
+
+	/* DRAWING - OUTPUT INDICATORS */
+
+	if (sequencers_updated) {
+		indicators_output_draw_latching(out_channels_firing);
 	}
 }
 
@@ -337,6 +480,25 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
 	uint8_t idx = length - position - 1;
 	return (pattern >> idx) & 0x01;
+}
+
+static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
+	// This is a standard "scale from input range to output range" function, but
+	// it uses specific ranges so that we can avoid multiplication or division by
+	// numbers that aren't powers of 2.
+
+	// 256ms min period = ~234bpm
+	// 1280ms max period = ~47bpm
+	// 1280-256 = an input range of 1024, or 2^10
+	clock_period = CONSTRAIN(clock_period, 256, 1280);
+	// Subtract input min
+	Milliseconds delta = clock_period - 256;
+	// (delta / input range) * output range. Input range is 2^10, output range is
+	// 2^7, so just divide by 2^3.
+	Milliseconds result = delta >> 3;
+	// Add output min
+	result += 64;
+	return result;
 }
 
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
