@@ -128,8 +128,6 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 /// Wrap the provided value as an occupied optional
 static EuclidParamOpt euclid_param_opt(EuclidParam inner);
-/// Given an `EncoderIdx`, return the associated Euclidean parameter
-static EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
 
 /// Return the `ParamIdx` for a given a channel and param kind
 static inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
@@ -621,21 +619,4 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 
 static EuclidParamOpt euclid_param_opt(EuclidParam inner) {
 	return (EuclidParamOpt){.inner = inner, .valid = true};
-}
-
-static EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx) {
-	switch (enc_idx) {
-		case ENCODER_1:
-			return (EuclidParamOpt){.inner = EUCLID_PARAM_LENGTH, .valid = true};
-			break;
-		case ENCODER_2:
-			return (EuclidParamOpt){.inner = EUCLID_PARAM_DENSITY, .valid = true};
-			break;
-		case ENCODER_3:
-			return (EuclidParamOpt){.inner = EUCLID_PARAM_OFFSET, .valid = true};
-			break;
-		default:
-			return EUCLID_PARAM_OPT_NONE;
-			break;
-	}
 }
