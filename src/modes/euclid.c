@@ -28,9 +28,6 @@ static const uint8_t BEAT_DENSITY_DEFAULT = 4;
 static const uint8_t BEAT_OFFSET_MIN = 0;
 static const uint8_t BEAT_OFFSET_MAX = 15;
 static const uint8_t BEAT_OFFSET_DEFAULT = 0;
-// Sequencer position
-static const uint8_t BEAT_POSITION_MAX = 15;
-static const uint8_t BEAT_POSITION_DEFAULT = 0;
 
 /* DATA STRUCTURES */
 
