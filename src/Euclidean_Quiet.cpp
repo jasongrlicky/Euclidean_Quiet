@@ -32,6 +32,7 @@ static Mode active_mode = MODE_EUCLID;
 
 static void active_mode_switch(Mode mode);
 static void mode_init(Mode mode);
+static void mode_update(Mode mode, const InputEvents *events, Milliseconds now);
 static void params_validate(Params *params, Mode mode);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Params *params, Mode mode);
@@ -66,13 +67,10 @@ void loop() {
 
 	internal_clock_update(&events_in, now);
 
-	/* HANDLE INPUT */
-
-	param_flags_clear_all_modified(&params, active_mode);
-
 	/* UPDATE MODE */
 
-	euclid_update(&events_in, now);
+	param_flags_clear_all_modified(&params, active_mode);
+	mode_update(active_mode, &events_in, now);
 
 	/* DRAWING - INPUT INDICATORS */
 
@@ -119,6 +117,14 @@ static void mode_init(Mode mode) {
 	switch (mode) {
 		case MODE_EUCLID:
 			euclid_init();
+			break;
+	}
+}
+
+static void mode_update(Mode mode, const InputEvents *events, Milliseconds now) {
+	switch (mode) {
+		case MODE_EUCLID:
+			euclid_update(events, now);
 			break;
 	}
 }
