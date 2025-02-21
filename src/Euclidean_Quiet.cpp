@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 
+#include "common/math.h"
 #include "common/timeout.h"
 #include "common/types.h"
 #include "hardware/input.h"
@@ -139,7 +140,8 @@ void loop() {
 
 	if (sequencers_updated) {
 		// Update output pulse length and timeout
-		Milliseconds pulse_length = constrain(((now - output_pulse_timeout.inner.start) / 5), 2, 5);
+		Milliseconds time_since_last = now - output_pulse_timeout.inner.start;
+		Milliseconds pulse_length = CONSTRAIN(time_since_last / 5, 2, 5);
 		output_pulse_timeout.inner.duration = pulse_length;
 
 		timeout_once_reset(&output_pulse_timeout, now);
@@ -259,7 +261,7 @@ static Milliseconds calc_playhead_flash_time(Milliseconds clock_period) {
 	// 256ms min period = ~234bpm
 	// 1280ms max period = ~47bpm
 	// 1280-256 = an input range of 1024, or 2^10
-	clock_period = constrain(clock_period, 256, 1280);
+	clock_period = CONSTRAIN(clock_period, 256, 1280);
 	// Subtract input min
 	Milliseconds delta = clock_period - 256;
 	// (delta / input range) * output range. Input range is 2^10, output range is
