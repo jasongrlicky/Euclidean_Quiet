@@ -17,8 +17,6 @@
 #include "ui/indicators.h"
 #include "ui/led_sleep.h"
 
-#include <euclidean.h>
-
 /* GLOBALS */
 
 static Mode active_mode = MODE_EUCLID;
