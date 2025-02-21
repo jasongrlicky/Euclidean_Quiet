@@ -127,7 +127,7 @@ static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 /// Wrap the provided value as an occupied optional
-static EuclidParamOpt euclid_param_opt(EuclidParam inner);
+static inline EuclidParamOpt euclid_param_opt(EuclidParam inner);
 /// Return the `ParamIdx` for a given a channel and param kind
 static inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind);
 static inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind);
@@ -592,7 +592,7 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 	}
 }
 
-static EuclidParamOpt euclid_param_opt(EuclidParam inner) {
+static inline EuclidParamOpt euclid_param_opt(EuclidParam inner) {
 	return (EuclidParamOpt){.inner = inner, .valid = true};
 }
 
