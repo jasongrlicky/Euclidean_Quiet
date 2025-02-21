@@ -217,13 +217,15 @@ void loop() {
 		euclid_draw_channels();
 	}
 
-	/* DRAWING - INDICATORS */
-
-	indicators_input_update(&events_in, now);
+	/* DRAWING - OUTPUT INDICATORS */
 
 	if (sequencers_updated) {
 		indicators_output_draw_latching(out_channels_firing);
 	}
+
+	/* DRAWING - INPUT INDICATORS */
+
+	indicators_input_update(&events_in, now);
 
 	/* UPDATE LED DISPLAY */
 
