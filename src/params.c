@@ -80,11 +80,3 @@ void param_name(char *result, Mode mode, ParamIdx idx) {
 	}
 }
 #endif
-
-void mode_params_validate(Params *params, Mode mode) {
-	switch (mode) {
-		case MODE_EUCLID:
-			euclid_params_validate(params);
-			break;
-	}
-}

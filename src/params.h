@@ -61,8 +61,6 @@ void param_flags_clear_all_modified(Params *params, Mode mode);
 
 Address param_address(Mode mode, ParamIdx idx);
 
-void mode_params_validate(Params *params, Mode mode);
-
 #if LOGGING_ENABLED
 
 #define PARAM_NAME_LEN 3
