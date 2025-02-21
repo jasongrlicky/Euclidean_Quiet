@@ -189,7 +189,7 @@ EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	return param_knob_moved;
 }
 
-uint8_t euclid_update(const InputEvents *events) {
+uint8_t euclid_update_sequencers(const InputEvents *events) {
 	// Clock ticks merge the internal and external clocks
 	bool clock_tick = events->trig || events->internal_clock_tick;
 

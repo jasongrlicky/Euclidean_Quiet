@@ -126,7 +126,7 @@ void loop() {
 
 	// Bitflags storing which output channels will fire this cycle, indexed by
 	// `OutputChannel`.
-	uint8_t out_channels_firing = euclid_update(&events_in);
+	uint8_t out_channels_firing = euclid_update_sequencers(&events_in);
 
 	/* OUTPUT */
 
