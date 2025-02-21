@@ -68,6 +68,7 @@ void loop() {
 	/* UPDATE MODE */
 	param_flags_clear_all_modified(&params, active_mode);
 	mode_update(active_mode, &events_in, now);
+	log_all_modified_params(&params, active_mode);
 
 	/* DRAWING - INPUT INDICATORS */
 	indicators_input_update(&events_in, now);
@@ -91,7 +92,6 @@ void loop() {
 	eeprom_save_all_needing_write(&params, active_mode);
 
 	log_cycle_time_end(now);
-	log_all_modified_params(&params, active_mode);
 }
 
 /* INTERNAL */
