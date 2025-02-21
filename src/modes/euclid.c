@@ -68,7 +68,7 @@ typedef struct AdjustmentDisplayState {
 
 /* GLOBALS */
 
-static EuclidState euclid_state = {
+static EuclidState state = {
     .active_channel = CHANNEL_1,
     .sequencer_positions = {0, 0, 0},
     .sequencer_running = false,
@@ -165,11 +165,11 @@ void euclid_init(void) {
 	}
 
 	// Select first channel on startup
-	euclid_state.active_channel = CHANNEL_1;
+	state.active_channel = CHANNEL_1;
 
 	// Draw initial UI
 	euclid_draw_channels();
-	active_channel_display_draw(euclid_state.active_channel);
+	active_channel_display_draw(state.active_channel);
 }
 
 void euclid_update(const InputEvents *events, Milliseconds now) {
@@ -180,7 +180,7 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 	const EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(events->enc_move);
 
 	// Update Generated Rhythms Based On Parameter Changes
-	Channel active_channel = euclid_state.active_channel;
+	Channel active_channel = state.active_channel;
 	if (param_knob_moved.valid) {
 		const Channel channel = active_channel;
 		const uint8_t length = euclid_get_length(&params, channel);
@@ -302,14 +302,14 @@ void euclid_update(const InputEvents *events, Milliseconds now) {
 static void euclid_handle_encoder_push(EncoderIdx enc_idx) {
 	const ChannelOpt active_channel_new = channel_for_encoder(enc_idx);
 	if (active_channel_new.valid) {
-		euclid_state.active_channel = active_channel_new.inner;
+		state.active_channel = active_channel_new.inner;
 	}
 }
 
 static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
 
-	const Channel active_channel = euclid_state.active_channel;
+	const Channel active_channel = state.active_channel;
 	const ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
 	const ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
 	const ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);
@@ -323,7 +323,7 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 		int length = euclid_get_length(&params, channel);
 		uint8_t density = euclid_get_density(&params, channel);
 		uint8_t offset = euclid_get_offset(&params, channel);
-		const uint8_t position = euclid_state.sequencer_positions[channel];
+		const uint8_t position = state.sequencer_positions[channel];
 
 		// Keep length in bounds
 		if (length >= PARAM_LENGTH_MAX) {
@@ -354,7 +354,7 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
-			euclid_state.sequencer_positions[channel] = 0;
+			state.sequencer_positions[channel] = 0;
 		}
 	}
 
@@ -433,27 +433,27 @@ static void euclid_draw_channels(void) {
 static void sequencer_handle_reset() {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		euclid_state.sequencer_positions[channel] = 0;
+		state.sequencer_positions[channel] = 0;
 	}
 
 	// Stop the sequencer
-	euclid_state.sequencer_running = false;
+	state.sequencer_running = false;
 }
 
 static void sequencer_handle_clock() {
 	// Advance sequencer if it is running
-	if (euclid_state.sequencer_running) {
+	if (state.sequencer_running) {
 		// Only advance if sequencer is running
 		sequencer_advance();
 	} else {
 		// If sequencer is stopped, start it so that the next clock advances
-		euclid_state.sequencer_running = true;
+		state.sequencer_running = true;
 	}
 }
 
 static void sequencer_advance() {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		uint8_t position = euclid_state.sequencer_positions[channel];
+		uint8_t position = state.sequencer_positions[channel];
 		const uint8_t length = euclid_get_length(&params, channel);
 
 		// Move sequencer playhead to next step
@@ -461,7 +461,7 @@ static void sequencer_advance() {
 		if (position >= length) {
 			position = 0;
 		}
-		euclid_state.sequencer_positions[channel] = position;
+		state.sequencer_positions[channel] = position;
 	}
 }
 
@@ -470,7 +470,7 @@ static uint8_t sequencer_read_current_step() {
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		const uint8_t length = euclid_get_length(&params, channel);
-		const uint8_t position = euclid_state.sequencer_positions[channel];
+		const uint8_t position = state.sequencer_positions[channel];
 		const uint16_t pattern = generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
@@ -490,7 +490,7 @@ static uint8_t sequencer_read_current_step() {
 
 static inline void draw_channel(Channel channel) {
 	const uint8_t length = euclid_get_length(&params, channel);
-	const uint8_t position = euclid_state.sequencer_positions[channel];
+	const uint8_t position = state.sequencer_positions[channel];
 	const uint16_t pattern = generated_rhythms[channel];
 
 	// Clear rows
