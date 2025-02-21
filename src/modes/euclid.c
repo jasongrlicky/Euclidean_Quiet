@@ -71,16 +71,16 @@ typedef struct AdjustmentDisplayState {
 
 /* GLOBALS */
 
-EuclidState euclid_state = {
+static EuclidState euclid_state = {
     .active_channel = CHANNEL_1,
     .sequencer_positions = {0, 0, 0},
     .sequencer_running = false,
 };
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
-uint16_t generated_rhythms[NUM_CHANNELS];
+static uint16_t generated_rhythms[NUM_CHANNELS];
 
-AdjustmentDisplayState adjustment_display_state = {
+static AdjustmentDisplayState adjustment_display_state = {
     .channel = CHANNEL_1,
     .parameter = EUCLID_PARAM_LENGTH,
     .visible = false,
@@ -92,7 +92,7 @@ static TimeoutOnce output_pulse_timeout = {
     .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
 
 // Tracks the playhead flash itself
-TimeoutOnce playhead_flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}};
+static TimeoutOnce playhead_flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}};
 // Track the time since the playhead has moved so we can make it flash in its idle loop
 static Timeout playhead_idle_timeout = {.duration = PLAYHEAD_IDLE_TIME};
 // Loop for making the playhead flash periodically after it is idle
@@ -127,39 +127,39 @@ static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position);
 static Milliseconds calc_playhead_flash_time(Milliseconds clock_period);
 static ChannelOpt channel_for_encoder(EncoderIdx enc_idx);
 /// Wrap the provided value as an occupied optional
-EuclidParamOpt euclid_param_opt(EuclidParam inner);
+static EuclidParamOpt euclid_param_opt(EuclidParam inner);
 /// Given an `EncoderIdx`, return the associated Euclidean parameter
-EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
+static EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx);
 
 /// Return the `ParamIdx` for a given a channel and param kind
-inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
+static inline ParamIdx euclid_param_idx(Channel channel, EuclidParam kind) {
 	return (ParamIdx)((channel * EUCLID_PARAMS_PER_CHANNEL) + kind);
 }
 
-inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind) {
+static inline uint8_t euclid_param_get(const Params *params, Channel channel, EuclidParam kind) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	return params->values[idx];
 }
 
 /// Set the value of the specified param. Do not use if Euclidean is not the
 /// active mode.
-inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
+static inline void euclid_param_set(Params *params, Channel channel, EuclidParam kind, uint8_t val) {
 	ParamIdx idx = euclid_param_idx(channel, kind);
 	params->values[idx] = val;
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_get_length(const Params *params, Channel channel) {
+static inline uint8_t euclid_get_length(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLID_PARAM_LENGTH);
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_get_density(const Params *params, Channel channel) {
+static inline uint8_t euclid_get_density(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLID_PARAM_DENSITY);
 }
 
 /// Do not use if Euclidean is not the active mode.
-inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
+static inline uint8_t euclid_get_offset(const Params *params, Channel channel) {
 	return euclid_param_get(params, channel, EUCLID_PARAM_OFFSET);
 }
 
@@ -619,9 +619,11 @@ static ChannelOpt channel_for_encoder(EncoderIdx enc_idx) {
 	}
 }
 
-EuclidParamOpt euclid_param_opt(EuclidParam inner) { return (EuclidParamOpt){.inner = inner, .valid = true}; }
+static EuclidParamOpt euclid_param_opt(EuclidParam inner) {
+	return (EuclidParamOpt){.inner = inner, .valid = true};
+}
 
-EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx) {
+static EuclidParamOpt euclid_param_for_encoder(EncoderIdx enc_idx) {
 	switch (enc_idx) {
 		case ENCODER_1:
 			return (EuclidParamOpt){.inner = EUCLID_PARAM_LENGTH, .valid = true};
