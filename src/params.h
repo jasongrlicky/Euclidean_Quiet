@@ -16,12 +16,6 @@ extern "C" {
  * mode has multiple parameters, in addition to its ephemeral state.
  */
 
-#define EUCLID_NUM_PARAMS 9
-/// How many params this mode has. Indexed by the `Mode` enum.
-static const uint8_t mode_num_params[NUM_MODES] = {
-    EUCLID_NUM_PARAMS, // EUCLID
-};
-
 #define PARAM_FLAGS_NONE 0x0
 #define PARAM_FLAG_MODIFIED 0x1
 #define PARAM_FLAG_NEEDS_WRITE 0x2
