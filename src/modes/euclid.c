@@ -13,7 +13,7 @@
 /* CONSTANTS */
 
 #define NUM_CHANNELS 3
-#define EUCLID_PARAMS_PER_CHANNEL 3
+static const uint8_t EUCLID_PARAMS_PER_CHANNEL = 3;
 
 // Bounds for three channel parameters
 // Length (N)
