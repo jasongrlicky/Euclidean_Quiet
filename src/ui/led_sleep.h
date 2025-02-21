@@ -8,16 +8,8 @@ extern "C" {
 
 #include "common/types.h"
 
-typedef enum LedSleepUpdate {
-	LED_SLEEP_UPDATE_NONE,
-	LED_SLEEP_UPDATE_WAKE,
-	LED_SLEEP_UPDATE_DIM,
-	LED_SLEEP_UPDATE_SLEEP,
-} LedSleepUpdate;
-
 void led_sleep_init(Milliseconds now);
 void led_sleep_update(bool postpone_sleep, Milliseconds now);
-LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now);
 
 #ifdef __cplusplus
 }

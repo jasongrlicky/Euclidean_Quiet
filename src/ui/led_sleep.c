@@ -4,16 +4,33 @@
 #include "config.h"
 #include "hardware/led.h"
 
+/* DATA STRUCTURES */
+
 typedef enum LedSleepState {
 	LED_SLEEP_STATE_WAKE,
 	LED_SLEEP_STATE_DIM,
 	LED_SLEEP_STATE_SLEEP,
 } LedSleepState;
 
+typedef enum LedSleepUpdate {
+	LED_SLEEP_UPDATE_NONE,
+	LED_SLEEP_UPDATE_WAKE,
+	LED_SLEEP_UPDATE_DIM,
+	LED_SLEEP_UPDATE_SLEEP,
+} LedSleepUpdate;
+
+/* GLOBALS */
+
 static LedSleepState state = LED_SLEEP_STATE_WAKE;
 
 static Timeout dim_timeout = {.duration = LED_DIM_TIME};
 static Timeout sleep_timeout = {.duration = LED_SLEEP_TIME};
+
+/* DECLARATION */
+
+static LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now);
+
+/* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
 void led_sleep_init(Milliseconds now) {
@@ -33,7 +50,9 @@ void led_sleep_update(bool postpone_sleep, Milliseconds now) {
 	}
 }
 
-LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now) {
+/* INTERNAL */
+
+static LedSleepUpdate led_sleep_decide(bool postpone_sleep, Milliseconds now) {
 	// Handle transition to wake state
 	if (postpone_sleep) {
 		timeout_reset(&dim_timeout, now);
