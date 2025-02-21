@@ -17,20 +17,20 @@
 
 // Bounds for three channel parameters
 // N: Beat Length
-#define BEAT_LENGTH_MIN 1
-#define BEAT_LENGTH_MAX 16
-#define BEAT_LENGTH_DEFAULT 16
+static const uint8_t BEAT_LENGTH_MIN = 1;
+static const uint8_t BEAT_LENGTH_MAX = 16;
+static const uint8_t BEAT_LENGTH_DEFAULT = 16;
 // K: Density
-#define BEAT_DENSITY_MIN 0
-#define BEAT_DENSITY_MAX 16
-#define BEAT_DENSITY_DEFAULT 4
+static const uint8_t BEAT_DENSITY_MIN = 0;
+static const uint8_t BEAT_DENSITY_MAX = 16;
+static const uint8_t BEAT_DENSITY_DEFAULT = 4;
 // O: Offset
-#define BEAT_OFFSET_MIN 0
-#define BEAT_OFFSET_MAX 15
-#define BEAT_OFFSET_DEFAULT 0
+static const uint8_t BEAT_OFFSET_MIN = 0;
+static const uint8_t BEAT_OFFSET_MAX = 15;
+static const uint8_t BEAT_OFFSET_DEFAULT = 0;
 // Sequencer position
-#define BEAT_POSITION_MAX 15
-#define BEAT_POSITION_DEFAULT 0
+static const uint8_t BEAT_POSITION_MAX = 15;
+static const uint8_t BEAT_POSITION_DEFAULT = 0;
 
 /* DATA STRUCTURES */
 
