@@ -1,7 +1,7 @@
 #include "indicators.h"
 
-#include "config.h"
 #include "common/timeout.h"
+#include "config.h"
 #include "framebuffer.h"
 
 #include <stdbool.h>
@@ -19,7 +19,7 @@ static uint8_t output_channel_led_x(OutputChannel channel);
 // cppcheck-suppress unusedFunction
 void indicators_input_update(const InputEvents *events, Milliseconds now) {
 	// Flash Trig indicator LED if we received a clock tick
-	bool clock_tick = events->trig || events->internal_clock_tick;
+	const bool clock_tick = events->trig || events->internal_clock_tick;
 	if (clock_tick) {
 		framebuffer_pixel_on(LED_IN_TRIG_X, LED_INDICATORS_Y);
 		timeout_once_reset(&trig_indicator_timeout, now);
@@ -43,9 +43,9 @@ void indicators_input_update(const InputEvents *events, Milliseconds now) {
 // cppcheck-suppress unusedFunction
 void indicators_output_draw_latching(uint8_t out_channels_firing) {
 	for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
-		uint8_t x = output_channel_led_x((OutputChannel)out_channel);
+		const uint8_t x = output_channel_led_x((OutputChannel)out_channel);
 
-		uint8_t active_step = (out_channels_firing >> out_channel) & 0x01;
+		const uint8_t active_step = (out_channels_firing >> out_channel) & 0x01;
 
 		framebuffer_pixel_set(x, LED_INDICATORS_Y, (Color)active_step);
 	}

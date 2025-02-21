@@ -72,11 +72,11 @@ void input_init(void) {
 // cppcheck-suppress unusedFunction
 void input_update(InputEvents *events, Milliseconds now) {
 	// Reset Input & Button
-	int reset_in_value = analogRead(PIN_IN_RESET);
+	const int reset_in_value = analogRead(PIN_IN_RESET);
 	events->reset = detect_rise_reset(reset_in_value);
 
 	// Trig Input
-	int trig_in_value = digitalRead(PIN_IN_TRIG);
+	const int trig_in_value = digitalRead(PIN_IN_TRIG);
 	events->trig = detect_rise_trig(trig_in_value);
 
 	// Encoder Movement
@@ -93,21 +93,21 @@ void input_update(InputEvents *events, Milliseconds now) {
 	}
 
 	// Encoder Pushes
-	int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
+	const int channel_switch_val = analogRead(PIN_IN_CHANNEL_SWITCH);
 	events->enc_push = detect_enc_push(channel_switch_val);
 }
 
 /* INTERNAL */
 
 static bool detect_rise_reset(int reset_in_value) {
-	bool above_threshold = (reset_in_value >= RESET_PIN_THRESHOLD);
-	bool should_toggle = reset_active ^ above_threshold;
+	const bool above_threshold = (reset_in_value >= RESET_PIN_THRESHOLD);
+	const bool should_toggle = reset_active ^ above_threshold;
 	reset_active ^= should_toggle;
 	return (reset_active && should_toggle);
 }
 
 static bool detect_rise_trig(int trig_in_value) {
-	bool result = (trig_in_value > trig_in_value_previous);
+	const bool result = (trig_in_value > trig_in_value_previous);
 
 	trig_in_value_previous = trig_in_value;
 
@@ -141,7 +141,7 @@ static EncoderIdx detect_enc_push(int channel_switch_val) {
 
 static int encoder_read(Encoder &enc) {
 	int result = 0;
-	int32_t value_read = enc.read();
+	const int32_t value_read = enc.read();
 	if (value_read == 0) {
 		enc.write(0);
 		result = 0;

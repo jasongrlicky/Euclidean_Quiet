@@ -31,7 +31,7 @@ static void mode_params_validate(Params *params, Mode mode);
 /* MAIN */
 
 void setup() {
-	Milliseconds now = millis();
+	const Milliseconds now = millis();
 
 	logging_init();
 	led_init();
@@ -43,7 +43,7 @@ void setup() {
 }
 
 void loop() {
-	Milliseconds now = millis();
+	const Milliseconds now = millis();
 
 	log_cycle_time_begin();
 
@@ -68,8 +68,8 @@ void loop() {
 	framebuffer_copy_row_to_display();
 
 	// Update LED Sleep
-	bool postpone_sleep = input_events_contains_any_external(&events_in);
-	LedSleepUpdate sleep_update = led_sleep_update(postpone_sleep, now);
+	const bool postpone_sleep = input_events_contains_any_external(&events_in);
+	const LedSleepUpdate sleep_update = led_sleep_update(postpone_sleep, now);
 	if (sleep_update == LED_SLEEP_UPDATE_WAKE) {
 		led_wake();
 	} else if (sleep_update == LED_SLEEP_UPDATE_DIM) {

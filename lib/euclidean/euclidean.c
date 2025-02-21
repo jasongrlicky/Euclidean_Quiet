@@ -61,8 +61,8 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
 	uint8_t b_count = length - a_count;
 
 	do {
-		uint8_t b_num_to_distribute_per_a = b_count / a_count;
-		uint8_t b_num_remainder = b_count - (a_count * b_num_to_distribute_per_a);
+		const uint8_t b_num_to_distribute_per_a = b_count / a_count;
+		const uint8_t b_num_remainder = b_count - (a_count * b_num_to_distribute_per_a);
 
 		// Append B onto A the number of times we could fully distribute Bs to As
 		for (uint8_t i = 0; i < b_num_to_distribute_per_a; i++) {
@@ -86,8 +86,8 @@ uint16_t euclidean_pattern(uint8_t length, uint8_t density) {
 			a_count = b_num_remainder;
 
 			// Note value for A before it gets modified
-			uint16_t a_prev = a;
-			uint8_t a_len_prev = a_len;
+			const uint16_t a_prev = a;
+			const uint8_t a_len_prev = a_len;
 
 			// Append B onto A, so A is now AB
 			a = binary_concat(a, b, b_len);
@@ -121,16 +121,16 @@ uint16_t pattern_rotate(uint16_t pattern, uint8_t pattern_len, uint8_t offset) {
 	}
 
 	// Create a mask of all 1s that is pattern_len long
-	uint16_t mask = ((1 << pattern_len) - 1);
+	const uint16_t mask = ((1 << pattern_len) - 1);
 
 	// Ignore any bits that are beyond pattern_len
 	pattern &= mask;
 
 	// Bits that do not get wrapped, they just get shifted right
-	uint16_t pattern_shifted = pattern >> offset;
+	const uint16_t pattern_shifted = pattern >> offset;
 
 	// Bits that get wrapped around to the left
-	uint16_t pattern_wrapped = pattern << (pattern_len - offset);
+	const uint16_t pattern_wrapped = pattern << (pattern_len - offset);
 
 	// Recombine the two parts of the pattern
 	uint16_t result = pattern_shifted | pattern_wrapped;

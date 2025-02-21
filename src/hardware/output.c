@@ -20,7 +20,7 @@ void output_init(void) {
 
 // cppcheck-suppress unusedFunction
 void output_set(OutputChannel channel, bool value) {
-	uint8_t pin = output_pin_from_channel(channel);
+	const uint8_t pin = output_pin_from_channel(channel);
 	digitalWrite(pin, (value) ? HIGH : LOW); // pulse out
 }
 

@@ -8,7 +8,7 @@ bool timeout_fired(const Timeout *timeout, Milliseconds now) {
 
 // cppcheck-suppress unusedFunction
 bool timeout_loop(Timeout *timeout, Milliseconds now) {
-	bool has_fired = timeout_fired(timeout, now);
+	const bool has_fired = timeout_fired(timeout, now);
 	if (has_fired) {
 		timeout_reset(timeout, now);
 	}
@@ -24,7 +24,7 @@ void timeout_once_reset(TimeoutOnce *timeout_once, Milliseconds now) {
 // cppcheck-suppress unusedFunction
 bool timeout_once_fired(TimeoutOnce *timeout_once, Milliseconds now) {
 	if (timeout_once->active) {
-		bool val = timeout_fired(&timeout_once->inner, now);
+		const bool val = timeout_fired(&timeout_once->inner, now);
 		if (val) {
 			timeout_once->active = false;
 		}

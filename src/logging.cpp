@@ -28,7 +28,7 @@ void log_cycle_time_begin() {
 
 void log_cycle_time_end(Milliseconds now) {
 #if LOGGING_ENABLED && LOGGING_CYCLE_TIME
-	Microseconds cycle_time = micros() - cycle_time_start;
+	const Microseconds cycle_time = micros() - cycle_time_start;
 	if (cycle_time > cycle_time_max) {
 		cycle_time_max = cycle_time;
 	}
@@ -80,7 +80,7 @@ void log_input_events(const InputEvents *events) {
 
 void log_all_modified_params(const Params *params, Mode mode) {
 #if LOGGING_ENABLED
-	uint8_t num_params = mode_num_params[mode];
+	const uint8_t num_params = mode_num_params[mode];
 
 	for (uint8_t idx = 0; idx < num_params; idx++) {
 		bool modified = param_flags_get(params, idx, PARAM_FLAG_MODIFIED);

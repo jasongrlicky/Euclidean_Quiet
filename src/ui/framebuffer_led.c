@@ -28,8 +28,8 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 
 // cppcheck-suppress unusedFunction
 void framebuffer_copy_row_to_display() {
-	uint8_t row = (out_row) % LED_ROWS;
-	uint16_t row_bits = framebuffer[row];
+	const uint8_t row = (out_row) % LED_ROWS;
+	const uint16_t row_bits = framebuffer[row];
 
 	uint8_t to_draw = 0;
 	for (uint8_t col = 0; col < LED_COLUMNS; col++) {
@@ -64,6 +64,6 @@ void framebuffer_update_color_animations(Milliseconds now) {
 /* INTERNAL */
 
 static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y) {
-	uint8_t val = (x + y + (ANIM_ANTS_NUM_FRAMES - frame)) / 2;
+	const uint8_t val = (x + y + (ANIM_ANTS_NUM_FRAMES - frame)) / 2;
 	return (val % 2);
 }
