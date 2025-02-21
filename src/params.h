@@ -6,10 +6,8 @@ extern "C" {
 
 #include "common/types.h"
 #include "config.h"
-#include "mode.h"
 
 #include <stdint.h>
-#include <string.h>
 
 /* Parameters are variables (stored as individual bytes) which are
  * programmatically tracked, read from and written to EEPROM, and logged. Each
