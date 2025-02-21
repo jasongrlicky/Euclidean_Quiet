@@ -30,7 +30,7 @@ static Mode active_mode = MODE_EUCLID;
 static void active_mode_switch(Mode mode);
 static void mode_init(Mode mode);
 static void mode_update(Mode mode, const InputEvents *events, Milliseconds now);
-static void params_validate(Params *params, Mode mode);
+static void mode_params_validate(Params *params, Mode mode);
 
 /* MAIN */
 
@@ -94,7 +94,7 @@ static void active_mode_switch(Mode mode) {
 	active_mode = mode;
 
 	eeprom_params_load(&params, mode);
-	params_validate(&params, mode);
+	mode_params_validate(&params, mode);
 
 	mode_init(mode);
 }
@@ -115,7 +115,7 @@ static void mode_update(Mode mode, const InputEvents *events, Milliseconds now) 
 	}
 }
 
-static void params_validate(Params *params, Mode mode) {
+static void mode_params_validate(Params *params, Mode mode) {
 	switch (mode) {
 		case MODE_EUCLID:
 			euclid_params_validate(params);
