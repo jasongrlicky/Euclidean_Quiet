@@ -25,6 +25,8 @@ static Mode active_mode = MODE_EUCLID;
 /* DECLARATIONS */
 
 static void active_mode_switch(Mode mode);
+/// Clear `PARAM_FLAG_MODIFIED` for all parameters
+static void mode_params_flags_clear_all_modified(Params *params, Mode mode);
 
 /* MAIN */
 
@@ -84,4 +86,12 @@ static void active_mode_switch(Mode mode) {
 	mode_params_validate(&params, mode);
 
 	mode_init(mode);
+}
+
+void mode_params_flags_clear_all_modified(Params *params, Mode mode) {
+	const uint8_t num_params = mode_num_params[mode];
+
+	for (uint8_t idx = 0; idx < num_params; idx++) {
+		param_flags_clear(params, idx, PARAM_FLAG_MODIFIED);
+	}
 }

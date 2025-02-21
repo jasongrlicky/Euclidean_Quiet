@@ -27,9 +27,6 @@ void mode_params_validate(Params *params, Mode mode);
 
 Address mode_param_address(Mode mode, ParamIdx idx);
 
-/// Clear `PARAM_FLAG_MODIFIED` for all parameters
-void mode_params_flags_clear_all_modified(Params *params, Mode mode);
-
 #if LOGGING_ENABLED
 
 #define PARAM_NAME_LEN 3
