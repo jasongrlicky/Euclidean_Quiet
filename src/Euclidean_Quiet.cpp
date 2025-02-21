@@ -2,8 +2,7 @@
 
 #include <Arduino.h>
 
-#include "common/timeout.h"
-#include "common/types.h"
+// #include "common/types.h"
 #include "hardware/eeprom.h"
 #include "hardware/input.h"
 #include "hardware/led.h"
@@ -13,7 +12,6 @@
 #include "modes/clock.h"
 #include "modes/euclid.h"
 #include "params.h"
-#include "ui/active_channel.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
 #include "ui/indicators.h"
