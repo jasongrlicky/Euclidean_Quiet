@@ -31,6 +31,7 @@ static Mode active_mode = MODE_EUCLID;
 /* DECLARATIONS */
 
 static void active_mode_switch(Mode mode);
+static void mode_init(Mode mode);
 static void params_validate(Params *params, Mode mode);
 /// Load state for the given mode into `params`.
 static void eeprom_params_load(Params *params, Mode mode);
@@ -44,11 +45,10 @@ void setup() {
 	logging_init();
 	led_init();
 	led_sleep_init(now);
-	active_mode_switch(MODE_EUCLID);
 	input_init();
 	output_init();
 
-	euclid_init();
+	active_mode_switch(MODE_EUCLID);
 
 	led_wake();
 }
@@ -110,8 +110,19 @@ void loop() {
 
 static void active_mode_switch(Mode mode) {
 	active_mode = mode;
+
 	eeprom_params_load(&params, mode);
 	params_validate(&params, mode);
+
+	mode_init(mode);
+}
+
+static void mode_init(Mode mode) {
+	switch (mode) {
+		case MODE_EUCLID:
+			euclid_init();
+			break;
+	}
 }
 
 static void params_validate(Params *params, Mode mode) {
