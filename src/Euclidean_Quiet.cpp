@@ -49,8 +49,6 @@ void setup() {
 	output_init();
 
 	active_mode_switch(MODE_EUCLID);
-
-	led_wake();
 }
 
 void loop() {
