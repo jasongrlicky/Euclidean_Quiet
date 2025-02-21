@@ -6,6 +6,7 @@ extern "C" {
 
 #include "common/types.h"
 #include "config.h"
+#include "mode.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -15,13 +16,7 @@ extern "C" {
  * mode has multiple parameters, in addition to its ephemeral state.
  */
 
-#define NUM_MODES 1
-typedef enum Mode {
-	MODE_EUCLID,
-} Mode;
-
 #define EUCLID_NUM_PARAMS 9
-
 /// How many params this mode has. Indexed by the `Mode` enum.
 static const uint8_t mode_num_params[NUM_MODES] = {
     EUCLID_NUM_PARAMS, // EUCLID
@@ -65,6 +60,8 @@ void param_flags_clear(Params *params, ParamIdx idx, uint8_t mask);
 void param_flags_clear_all_modified(Params *params, Mode mode);
 
 Address param_address(Mode mode, ParamIdx idx);
+
+void mode_params_validate(Params *params, Mode mode);
 
 #if LOGGING_ENABLED
 

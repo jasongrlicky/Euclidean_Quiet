@@ -9,6 +9,7 @@
 #include "hardware/output.h"
 #include "hardware/properties.h"
 #include "logging.h"
+#include "mode.h"
 #include "modes/clock.h"
 #include "modes/euclid.h"
 #include "params.h"
@@ -24,9 +25,6 @@ static Mode active_mode = MODE_EUCLID;
 /* DECLARATIONS */
 
 static void active_mode_switch(Mode mode);
-static void mode_init(Mode mode);
-static void mode_update(Mode mode, const InputEvents *events, Milliseconds now);
-static void mode_params_validate(Params *params, Mode mode);
 
 /* MAIN */
 
@@ -86,28 +84,4 @@ static void active_mode_switch(Mode mode) {
 	mode_params_validate(&params, mode);
 
 	mode_init(mode);
-}
-
-static void mode_init(Mode mode) {
-	switch (mode) {
-		case MODE_EUCLID:
-			euclid_init();
-			break;
-	}
-}
-
-static void mode_update(Mode mode, const InputEvents *events, Milliseconds now) {
-	switch (mode) {
-		case MODE_EUCLID:
-			euclid_update(events, now);
-			break;
-	}
-}
-
-static void mode_params_validate(Params *params, Mode mode) {
-	switch (mode) {
-		case MODE_EUCLID:
-			euclid_params_validate(params);
-			break;
-	}
 }
