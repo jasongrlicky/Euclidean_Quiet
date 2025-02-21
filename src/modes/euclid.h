@@ -5,7 +5,6 @@ extern "C" {
 #endif
 
 #include "common/events.h"
-#include "common/timeout.h"
 #include "common/types.h"
 #include "params.h"
 

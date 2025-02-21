@@ -1,6 +1,7 @@
 #include "euclid.h"
 
 #include "common/math.h"
+#include "common/timeout.h"
 #include "config.h"
 #include "hardware/output.h"
 #include "ui/active_channel.h"
