@@ -16,18 +16,18 @@
 #define EUCLID_PARAMS_PER_CHANNEL 3
 
 // Bounds for three channel parameters
-// N: Beat Length
-static const uint8_t BEAT_LENGTH_MIN = 1;
-static const uint8_t BEAT_LENGTH_MAX = 16;
-static const uint8_t BEAT_LENGTH_DEFAULT = 16;
-// K: Density
-static const uint8_t BEAT_DENSITY_MIN = 0;
-static const uint8_t BEAT_DENSITY_MAX = 16;
-static const uint8_t BEAT_DENSITY_DEFAULT = 4;
-// O: Offset
-static const uint8_t BEAT_OFFSET_MIN = 0;
-static const uint8_t BEAT_OFFSET_MAX = 15;
-static const uint8_t BEAT_OFFSET_DEFAULT = 0;
+// Length (N)
+static const uint8_t PARAM_LENGTH_MIN = 1;
+static const uint8_t PARAM_LENGTH_MAX = 16;
+static const uint8_t PARAM_LENGTH_DEFAULT = 16;
+// Density (K)
+static const uint8_t PARAM_DENSITY_MIN = 0;
+static const uint8_t PARAM_DENSITY_MAX = 16;
+static const uint8_t PARAM_DENSITY_DEFAULT = 4;
+// Offset (O)
+static const uint8_t PARAM_OFFSET_MIN = 0;
+static const uint8_t PARAM_OFFSET_MAX = 15;
+static const uint8_t PARAM_OFFSET_DEFAULT = 0;
 
 /* DATA STRUCTURES */
 
@@ -142,14 +142,14 @@ void euclid_params_validate(Params *params) {
 		uint8_t density = euclid_get_density(params, channel);
 		uint8_t offset = euclid_get_offset(params, channel);
 
-		if ((length > BEAT_LENGTH_MAX) || (length < BEAT_LENGTH_MIN)) {
-			euclid_param_set(params, channel, EUCLID_PARAM_LENGTH, BEAT_LENGTH_DEFAULT);
+		if ((length > PARAM_LENGTH_MAX) || (length < PARAM_LENGTH_MIN)) {
+			euclid_param_set(params, channel, EUCLID_PARAM_LENGTH, PARAM_LENGTH_DEFAULT);
 		}
-		if (density > BEAT_DENSITY_MAX || density > length) {
-			euclid_param_set(params, channel, EUCLID_PARAM_DENSITY, BEAT_DENSITY_DEFAULT);
+		if (density > PARAM_DENSITY_MAX || density > length) {
+			euclid_param_set(params, channel, EUCLID_PARAM_DENSITY, PARAM_DENSITY_DEFAULT);
 		}
-		if (offset > BEAT_OFFSET_MAX || offset > length) {
-			euclid_param_set(params, channel, EUCLID_PARAM_OFFSET, BEAT_OFFSET_DEFAULT);
+		if (offset > PARAM_OFFSET_MAX || offset > length) {
+			euclid_param_set(params, channel, EUCLID_PARAM_OFFSET, PARAM_OFFSET_DEFAULT);
 		}
 	}
 }
@@ -326,13 +326,13 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 		uint8_t position = euclid_state.sequencer_positions[channel];
 
 		// Keep length in bounds
-		if (length >= BEAT_LENGTH_MAX) {
-			length = BEAT_LENGTH_MAX;
+		if (length >= PARAM_LENGTH_MAX) {
+			length = PARAM_LENGTH_MAX;
 		}
-		if (length + nknob > BEAT_LENGTH_MAX) {
+		if (length + nknob > PARAM_LENGTH_MAX) {
 			nknob = 0;
 		}
-		if (length + nknob < BEAT_LENGTH_MIN) {
+		if (length + nknob < PARAM_LENGTH_MIN) {
 			nknob = 0;
 		}
 
@@ -371,7 +371,7 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 		if (density + kknob > length) {
 			kknob = 0;
 		}
-		if (density + kknob < BEAT_DENSITY_MIN) {
+		if (density + kknob < PARAM_DENSITY_MIN) {
 			kknob = 0;
 		}
 
@@ -393,7 +393,7 @@ static EuclidParamOpt euclid_handle_encoder_move(const int16_t *enc_move) {
 		if (offset + oknob > length - 1) {
 			oknob = 0;
 		}
-		if (offset + oknob < BEAT_OFFSET_MIN) {
+		if (offset + oknob < PARAM_OFFSET_MIN) {
 			oknob = 0;
 		}
 
