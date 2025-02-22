@@ -5,10 +5,10 @@ extern "C" {
 #endif
 
 #include "common/events.h"
+#include "common/params.h"
 #include "common/types.h"
 #include "config.h"
 #include "mode/mode.h"
-#include "params.h"
 
 void logging_init();
 void log_cycle_time_begin();

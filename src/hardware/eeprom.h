@@ -4,9 +4,9 @@
 extern "C" {
 #endif
 
+#include "common/params.h"
 #include "config.h"
 #include "mode/mode.h"
-#include "params.h"
 
 /// Load state for the given mode into `params`.
 void eeprom_params_load(Params *params, Mode mode);

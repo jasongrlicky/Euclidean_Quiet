@@ -5,8 +5,8 @@ extern "C" {
 #endif
 
 #include "common/events.h"
+#include "common/params.h"
 #include "common/types.h"
-#include "params.h"
 
 #include <stdbool.h>
 #include <stdint.h>

@@ -5,9 +5,9 @@ extern "C" {
 #endif
 
 #include "common/events.h"
+#include "common/params.h"
 #include "common/types.h"
 #include "config.h"
-#include "params.h"
 
 #define NUM_MODES 1
 typedef enum Mode {

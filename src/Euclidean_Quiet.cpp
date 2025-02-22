@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 
+#include "common/params.h"
 #include "common/types.h"
 #include "hardware/eeprom.h"
 #include "hardware/input.h"
@@ -12,7 +13,6 @@
 #include "mode/clock.h"
 #include "mode/euclid.h"
 #include "mode/mode.h"
-#include "params.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
 #include "ui/indicators.h"
