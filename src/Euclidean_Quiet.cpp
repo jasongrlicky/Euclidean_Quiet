@@ -22,6 +22,10 @@
 
 static Mode active_mode = MODE_EUCLID;
 
+/// Stores the runtime-modifiable information for the active mode's parameters.
+/// Static information, such as addresses or names, is stored separately.
+static Params params;
+
 /* DECLARATIONS */
 
 static void active_mode_switch(Mode mode);
@@ -57,7 +61,7 @@ void loop() {
 
 	// Update Active Mode
 	params_reset_modified_flag(&params, active_mode);
-	mode_update(active_mode, &events_in, now);
+	mode_update(&params, active_mode, &events_in, now);
 	log_all_modified_params(&params, active_mode);
 
 	// Drawing - Input Indicators
@@ -85,7 +89,7 @@ static void active_mode_switch(Mode mode) {
 	eeprom_params_load(&params, mode);
 	mode_params_validate(&params, mode);
 
-	mode_init(mode);
+	mode_init(&params, mode);
 }
 
 void params_reset_modified_flag(Params *params, Mode mode) {

@@ -14,8 +14,8 @@ typedef enum Mode {
 	MODE_EUCLID,
 } Mode;
 
-void mode_init(Mode mode);
-void mode_update(Mode mode, const InputEvents *events, Milliseconds now);
+void mode_init(Params *params, Mode mode);
+void mode_update(Params *params, Mode mode, const InputEvents *events, Milliseconds now);
 
 #define EUCLID_NUM_PARAMS 9
 /// How many params this mode has. Indexed by the `Mode` enum.

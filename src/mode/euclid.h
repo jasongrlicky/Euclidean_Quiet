@@ -12,8 +12,8 @@ extern "C" {
 #include <stdint.h>
 
 void euclid_params_validate(Params *params);
-void euclid_init(void);
-void euclid_update(const InputEvents *events, Milliseconds now);
+void euclid_init(const Params *params);
+void euclid_update(Params *params, const InputEvents *events, Milliseconds now);
 
 #ifdef __cplusplus
 }

@@ -35,10 +35,6 @@ typedef struct Params {
 	uint8_t flags[PARAMS_MAX];
 } Params;
 
-/// Stores the runtime-modifiable information for the active mode's parameters.
-/// Static information, such as addresses or names, is stored separately.
-extern Params params;
-
 /// Set the param referenced by `idx` to `value`, and set its flags to indicate
 /// that it has been modified and needs to be written to the EEPROM.
 void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value);

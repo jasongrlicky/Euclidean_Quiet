@@ -1,9 +1,5 @@
 #include "params.h"
 
-/* GLOBALS */
-
-Params params;
-
 /* EXTERNAL */
 
 void param_and_flags_set(Params *params, ParamIdx idx, uint8_t value) {
