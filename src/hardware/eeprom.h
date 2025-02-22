@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 #include "config.h"
-#include "mode.h"
+#include "mode/mode.h"
 #include "params.h"
 
 /// Load state for the given mode into `params`.

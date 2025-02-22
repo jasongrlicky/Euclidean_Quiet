@@ -7,7 +7,7 @@ extern "C" {
 #include "common/events.h"
 #include "common/types.h"
 #include "config.h"
-#include "mode.h"
+#include "mode/mode.h"
 #include "params.h"
 
 void logging_init();
