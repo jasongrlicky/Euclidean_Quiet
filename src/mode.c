@@ -1,6 +1,6 @@
 #include "mode.h"
 
-#include "modes/euclid.h"
+#include "mode/euclid.h"
 
 /* CONSTANTS */
 
