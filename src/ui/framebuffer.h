@@ -25,10 +25,10 @@ typedef enum Color {
 /// hardware display. 2 bits per pixel, so it supports 4 colors.
 uint16_t framebuffer[LED_ROWS];
 
-#define framebuffer_pixel_on(x, y) (framebuffer_pixel_set(x, y, COLOR_ON))
-#define framebuffer_pixel_on_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_ON))
-#define framebuffer_pixel_off(x, y) (framebuffer_pixel_set(x, y, COLOR_OFF))
-#define framebuffer_pixel_off_fast(x, y) (framebuffer_pixel_set_fast(x, y, COLOR_OFF))
+void framebuffer_pixel_on(uint8_t x, uint8_t y);
+void framebuffer_pixel_on_fast(uint8_t x, uint8_t y);
+void framebuffer_pixel_off(uint8_t x, uint8_t y);
+void framebuffer_pixel_off_fast(uint8_t x, uint8_t y);
 
 /// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate
 /// system that is not mirrored left-to-right. Overwrites existing color.
@@ -50,7 +50,7 @@ void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color);
 
 /// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
-#define framebuffer_row_off(y) (framebuffer_row_set(y, 0))
+void framebuffer_row_off(uint8_t y);
 
 /// Set the color values directly for a row of pixels on the LED Matrix.
 /// Colors are 2-bit.

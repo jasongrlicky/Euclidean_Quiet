@@ -17,4 +17,19 @@ void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color) {
 }
 
 // cppcheck-suppress unusedFunction
+void framebuffer_pixel_on(uint8_t x, uint8_t y) { framebuffer_pixel_set(x, y, COLOR_ON); }
+
+// cppcheck-suppress unusedFunction
+void framebuffer_pixel_on_fast(uint8_t x, uint8_t y) { framebuffer_pixel_set_fast(x, y, COLOR_ON); }
+
+// cppcheck-suppress unusedFunction
+void framebuffer_pixel_off(uint8_t x, uint8_t y) { framebuffer_pixel_set(x, y, COLOR_OFF); }
+
+// cppcheck-suppress unusedFunction
+void framebuffer_pixel_off_fast(uint8_t x, uint8_t y) { framebuffer_pixel_set_fast(x, y, COLOR_OFF); }
+
+// cppcheck-suppress unusedFunction
+void framebuffer_row_off(uint8_t y) { framebuffer_row_set(y, 0); }
+
+// cppcheck-suppress unusedFunction
 void framebuffer_row_set(uint8_t y, uint16_t pixels) { framebuffer[y] = pixels; }
