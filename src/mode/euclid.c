@@ -495,8 +495,8 @@ static inline void draw_channel(Channel channel, uint8_t length) {
 
 	// Clear rows
 	const uint8_t row = channel * 2;
-	framebuffer_row_off(row);
-	framebuffer_row_off(row + 1);
+	framebuffer_row_off(&framebuffer, row);
+	framebuffer_row_off(&framebuffer, row + 1);
 
 	const bool showing_length_display = (adjustment_display_state.visible) &&
 	                                    (channel == adjustment_display_state.channel) &&
@@ -518,7 +518,7 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
 			y += 1;
 		}
 
-		framebuffer_pixel_set_fast(x, y, COLOR_ANTS);
+		framebuffer_pixel_set_fast(&framebuffer, x, y, COLOR_ANTS);
 	}
 }
 
@@ -544,7 +544,7 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 			color = (active_step) ? COLOR_ON : COLOR_OFF;
 		}
 
-		framebuffer_pixel_set_fast(x, y, color);
+		framebuffer_pixel_set_fast(&framebuffer, x, y, color);
 	}
 }
 

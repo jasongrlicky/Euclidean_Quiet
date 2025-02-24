@@ -15,5 +15,5 @@ void active_channel_display_draw(Channel active_channel) {
 	} else if (active_channel == CHANNEL_3) {
 		row_bits = 0x5000; // Two right dots
 	}
-	framebuffer_row_set(LED_CH_SEL_Y, row_bits);
+	framebuffer_row_set(&framebuffer, LED_CH_SEL_Y, row_bits);
 }

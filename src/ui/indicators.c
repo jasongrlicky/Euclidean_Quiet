@@ -21,22 +21,22 @@ void indicators_input_update(const InputEvents *events, Milliseconds now) {
 	// Flash Trig indicator LED if we received a clock tick
 	const bool clock_tick = events->trig || events->internal_clock_tick;
 	if (clock_tick) {
-		framebuffer_pixel_on(LED_IN_TRIG_X, LED_INDICATORS_Y);
+		framebuffer_pixel_on(&framebuffer, LED_IN_TRIG_X, LED_INDICATORS_Y);
 		timeout_once_reset(&trig_indicator_timeout, now);
 	}
 
 	// Flash Reset indicator LED if we received a reset input event
 	if (events->reset) {
-		framebuffer_pixel_on(LED_IN_RESET_X, LED_INDICATORS_Y);
+		framebuffer_pixel_on(&framebuffer, LED_IN_RESET_X, LED_INDICATORS_Y);
 		timeout_once_reset(&reset_indicator_timeout, now);
 	}
 
 	// Turn off indicator LEDs that have been on long enough
 	if (timeout_once_fired(&trig_indicator_timeout, now)) {
-		framebuffer_pixel_off(LED_IN_TRIG_X, LED_INDICATORS_Y);
+		framebuffer_pixel_off(&framebuffer, LED_IN_TRIG_X, LED_INDICATORS_Y);
 	}
 	if (timeout_once_fired(&reset_indicator_timeout, now)) {
-		framebuffer_pixel_off(LED_IN_RESET_X, LED_INDICATORS_Y);
+		framebuffer_pixel_off(&framebuffer, LED_IN_RESET_X, LED_INDICATORS_Y);
 	}
 }
 
@@ -47,7 +47,7 @@ void indicators_output_draw_latching(uint8_t out_channels_firing) {
 
 		const uint8_t active_step = (out_channels_firing >> out_channel) & 0x01;
 
-		framebuffer_pixel_set(x, LED_INDICATORS_Y, (Color)active_step);
+		framebuffer_pixel_set(&framebuffer, x, LED_INDICATORS_Y, (Color)active_step);
 	}
 }
 

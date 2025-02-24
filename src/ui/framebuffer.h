@@ -32,10 +32,10 @@ typedef struct Framebuffer {
 
 Framebuffer framebuffer;
 
-void framebuffer_pixel_on(uint8_t x, uint8_t y);
-void framebuffer_pixel_on_fast(uint8_t x, uint8_t y);
-void framebuffer_pixel_off(uint8_t x, uint8_t y);
-void framebuffer_pixel_off_fast(uint8_t x, uint8_t y);
+void framebuffer_pixel_on(Framebuffer *fb, uint8_t x, uint8_t y);
+void framebuffer_pixel_on_fast(Framebuffer *fb, uint8_t x, uint8_t y);
+void framebuffer_pixel_off(Framebuffer *fb, uint8_t x, uint8_t y);
+void framebuffer_pixel_off_fast(Framebuffer *fb, uint8_t x, uint8_t y);
 
 /// Set a single pixel on the framebuffer to the 2-bit color, using a coordinate
 /// system that is not mirrored left-to-right. Overwrites existing color.
@@ -43,7 +43,7 @@ void framebuffer_pixel_off_fast(uint8_t x, uint8_t y);
 /// @param y Zero-indexed position, from top to bottom.
 /// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON`
 /// or `1` turns it on.
-void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
+void framebuffer_pixel_set(Framebuffer *fb, uint8_t x, uint8_t y, Color color);
 
 /// Like `framebuffer_pixel_set()`, but does not overwrite the existing color - it
 /// is assumed to be `COLOR_OFF`. It also does not mark the row as needing a
@@ -53,16 +53,16 @@ void framebuffer_pixel_set(uint8_t x, uint8_t y, Color color);
 /// @param y Zero-indexed position, from top to bottom.
 /// @param color 2-bit color. `COLOR_OFF` or `0` turns off pixel, `COLOR_ON`
 /// or `1` turns it on.
-void framebuffer_pixel_set_fast(uint8_t x, uint8_t y, Color color);
+void framebuffer_pixel_set_fast(Framebuffer *fb, uint8_t x, uint8_t y, Color color);
 
 /// Clear a row of pixels on the framebuffer
 /// @param y Zero-indexed position, from top to bottom.
-void framebuffer_row_off(uint8_t y);
+void framebuffer_row_off(Framebuffer *fb, uint8_t y);
 
 /// Set the color values directly for a row of pixels on the LED Matrix.
 /// Colors are 2-bit.
 /// @param y Zero-indexed position, from top to bottom.
-void framebuffer_row_set(uint8_t y, uint16_t pixels);
+void framebuffer_row_set(Framebuffer *fb, uint8_t y, uint16_t pixels);
 
 #ifdef __cplusplus
 }
