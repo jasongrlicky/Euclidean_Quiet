@@ -1,5 +1,11 @@
 #include "framebuffer.h"
 
+/* GLOBALS*/
+
+Framebuffer framebuffer;
+
+/* EXTERNAL */
+
 // cppcheck-suppress unusedFunction
 void framebuffer_pixel_set(Framebuffer *fb, uint8_t x, uint8_t y, Color color) {
 	// Clear existing color

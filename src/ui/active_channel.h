@@ -5,8 +5,9 @@ extern "C" {
 #endif
 
 #include "common/types.h"
+#include "framebuffer.h"
 
-void active_channel_display_draw(Channel active_channel);
+void active_channel_display_draw(Framebuffer *fb, Channel active_channel);
 
 #ifdef __cplusplus
 }

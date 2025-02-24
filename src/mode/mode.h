@@ -8,14 +8,15 @@ extern "C" {
 #include "common/params.h"
 #include "common/types.h"
 #include "config.h"
+#include "ui/framebuffer.h"
 
 #define NUM_MODES 1
 typedef enum Mode {
 	MODE_EUCLID,
 } Mode;
 
-void mode_init(Params *params, Mode mode);
-void mode_update(Params *params, Mode mode, const InputEvents *events, Milliseconds now);
+void mode_init(Params *params, Framebuffer *fb, Mode mode);
+void mode_update(Params *params, Framebuffer *fb, Mode mode, const InputEvents *events, Milliseconds now);
 
 #define EUCLID_NUM_PARAMS 9
 /// How many params this mode has. Indexed by the `Mode` enum.

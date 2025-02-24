@@ -5,7 +5,6 @@
 #include "config.h"
 #include "hardware/output.h"
 #include "ui/active_channel.h"
-#include "ui/framebuffer.h"
 #include "ui/indicators.h"
 
 #include <euclidean.h>
@@ -154,7 +153,7 @@ void euclid_params_validate(Params *params) {
 	}
 }
 
-void euclid_init(const Params *params) {
+void euclid_init(const Params *params, Framebuffer *fb) {
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
 		const Channel channel = (Channel)a;
@@ -169,10 +168,10 @@ void euclid_init(const Params *params) {
 
 	// Draw initial UI
 	euclid_draw_channels(params);
-	active_channel_display_draw(state.active_channel);
+	active_channel_display_draw(fb, state.active_channel);
 }
 
-void euclid_update(Params *params, const InputEvents *events, Milliseconds now) {
+void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, Milliseconds now) {
 	euclid_handle_encoder_push(events->enc_push);
 
 	// Note the param associated with a knob that was moved so we can re-generate
@@ -228,7 +227,7 @@ void euclid_update(Params *params, const InputEvents *events, Milliseconds now) 
 	/* DRAWING - ACTIVE CHANNEL DISPLAY */
 
 	if (events->enc_push != ENCODER_NONE) {
-		active_channel_display_draw(active_channel);
+		active_channel_display_draw(fb, active_channel);
 	}
 
 	/* DRAWING - CHANNELS */

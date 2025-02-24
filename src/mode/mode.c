@@ -26,18 +26,18 @@ static const char name_not_found[PARAM_NAME_LEN] = "??";
 
 /* EXTERNAL */
 
-void mode_init(Params *params, Mode mode) {
+void mode_init(Params *params, Framebuffer *fb, Mode mode) {
 	switch (mode) {
 		case MODE_EUCLID:
-			euclid_init(params);
+			euclid_init(params, fb);
 			break;
 	}
 }
 
-void mode_update(Params *params, Mode mode, const InputEvents *events, Milliseconds now) {
+void mode_update(Params *params, Framebuffer *fb, Mode mode, const InputEvents *events, Milliseconds now) {
 	switch (mode) {
 		case MODE_EUCLID:
-			euclid_update(params, events, now);
+			euclid_update(params, fb, events, now);
 			break;
 	}
 }
