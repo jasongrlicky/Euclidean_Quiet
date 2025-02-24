@@ -26,6 +26,8 @@ static Mode active_mode = MODE_EUCLID;
 /// Static information, such as addresses or names, is stored separately.
 static Params params;
 
+extern Framebuffer framebuffer;
+
 /* DECLARATIONS */
 
 static void active_mode_switch(Mode mode);
@@ -69,7 +71,7 @@ void loop() {
 
 	// Update LED Display
 	framebuffer_update_color_animations(now);
-	framebuffer_copy_row_to_display();
+	framebuffer_copy_row_to_display(&framebuffer);
 
 	// Update LED Sleep
 	const bool postpone_sleep = input_events_contains_any_external(&events_in);
