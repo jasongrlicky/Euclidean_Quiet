@@ -16,7 +16,7 @@ static uint8_t output_channel_led_x(OutputChannel channel);
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction
-void indicators_input_update(Framebuffer *fb, const InputEvents *events, Milliseconds now) {
+void indicators_input_draw(Framebuffer *fb, const InputEvents *events, Milliseconds now) {
 	// Flash Trig indicator LED if we received a clock tick
 	const bool clock_tick = events->trig || events->internal_clock_tick;
 	if (clock_tick) {
@@ -40,7 +40,7 @@ void indicators_input_update(Framebuffer *fb, const InputEvents *events, Millise
 }
 
 // cppcheck-suppress unusedFunction
-void indicators_output_draw_latching(Framebuffer *fb, uint8_t out_channels_firing) {
+void indicators_output_latching_draw(Framebuffer *fb, uint8_t out_channels_firing) {
 	for (uint8_t out_channel = 0; out_channel < OUTPUT_NUM_CHANNELS; out_channel++) {
 		const uint8_t x = output_channel_led_x((OutputChannel)out_channel);
 

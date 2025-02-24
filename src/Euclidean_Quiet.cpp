@@ -65,7 +65,7 @@ void loop() {
 	log_all_modified_params(&params, active_mode);
 
 	// Drawing - Input Indicators
-	indicators_input_update(&framebuffer, &events_in, now);
+	indicators_input_draw(&framebuffer, &events_in, now);
 
 	// Update LED Display
 	framebuffer_update_color_animations(now);

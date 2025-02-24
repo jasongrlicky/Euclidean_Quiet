@@ -292,7 +292,7 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 	/* DRAWING - OUTPUT INDICATORS */
 
 	if (sequencers_updated) {
-		indicators_output_draw_latching(fb, out_channels_firing);
+		indicators_output_latching_draw(fb, out_channels_firing);
 	}
 }
 
