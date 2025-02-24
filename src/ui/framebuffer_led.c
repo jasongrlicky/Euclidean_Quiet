@@ -5,7 +5,7 @@
 #include "framebuffer.h"
 #include "hardware/led.h"
 
-extern uint16_t framebuffer[LED_ROWS];
+extern Framebuffer framebuffer;
 
 /// To keep latency from spiking, we only draw one row of the framebuffer to the
 /// LED matrix at a time. The row that gets drawn rotates between the 8 rows of
@@ -29,7 +29,7 @@ static inline uint8_t anim_marching_ants(uint8_t frame, uint8_t x, uint8_t y);
 // cppcheck-suppress unusedFunction
 void framebuffer_copy_row_to_display() {
 	const uint8_t row = (out_row) % LED_ROWS;
-	const uint16_t row_bits = framebuffer[row];
+	const uint16_t row_bits = framebuffer.data[row];
 
 	uint8_t to_draw = 0;
 	for (uint8_t col = 0; col < LED_COLUMNS; col++) {

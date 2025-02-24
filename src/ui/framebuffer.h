@@ -23,7 +23,14 @@ typedef enum Color {
 
 /// Buffer that can be drawn into and manipulated before being drawn to the
 /// hardware display. 2 bits per pixel, so it supports 4 colors.
-uint16_t framebuffer[LED_ROWS];
+typedef struct Framebuffer {
+	/// Each row is stored as bits with 2 bits pixel, with 8 pixels per row
+	/// indexed according to their x position. The rows are indexed according to
+	/// their y position, from top to bottom, on the display.
+	uint16_t data[LED_ROWS];
+} Framebuffer;
+
+Framebuffer framebuffer;
 
 void framebuffer_pixel_on(uint8_t x, uint8_t y);
 void framebuffer_pixel_on_fast(uint8_t x, uint8_t y);
