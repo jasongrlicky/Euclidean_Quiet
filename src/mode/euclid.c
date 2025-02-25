@@ -531,7 +531,7 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 	uint8_t row_1_remainder_shift = 8;
 	uint8_t row_2_remainder_shift = 8;
 
-	uint8_t i = (length - 1);
+	uint8_t i = length;
 	uint8_t step = 0;
 	do {
 		// Optimization - Read current step and shift pattern for next loop. Faster
