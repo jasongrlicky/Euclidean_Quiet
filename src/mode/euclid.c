@@ -534,10 +534,10 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 			y += 1;
 		}
 
-		bool active_step = pattern_read(pattern, length, step);
-		bool playhead_here = (step == position);
-		bool playhead_flash_active = playhead_flash_timeout.active;
-		bool flashing_now = playhead_here && playhead_flash_active;
+		const bool active_step = pattern_read(pattern, length, step);
+		const bool playhead_here = (step == position);
+		const bool playhead_flash_active = playhead_flash_timeout.active;
+		const bool flashing_now = playhead_here && playhead_flash_active;
 		Color color;
 		if (flashing_now) {
 			color = COLOR_BLINK;
