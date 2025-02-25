@@ -529,6 +529,8 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 	uint16_t row_colors_1 = 0;
 	uint16_t row_colors_2 = 0;
 
+	// Optimization - The do/while loop, decrementing iteration, and separate
+	// counter for steps are all faster than otherwise.
 	uint8_t i = length;
 	uint8_t step = length - 1;
 	do {
