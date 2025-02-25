@@ -524,15 +524,13 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 
 static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
                                         uint8_t position) {
-	position = length - position - 1;
-
 	const bool playhead_flash_active = playhead_flash_timeout.active;
 
 	uint16_t row_colors_1 = 0;
 	uint16_t row_colors_2 = 0;
 
 	uint8_t i = length;
-	uint8_t step = 0;
+	uint8_t step = length - 1;
 	do {
 		// Optimization - Read current step and shift pattern for next loop. Faster
 		// than pattern_read because index and mask aren't recalculated.
@@ -548,7 +546,7 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 			color = (active_step) ? COLOR_ON : COLOR_OFF;
 		}
 
-		if (step <= 7) {
+		if (step < 8) {
 			row_colors_1 <<= 2;
 			row_colors_1 |= color;
 		} else {
@@ -556,7 +554,7 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 			row_colors_2 |= color;
 		}
 
-		step++;
+		step--;
 		i--;
 	} while (i);
 
