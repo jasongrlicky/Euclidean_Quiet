@@ -493,10 +493,7 @@ static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length
 	const uint8_t position = state.sequencer_positions[channel];
 	const uint16_t pattern = generated_rhythms[channel];
 
-	// Clear rows
-	const uint8_t row = channel * 2;
-	framebuffer_row_off(fb, row);
-	framebuffer_row_off(fb, row + 1);
+	draw_channel_pattern(fb, channel, pattern, length, position);
 
 	const bool showing_length_display = (adjustment_display_state.visible) &&
 	                                    (channel == adjustment_display_state.channel) &&
@@ -504,7 +501,6 @@ static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length
 	if (showing_length_display) {
 		draw_channel_length(fb, channel, pattern, length);
 	}
-	draw_channel_pattern(fb, channel, pattern, length, position);
 }
 
 static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length) {
