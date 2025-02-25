@@ -531,7 +531,10 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 	uint16_t row_colors_2 = 0;
 	uint8_t row_1_remainder_shift = 16;
 	uint8_t row_2_remainder_shift = 16;
-	for (uint8_t step = 0; step < length; step++) {
+
+	uint8_t i = (length - 1);
+	uint8_t step = 0;
+	do {
 		// Optimization - Read current step and shift pattern for next loop. Faster
 		// than pattern_read because index and mask aren't recalculated.
 		const bool active_step = pattern & 0x01;
@@ -555,7 +558,11 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 			row_colors_2 |= (color << 14);
 			row_2_remainder_shift -= 2;
 		}
-	}
+
+		step++;
+		i--;
+	} while (i);
+
 	row_colors_1 >>= row_1_remainder_shift;
 	row_colors_2 >>= row_2_remainder_shift;
 
