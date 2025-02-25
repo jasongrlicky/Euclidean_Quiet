@@ -103,7 +103,6 @@ static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *
 // Returns bitflags storing which output channels will fire this cycle, indexed
 // by `OutputChannel`.
 static uint8_t euclid_update_sequencers(const Params *params, const InputEvents *events);
-static void euclid_draw_channels(const Params *params);
 static void sequencer_handle_reset(void);
 static void sequencer_handle_clock(const Params *params);
 static void sequencer_advance(const Params *params);
@@ -111,9 +110,11 @@ static void sequencer_advance(const Params *params);
 /// @return Bitflags, indexed using `OutputChannel`. 1 = begin an output pulse this cycle for this channel, 0
 /// = do nothing for this channel
 static uint8_t sequencer_read_current_step(const Params *params);
-static inline void draw_channel(Channel channel, uint8_t length);
-static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length);
-static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position);
+static void euclid_draw_channels(Framebuffer *fb, const Params *params);
+static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length);
+static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length);
+static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
+                                        uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -167,7 +168,7 @@ void euclid_init(const Params *params, Framebuffer *fb) {
 	state.active_channel = CHANNEL_1;
 
 	// Draw initial UI
-	euclid_draw_channels(params);
+	euclid_draw_channels(fb, params);
 	active_channel_display_draw(fb, state.active_channel);
 }
 
@@ -286,7 +287,7 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 	}
 
 	if (needs_redraw) {
-		euclid_draw_channels(params);
+		euclid_draw_channels(fb, params);
 	}
 
 	/* DRAWING - OUTPUT INDICATORS */
@@ -423,10 +424,10 @@ static uint8_t euclid_update_sequencers(const Params *params, const InputEvents 
 	return out_channels_firing;
 }
 
-static void euclid_draw_channels(const Params *params) {
+static void euclid_draw_channels(Framebuffer *fb, const Params *params) {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		const uint8_t length = euclid_get_length(params, channel);
-		draw_channel((Channel)channel, length);
+		draw_channel(fb, (Channel)channel, length);
 	}
 }
 
@@ -488,25 +489,25 @@ static uint8_t sequencer_read_current_step(const Params *params) {
 	return out_channels_firing;
 }
 
-static inline void draw_channel(Channel channel, uint8_t length) {
+static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length) {
 	const uint8_t position = state.sequencer_positions[channel];
 	const uint16_t pattern = generated_rhythms[channel];
 
 	// Clear rows
 	const uint8_t row = channel * 2;
-	framebuffer_row_off(&framebuffer, row);
-	framebuffer_row_off(&framebuffer, row + 1);
+	framebuffer_row_off(fb, row);
+	framebuffer_row_off(fb, row + 1);
 
 	const bool showing_length_display = (adjustment_display_state.visible) &&
 	                                    (channel == adjustment_display_state.channel) &&
 	                                    (adjustment_display_state.parameter == EUCLID_PARAM_LENGTH);
 	if (showing_length_display) {
-		draw_channel_length(channel, pattern, length);
+		draw_channel_length(fb, channel, pattern, length);
 	}
-	draw_channel_pattern(channel, pattern, length, position);
+	draw_channel_pattern(fb, channel, pattern, length, position);
 }
 
-static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_t length) {
+static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length) {
 	const uint8_t row = channel * 2;
 
 	for (uint8_t step = length; step < 16; step++) {
@@ -517,11 +518,12 @@ static inline void draw_channel_length(Channel channel, uint16_t pattern, uint8_
 			y += 1;
 		}
 
-		framebuffer_pixel_set_fast(&framebuffer, x, y, COLOR_ANTS);
+		framebuffer_pixel_set_fast(fb, x, y, COLOR_ANTS);
 	}
 }
 
-static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8_t length, uint8_t position) {
+static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
+                                        uint8_t position) {
 	const uint8_t row = channel * 2;
 
 	for (uint8_t step = 0; step < length; step++) {
@@ -543,7 +545,7 @@ static inline void draw_channel_pattern(Channel channel, uint16_t pattern, uint8
 			color = (active_step) ? COLOR_ON : COLOR_OFF;
 		}
 
-		framebuffer_pixel_set_fast(&framebuffer, x, y, color);
+		framebuffer_pixel_set_fast(fb, x, y, color);
 	}
 }
 
