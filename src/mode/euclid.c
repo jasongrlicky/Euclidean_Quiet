@@ -527,14 +527,9 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 	const uint8_t row = channel * 2;
 	const bool playhead_flash_active = playhead_flash_timeout.active;
 
+	uint16_t row_colors_1 = 0;
+	uint16_t row_colors_2 = 0;
 	for (uint8_t step = 0; step < length; step++) {
-		uint8_t x = step;
-		uint8_t y = row;
-		if (step > 7) {
-			x -= 8;
-			y += 1;
-		}
-
 		// Optimization - Read current step and shift pattern for next loop. Faster
 		// than pattern_read because index and mask aren't recalculated.
 		const bool active_step = pattern & 0x01;
@@ -549,8 +544,26 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 			color = (active_step) ? COLOR_ON : COLOR_OFF;
 		}
 
-		framebuffer_pixel_set_fast(fb, x, y, color);
+		if (step <= 7) {
+			row_colors_1 = row_colors_1 >> 2;
+			row_colors_1 |= (color << 14);
+		} else {
+			row_colors_2 = row_colors_2 >> 2;
+			row_colors_2 |= (color << 14);
+		}
 	}
+	uint8_t row_1_remainder_shift = 0;
+	uint8_t row_2_remainder_shift = 0;
+	if (length <= 8) {
+		row_1_remainder_shift = (8 - length) * 2;
+	} else {
+		row_2_remainder_shift = (16 - length) * 2;
+	}
+	row_colors_1 = row_colors_1 >> row_1_remainder_shift;
+	row_colors_2 = row_colors_2 >> row_2_remainder_shift;
+
+	framebuffer_row_set(fb, row, row_colors_1);
+	framebuffer_row_set(fb, row + 1, row_colors_2);
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
