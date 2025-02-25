@@ -524,7 +524,6 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 
 static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
                                         uint8_t position) {
-	const uint8_t row = channel * 2;
 	const bool playhead_flash_active = playhead_flash_timeout.active;
 
 	uint16_t row_colors_1 = 0;
@@ -566,6 +565,7 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 	row_colors_1 >>= row_1_remainder_shift;
 	row_colors_2 >>= row_2_remainder_shift;
 
+	const uint8_t row = channel * 2;
 	framebuffer_row_set(fb, row, row_colors_1);
 	framebuffer_row_set(fb, row + 1, row_colors_2);
 }
