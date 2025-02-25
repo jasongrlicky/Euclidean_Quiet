@@ -60,7 +60,7 @@ void framebuffer_pixel_set_fast(Framebuffer *fb, uint8_t x, uint8_t y, Color col
 void framebuffer_row_off(Framebuffer *fb, uint8_t y);
 
 /// Set the color values directly for a row of pixels on the LED Matrix.
-/// Colors are 2-bit.
+/// Colors are 2-bit, and the x-axis is reversed (high bits appear on the right).
 /// @param y Zero-indexed position, from top to bottom.
 void framebuffer_row_set(Framebuffer *fb, uint8_t y, uint16_t pixels);
 
