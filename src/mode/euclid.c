@@ -522,8 +522,7 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
                                         uint8_t position) {
 	const bool playhead_flash_active = playhead_flash_timeout.active;
 
-	uint16_t row_colors_1 = 0;
-	uint16_t row_colors_2 = 0;
+	uint16_t pixel_rows[2] = {0, 0};
 
 	// Optimization - The do/while loop, decrementing iteration, and separate
 	// counter for steps are all faster than otherwise.
@@ -545,11 +544,11 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 		}
 
 		if (step < 8) {
-			row_colors_1 <<= 2;
-			row_colors_1 |= color;
+			pixel_rows[0] <<= 2;
+			pixel_rows[0] |= color;
 		} else {
-			row_colors_2 <<= 2;
-			row_colors_2 |= color;
+			pixel_rows[1] <<= 2;
+			pixel_rows[1] |= color;
 		}
 
 		step--;
@@ -557,8 +556,8 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 	} while (i);
 
 	const uint8_t row = channel * 2;
-	framebuffer_row_set(fb, row, row_colors_1);
-	framebuffer_row_set(fb, row + 1, row_colors_2);
+	framebuffer_row_set(fb, row, pixel_rows[0]);
+	framebuffer_row_set(fb, row + 1, pixel_rows[1]);
 }
 
 static bool pattern_read(uint16_t pattern, uint8_t length, uint8_t position) {
