@@ -524,12 +524,12 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 
 static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
                                         uint8_t position) {
+	position = length - position - 1;
+
 	const bool playhead_flash_active = playhead_flash_timeout.active;
 
 	uint16_t row_colors_1 = 0;
 	uint16_t row_colors_2 = 0;
-	uint8_t row_1_remainder_shift = 8;
-	uint8_t row_2_remainder_shift = 8;
 
 	uint8_t i = length;
 	uint8_t step = 0;
@@ -549,21 +549,16 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 		}
 
 		if (step <= 7) {
-			row_colors_1 >>= 2;
-			row_colors_1 |= (color << 14);
-			row_1_remainder_shift--;
+			row_colors_1 <<= 2;
+			row_colors_1 |= color;
 		} else {
-			row_colors_2 >>= 2;
-			row_colors_2 |= (color << 14);
-			row_2_remainder_shift--;
+			row_colors_2 <<= 2;
+			row_colors_2 |= color;
 		}
 
 		step++;
 		i--;
 	} while (i);
-
-	row_colors_1 >>= (row_1_remainder_shift * 2);
-	row_colors_2 >>= (row_2_remainder_shift * 2);
 
 	const uint8_t row = channel * 2;
 	framebuffer_row_set(fb, row, row_colors_1);
