@@ -535,7 +535,11 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 			y += 1;
 		}
 
-		const bool active_step = pattern_read(pattern, length, step);
+		// Optimization - Read current step and shift pattern for next loop. Faster
+		// than pattern_read because index and mask aren't recalculated.
+		const bool active_step = pattern & 0x01;
+		pattern = pattern >> 1;
+
 		const bool playhead_here = (step == position);
 		const bool flashing_now = playhead_here && playhead_flash_active;
 		Color color;
