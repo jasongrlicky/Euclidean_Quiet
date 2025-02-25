@@ -525,6 +525,7 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
                                         uint8_t position) {
 	const uint8_t row = channel * 2;
+	const bool playhead_flash_active = playhead_flash_timeout.active;
 
 	for (uint8_t step = 0; step < length; step++) {
 		uint8_t x = step;
@@ -536,7 +537,6 @@ static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16
 
 		const bool active_step = pattern_read(pattern, length, step);
 		const bool playhead_here = (step == position);
-		const bool playhead_flash_active = playhead_flash_timeout.active;
 		const bool flashing_now = playhead_here && playhead_flash_active;
 		Color color;
 		if (flashing_now) {
