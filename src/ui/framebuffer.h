@@ -30,8 +30,6 @@ typedef struct Framebuffer {
 	uint16_t data[LED_ROWS];
 } Framebuffer;
 
-extern Framebuffer framebuffer;
-
 void framebuffer_pixel_on(Framebuffer *fb, uint8_t x, uint8_t y);
 void framebuffer_pixel_on_fast(Framebuffer *fb, uint8_t x, uint8_t y);
 void framebuffer_pixel_off(Framebuffer *fb, uint8_t x, uint8_t y);

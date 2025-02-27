@@ -1,9 +1,5 @@
 #include "framebuffer.h"
 
-/* GLOBALS*/
-
-Framebuffer framebuffer;
-
 /* EXTERNAL */
 
 // cppcheck-suppress unusedFunction

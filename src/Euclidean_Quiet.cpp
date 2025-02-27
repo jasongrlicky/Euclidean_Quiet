@@ -26,6 +26,8 @@ static Mode active_mode = MODE_EUCLID;
 /// Static information, such as addresses or names, is stored separately.
 static Params params;
 
+Framebuffer framebuffer;
+
 /* DECLARATIONS */
 
 static void active_mode_switch(Mode mode);
