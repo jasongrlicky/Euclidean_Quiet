@@ -61,6 +61,12 @@ typedef struct AdjustmentDisplayState {
 	bool visible;
 } AdjustmentDisplayState;
 
+typedef struct OutputPulseState {
+	/// Timeout duration is the output pulse length, set based on the time since last trigger
+	TimeoutOnce timeout;
+	Milliseconds last_clock_or_reset;
+} OutputPulseState;
+
 typedef struct PlayheadState {
 	// Tracks the playhead flash itself
 	TimeoutOnce flash_timeout;
@@ -78,6 +84,7 @@ typedef struct EuclidState {
 	uint16_t generated_rhythms[NUM_CHANNELS];
 	SequencerState sequencer;
 	AdjustmentDisplayState adjustment_display;
+	OutputPulseState output_pulse;
 	PlayheadState playhead;
 } EuclidState;
 
@@ -95,6 +102,10 @@ static const EuclidState EUCLID_STATE_INIT = {
 			.channel = CHANNEL_1,	
 			.visible = false,
 		},
+		.output_pulse = {
+			.timeout = {.inner = {.duration = 5}}, 
+			.last_clock_or_reset= 0,
+		},
 		.playhead = {
 			.flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}},
 			.idle_timeout = {.duration = PLAYHEAD_IDLE_TIME},
@@ -106,11 +117,6 @@ static const EuclidState EUCLID_STATE_INIT = {
 /* GLOBALS */
 
 static EuclidState state;
-
-static Milliseconds last_clock_or_reset;
-
-static TimeoutOnce output_pulse_timeout = {
-    .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
 
 /* DECLARATIONS */
 
@@ -228,15 +234,15 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 
 	if (sequencers_updated) {
 		// Update output pulse length and timeout
-		const Milliseconds time_since_last = now - output_pulse_timeout.inner.start;
+		const Milliseconds time_since_last = now - state.output_pulse.timeout.inner.start;
 		const Milliseconds pulse_length = CONSTRAIN(time_since_last / 5, 2, 5);
-		output_pulse_timeout.inner.duration = pulse_length;
+		state.output_pulse.timeout.inner.duration = pulse_length;
 
-		timeout_once_reset(&output_pulse_timeout, now);
+		timeout_once_reset(&state.output_pulse.timeout, now);
 	}
 
 	// FINISH ANY PULSES THAT ARE ACTIVE
-	if (timeout_once_fired(&output_pulse_timeout, now)) {
+	if (timeout_once_fired(&state.output_pulse.timeout, now)) {
 		output_clear_all();
 	}
 
@@ -251,9 +257,9 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 	if (sequencers_updated) {
 		// Update playhead flash duration based on the last interval between two
 		// clock or reset signals received.
-		const Milliseconds previous_period = now - last_clock_or_reset;
+		const Milliseconds previous_period = now - state.output_pulse.last_clock_or_reset;
 		state.playhead.flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
-		last_clock_or_reset = now;
+		state.output_pulse.last_clock_or_reset = now;
 
 		// Reset playhead flash
 		timeout_once_reset(&state.playhead.flash_timeout, now);
