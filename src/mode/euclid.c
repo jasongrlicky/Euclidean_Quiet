@@ -55,16 +55,6 @@ typedef struct EuclidState {
 	bool sequencer_running;
 } EuclidState;
 
-typedef struct AdjustmentDisplayState {
-	/// Which channel is currently showing its adjustment display. Only one
-	/// adjustment display can be visible at a time.
-	Channel channel;
-	/// The parameter that is being displayed in the adjustment display.
-	EuclidParam parameter;
-	/// Is the adjustment display showing currently
-	bool visible;
-} AdjustmentDisplayState;
-
 /* GLOBALS */
 
 static EuclidState state = {
@@ -76,10 +66,12 @@ static EuclidState state = {
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 static uint16_t generated_rhythms[NUM_CHANNELS];
 
-static AdjustmentDisplayState adjustment_display_state = {
-    .channel = CHANNEL_1,
-    .parameter = EUCLID_PARAM_LENGTH,
-    .visible = false,
+/// Which channel is currently showing its adjustment display. Only one
+/// adjustment display can be visible at a time, and in this mode, only the
+/// length parameter shows an adjustment display.
+static ChannelOpt adjustment_display_state = {
+    .inner = CHANNEL_1,
+    .valid = false,
 };
 
 static Milliseconds last_clock_or_reset;
@@ -267,20 +259,24 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 	bool needs_redraw = sequencers_updated || playhead_flash_updated;
 
 	if (param_knob_moved.valid) {
-		// If parameters have changed, reset the adjustment display timeout and state
-		adjustment_display_state.channel = active_channel;
-		adjustment_display_state.parameter = param_knob_moved.inner;
-		adjustment_display_state.visible = true;
-		timeout_reset(&adjustment_display_timeout, now);
+		if (param_knob_moved.inner == EUCLID_PARAM_LENGTH) {
+			// If length parameter was changed, reset the adjustment display timeout and state
+			adjustment_display_state.inner = active_channel;
+			adjustment_display_state.valid = true;
+			timeout_reset(&adjustment_display_timeout, now);
+		} else {
+			// Otherwise, just hide the adjustment display
+			adjustment_display_state.valid = false;
+		}
 
 		needs_redraw = true;
 	} else {
 		// If no parameters have changed, check if the adjustment display still
 		// needs to be shown, and hide it if it doesn't
-		if (adjustment_display_state.visible) {
+		if (adjustment_display_state.valid) {
 			bool should_be_hidden = timeout_fired(&adjustment_display_timeout, now);
 			if (should_be_hidden) {
-				adjustment_display_state.visible = false;
+				adjustment_display_state.valid = false;
 				needs_redraw = true;
 			}
 		}
@@ -495,9 +491,8 @@ static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length
 
 	draw_channel_pattern(fb, channel, pattern, length, position);
 
-	const bool showing_length_display = (adjustment_display_state.visible) &&
-	                                    (channel == adjustment_display_state.channel) &&
-	                                    (adjustment_display_state.parameter == EUCLID_PARAM_LENGTH);
+	const bool showing_length_display =
+	    (adjustment_display_state.valid) && (channel == adjustment_display_state.inner);
 	if (showing_length_display) {
 		draw_channel_length(fb, channel, pattern, length);
 	}
