@@ -61,6 +61,15 @@ typedef struct AdjustmentDisplayState {
 	bool visible;
 } AdjustmentDisplayState;
 
+typedef struct PlayheadState {
+	// Tracks the playhead flash itself
+	TimeoutOnce flash_timeout;
+	// Track the time since the playhead has moved so we can make it flash in its idle loop
+	Timeout idle_timeout;
+	// Loop for making the playhead flash periodically after it is idle
+	Timeout idle_loop_timeout;
+} PlayheadState;
+
 /// State of the entire Euclidean rhythm generator mode
 typedef struct EuclidState {
 	/// The sequencer channel that is currently selected
@@ -69,6 +78,7 @@ typedef struct EuclidState {
 	uint16_t generated_rhythms[NUM_CHANNELS];
 	SequencerState sequencer;
 	AdjustmentDisplayState adjustment_display;
+	PlayheadState playhead;
 } EuclidState;
 
 // clang-format off
@@ -81,10 +91,15 @@ static const EuclidState EUCLID_STATE_INIT = {
 			.running = false,
 		},
 		.adjustment_display = {
-			.timeout = { .duration = ADJUSTMENT_DISPLAY_TIME },
+			.timeout = {.duration = ADJUSTMENT_DISPLAY_TIME},
 			.channel = CHANNEL_1,	
 			.visible = false,
-		}
+		},
+		.playhead = {
+			.flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}},
+			.idle_timeout = {.duration = PLAYHEAD_IDLE_TIME},
+			.idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERIOD},
+		},
 };
 // clang-format on
 
@@ -96,13 +111,6 @@ static Milliseconds last_clock_or_reset;
 
 static TimeoutOnce output_pulse_timeout = {
     .inner = {.duration = 5}}; // Pulse length, set based on the time since last trigger
-
-// Tracks the playhead flash itself
-static TimeoutOnce playhead_flash_timeout = {.inner = {.duration = PLAYHEAD_FLASH_TIME_DEFAULT}};
-// Track the time since the playhead has moved so we can make it flash in its idle loop
-static Timeout playhead_idle_timeout = {.duration = PLAYHEAD_IDLE_TIME};
-// Loop for making the playhead flash periodically after it is idle
-static Timeout playhead_idle_loop_timeout = {.duration = PLAYHEAD_IDLE_LOOP_PERIOD};
 
 /* DECLARATIONS */
 
@@ -244,29 +252,29 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 		// Update playhead flash duration based on the last interval between two
 		// clock or reset signals received.
 		const Milliseconds previous_period = now - last_clock_or_reset;
-		playhead_flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
+		state.playhead.flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
 		last_clock_or_reset = now;
 
 		// Reset playhead flash
-		timeout_once_reset(&playhead_flash_timeout, now);
+		timeout_once_reset(&state.playhead.flash_timeout, now);
 
 		// Reset playhead idle
-		timeout_reset(&playhead_idle_timeout, now);
+		timeout_reset(&state.playhead.idle_timeout, now);
 	}
 
 	// Update playhead idle - Make playhead flash periodically when it hasn't
 	// moved in a certain amount of time
 	bool playhead_flash_updated = false;
-	if (timeout_fired(&playhead_idle_timeout, now)) {
-		if (timeout_loop(&playhead_idle_loop_timeout, now)) {
-			playhead_flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
-			timeout_once_reset(&playhead_flash_timeout, now);
+	if (timeout_fired(&state.playhead.idle_timeout, now)) {
+		if (timeout_loop(&state.playhead.idle_loop_timeout, now)) {
+			state.playhead.flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
+			timeout_once_reset(&state.playhead.flash_timeout, now);
 			playhead_flash_updated = true;
 		}
 	}
 
 	// Update playhead flash
-	if (timeout_once_fired(&playhead_flash_timeout, now)) {
+	if (timeout_once_fired(&state.playhead.flash_timeout, now)) {
 		playhead_flash_updated = true;
 	}
 
@@ -530,7 +538,7 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 
 static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
                                         uint8_t position) {
-	const bool playhead_flash_active = playhead_flash_timeout.active;
+	const bool playhead_flash_active = state.playhead.flash_timeout.active;
 
 	uint16_t pixel_rows[2] = {0, 0};
 
