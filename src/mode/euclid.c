@@ -49,6 +49,8 @@ static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGT
 typedef struct EuclidState {
 	/// The sequencer channel that is currently selected
 	Channel active_channel;
+	/// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
+	uint16_t generated_rhythms[NUM_CHANNELS];
 	/// Step index representing the playhead position for for each of this mode's
 	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
 	uint8_t sequencer_positions[NUM_CHANNELS];
@@ -65,9 +67,6 @@ static const EuclidState EUCLID_STATE_INIT = {
 /* GLOBALS */
 
 static EuclidState state;
-
-/// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
-static uint16_t generated_rhythms[NUM_CHANNELS];
 
 /// Which channel is currently showing its adjustment display. Only one
 /// adjustment display can be visible at a time, and in this mode, only the
@@ -158,7 +157,7 @@ void euclid_init(const Params *params, Framebuffer *fb) {
 		const uint8_t length = euclid_get_length(params, channel);
 		const uint8_t density = euclid_get_density(params, channel);
 		const uint8_t offset = euclid_get_offset(params, channel);
-		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
+		state.generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
 	// Draw initial UI
@@ -181,7 +180,7 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 		const uint8_t density = euclid_get_density(params, channel);
 		const uint8_t offset = euclid_get_offset(params, channel);
 
-		generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
+		state.generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 	}
 
 	/* UPDATE SEQUENCER */
@@ -470,7 +469,7 @@ static uint8_t sequencer_read_current_step(const Params *params) {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		const uint8_t length = euclid_get_length(params, channel);
 		const uint8_t position = state.sequencer_positions[channel];
-		const uint16_t pattern = generated_rhythms[channel];
+		const uint16_t pattern = state.generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
 		bool step_is_active = pattern_read(pattern, length, position);
@@ -489,7 +488,7 @@ static uint8_t sequencer_read_current_step(const Params *params) {
 
 static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length) {
 	const uint8_t position = state.sequencer_positions[channel];
-	const uint16_t pattern = generated_rhythms[channel];
+	const uint16_t pattern = state.generated_rhythms[channel];
 
 	draw_channel_pattern(fb, channel, pattern, length, position);
 
