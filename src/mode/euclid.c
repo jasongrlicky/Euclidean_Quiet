@@ -45,25 +45,33 @@ typedef struct EuclidParamOpt {
 
 static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGTH, .valid = false};
 
+typedef struct SequencerState {
+	/// Step index representing the playhead position for for each of this mode's
+	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
+	uint8_t positions[NUM_CHANNELS];
+	bool running;
+} SequencerState;
+
 /// State of the entire Euclidean rhythm generator mode
 typedef struct EuclidState {
 	/// The sequencer channel that is currently selected
 	Channel active_channel;
 	/// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 	uint16_t generated_rhythms[NUM_CHANNELS];
-	/// Step index representing the playhead position for for each of this mode's
-	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
-	uint8_t sequencer_positions[NUM_CHANNELS];
-	bool sequencer_running;
+	SequencerState sequencer;
 } EuclidState;
 
+// clang-format off
 static const EuclidState EUCLID_STATE_INIT = {
     // First channel is selected on startup
     .active_channel = CHANNEL_1,
     .generated_rhythms = {0, 0, 0},
-    .sequencer_positions = {0, 0, 0},
-    .sequencer_running = false,
+    .sequencer = {
+			.positions = {0, 0, 0},
+			.running = false,
+		},
 };
+// clang-format on
 
 /* GLOBALS */
 
@@ -321,7 +329,7 @@ static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *
 		int length = euclid_get_length(params, channel);
 		uint8_t density = euclid_get_density(params, channel);
 		uint8_t offset = euclid_get_offset(params, channel);
-		const uint8_t position = state.sequencer_positions[channel];
+		const uint8_t position = state.sequencer.positions[channel];
 
 		// Keep length in bounds
 		if (length >= PARAM_LENGTH_MAX) {
@@ -352,7 +360,7 @@ static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
-			state.sequencer_positions[channel] = 0;
+			state.sequencer.positions[channel] = 0;
 		}
 	}
 
@@ -432,27 +440,27 @@ static void euclid_draw_channels(Framebuffer *fb, const Params *params) {
 static void sequencer_handle_reset(void) {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		state.sequencer_positions[channel] = 0;
+		state.sequencer.positions[channel] = 0;
 	}
 
 	// Stop the sequencer
-	state.sequencer_running = false;
+	state.sequencer.running = false;
 }
 
 static void sequencer_handle_clock(const Params *params) {
 	// Advance sequencer if it is running
-	if (state.sequencer_running) {
+	if (state.sequencer.running) {
 		// Only advance if sequencer is running
 		sequencer_advance(params);
 	} else {
 		// If sequencer is stopped, start it so that the next clock advances
-		state.sequencer_running = true;
+		state.sequencer.running = true;
 	}
 }
 
 static void sequencer_advance(const Params *params) {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		uint8_t position = state.sequencer_positions[channel];
+		uint8_t position = state.sequencer.positions[channel];
 		const uint8_t length = euclid_get_length(params, channel);
 
 		// Move sequencer playhead to next step
@@ -460,7 +468,7 @@ static void sequencer_advance(const Params *params) {
 		if (position >= length) {
 			position = 0;
 		}
-		state.sequencer_positions[channel] = position;
+		state.sequencer.positions[channel] = position;
 	}
 }
 
@@ -469,7 +477,7 @@ static uint8_t sequencer_read_current_step(const Params *params) {
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		const uint8_t length = euclid_get_length(params, channel);
-		const uint8_t position = state.sequencer_positions[channel];
+		const uint8_t position = state.sequencer.positions[channel];
 		const uint16_t pattern = state.generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
@@ -488,7 +496,7 @@ static uint8_t sequencer_read_current_step(const Params *params) {
 }
 
 static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length) {
-	const uint8_t position = state.sequencer_positions[channel];
+	const uint8_t position = state.sequencer.positions[channel];
 	const uint16_t pattern = state.generated_rhythms[channel];
 
 	draw_channel_pattern(fb, channel, pattern, length, position);
