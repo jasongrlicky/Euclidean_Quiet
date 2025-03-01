@@ -55,13 +55,16 @@ typedef struct EuclidState {
 	bool sequencer_running;
 } EuclidState;
 
-/* GLOBALS */
-
-static EuclidState state = {
+static const EuclidState EUCLID_STATE_INIT = {
+    // First channel is selected on startup
     .active_channel = CHANNEL_1,
     .sequencer_positions = {0, 0, 0},
     .sequencer_running = false,
 };
+
+/* GLOBALS */
+
+static EuclidState state;
 
 /// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
 static uint16_t generated_rhythms[NUM_CHANNELS];
@@ -147,6 +150,8 @@ void euclid_params_validate(Params *params) {
 }
 
 void euclid_init(const Params *params, Framebuffer *fb) {
+	state = EUCLID_STATE_INIT;
+
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
 		const Channel channel = (Channel)a;
@@ -155,9 +160,6 @@ void euclid_init(const Params *params, Framebuffer *fb) {
 		const uint8_t offset = euclid_get_offset(params, channel);
 		generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
-
-	// Select first channel on startup
-	state.active_channel = CHANNEL_1;
 
 	// Draw initial UI
 	euclid_draw_channels(fb, params);

@@ -15,6 +15,8 @@ typedef enum Mode {
 	MODE_EUCLID,
 } Mode;
 
+/// Initialize ethereal state for mode. Assumes that the params have already been
+/// loaded from EEPROM.
 void mode_init(Params *params, Framebuffer *fb, Mode mode);
 void mode_update(Params *params, Framebuffer *fb, Mode mode, const InputEvents *events, Milliseconds now);
 
