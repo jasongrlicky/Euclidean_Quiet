@@ -60,6 +60,7 @@ typedef struct EuclidState {
 static const EuclidState EUCLID_STATE_INIT = {
     // First channel is selected on startup
     .active_channel = CHANNEL_1,
+    .generated_rhythms = {0, 0, 0},
     .sequencer_positions = {0, 0, 0},
     .sequencer_running = false,
 };
