@@ -2,6 +2,10 @@
 
 #include "mode/euclid.h"
 
+#if LOGGING_ENABLED
+#include <string.h>
+#endif
+
 /* CONSTANTS */
 
 /*
