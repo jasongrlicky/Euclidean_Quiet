@@ -13,6 +13,7 @@
 #include "mode/clock.h"
 #include "mode/euclid.h"
 #include "mode/mode.h"
+#include "mode/state.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
 #include "ui/indicators.h"
@@ -21,6 +22,7 @@
 /* GLOBALS */
 
 static Mode active_mode = MODE_EUCLID;
+static ModeState mode_state;
 
 /// Stores the runtime-modifiable information for the active mode's parameters.
 /// Static information, such as addresses or names, is stored separately.

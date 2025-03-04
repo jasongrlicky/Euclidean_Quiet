@@ -1,7 +1,6 @@
 #include "euclid.h"
 
 #include "common/math.h"
-#include "common/timeout.h"
 #include "config.h"
 #include "hardware/output.h"
 #include "ui/active_channel.h"
@@ -11,7 +10,6 @@
 
 /* CONSTANTS */
 
-#define NUM_CHANNELS 3
 static const uint8_t EUCLID_PARAMS_PER_CHANNEL = 3;
 
 // Bounds for three channel parameters
@@ -44,49 +42,6 @@ typedef struct EuclidParamOpt {
 } EuclidParamOpt;
 
 static const EuclidParamOpt EUCLID_PARAM_OPT_NONE = {.inner = EUCLID_PARAM_LENGTH, .valid = false};
-
-typedef struct SequencerState {
-	/// Step index representing the playhead position for for each of this mode's
-	/// channels, indexed by `Channel` enum. Valid values are `0` to `15`.
-	uint8_t positions[NUM_CHANNELS];
-	bool running;
-} SequencerState;
-
-/// Only one adjustment display can be visible at a time, and in this mode, only
-/// the length parameter shows an adjustment display.
-typedef struct AdjustmentDisplayState {
-	Timeout timeout;
-	/// Which channel is currently showing its adjustment display.
-	Channel channel;
-	bool visible;
-} AdjustmentDisplayState;
-
-typedef struct OutputPulseState {
-	/// Timeout duration is the output pulse length, set based on the time since last trigger
-	TimeoutOnce timeout;
-	Milliseconds last_clock_or_reset;
-} OutputPulseState;
-
-typedef struct PlayheadState {
-	// Tracks the playhead flash itself
-	TimeoutOnce flash_timeout;
-	// Track the time since the playhead has moved so we can make it flash in its idle loop
-	Timeout idle_timeout;
-	// Loop for making the playhead flash periodically after it is idle
-	Timeout idle_loop_timeout;
-} PlayheadState;
-
-/// State of the entire Euclidean rhythm generator mode
-typedef struct EuclidState {
-	/// The sequencer channel that is currently selected
-	Channel active_channel;
-	/// Stores each generated Euclidean rhythm as 16 bits. Indexed by channel number.
-	uint16_t generated_rhythms[NUM_CHANNELS];
-	SequencerState sequencer;
-	AdjustmentDisplayState adjustment_display;
-	OutputPulseState output_pulse;
-	PlayheadState playhead;
-} EuclidState;
 
 // clang-format off
 static const EuclidState EUCLID_STATE_INIT = {
