@@ -56,8 +56,9 @@ typedef struct EuclidState {
 } EuclidState;
 
 void euclid_params_validate(Params *params);
-void euclid_init(const Params *params, Framebuffer *fb);
-void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, Milliseconds now);
+void euclid_init(EuclidState *state, const Params *params, Framebuffer *fb);
+void euclid_update(EuclidState *state, Params *params, Framebuffer *fb, const InputEvents *events,
+                   Milliseconds now);
 
 #ifdef __cplusplus
 }

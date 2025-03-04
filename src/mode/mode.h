@@ -8,6 +8,7 @@ extern "C" {
 #include "common/params.h"
 #include "common/types.h"
 #include "config.h"
+#include "mode/state.h"
 #include "ui/framebuffer.h"
 
 #define NUM_MODES 1
@@ -17,8 +18,9 @@ typedef enum Mode {
 
 /// Initialize ethereal state for mode. Assumes that the params have already been
 /// loaded from EEPROM.
-void mode_init(Params *params, Framebuffer *fb, Mode mode);
-void mode_update(Params *params, Framebuffer *fb, Mode mode, const InputEvents *events, Milliseconds now);
+void mode_init(ModeState *state, Params *params, Framebuffer *fb, Mode mode);
+void mode_update(ModeState *state, Params *params, Framebuffer *fb, Mode mode, const InputEvents *events,
+                 Milliseconds now);
 
 #define EUCLID_NUM_PARAMS 9
 /// How many params this mode has. Indexed by the `Mode` enum.

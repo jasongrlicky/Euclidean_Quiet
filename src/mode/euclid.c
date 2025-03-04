@@ -69,29 +69,25 @@ static const EuclidState EUCLID_STATE_INIT = {
 };
 // clang-format on
 
-/* GLOBALS */
-
-static EuclidState state;
-
 /* DECLARATIONS */
 
-static void euclid_handle_encoder_push(EncoderIdx enc_idx);
-static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *enc_move);
+static void euclid_handle_encoder_push(EuclidState *state, EncoderIdx enc_idx);
+static EuclidParamOpt euclid_handle_encoder_move(EuclidState *state, Params *params, const int16_t *enc_move);
 // Returns bitflags storing which output channels will fire this cycle, indexed
 // by `OutputChannel`.
-static uint8_t euclid_update_sequencers(const Params *params, const InputEvents *events);
-static void sequencer_handle_reset(void);
-static void sequencer_handle_clock(const Params *params);
-static void sequencer_advance(const Params *params);
+static uint8_t euclid_update_sequencers(EuclidState *state, const Params *params, const InputEvents *events);
+static void sequencer_handle_reset(EuclidState *state);
+static void sequencer_handle_clock(EuclidState *state, const Params *params);
+static void sequencer_advance(EuclidState *state, const Params *params);
 /// What is the output that should be sent for each sequencer this cycle
 /// @return Bitflags, indexed using `OutputChannel`. 1 = begin an output pulse this cycle for this channel, 0
 /// = do nothing for this channel
-static uint8_t sequencer_read_current_step(const Params *params);
-static void euclid_draw_channels(Framebuffer *fb, const Params *params);
-static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length);
+static uint8_t sequencer_read_current_step(EuclidState *state, const Params *params);
+static void euclid_draw_channels(EuclidState *state, Framebuffer *fb, const Params *params);
+static inline void draw_channel(EuclidState *state, Framebuffer *fb, Channel channel, uint8_t length);
 static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length);
-static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
-                                        uint8_t position);
+static inline void draw_channel_pattern(EuclidState *state, Framebuffer *fb, Channel channel,
+                                        uint16_t pattern, uint8_t length, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
 /// @param length The length of the pattern. Must be <= 16.
@@ -131,8 +127,8 @@ void euclid_params_validate(Params *params) {
 	}
 }
 
-void euclid_init(const Params *params, Framebuffer *fb) {
-	state = EUCLID_STATE_INIT;
+void euclid_init(EuclidState *state, const Params *params, Framebuffer *fb) {
+	*state = EUCLID_STATE_INIT;
 
 	// Initialise generated rhythms
 	for (int a = 0; a < NUM_CHANNELS; a++) {
@@ -140,30 +136,31 @@ void euclid_init(const Params *params, Framebuffer *fb) {
 		const uint8_t length = euclid_get_length(params, channel);
 		const uint8_t density = euclid_get_density(params, channel);
 		const uint8_t offset = euclid_get_offset(params, channel);
-		state.generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
+		state->generated_rhythms[a] = euclidean_pattern_rotate(length, density, offset);
 	}
 
 	// Draw initial UI
-	euclid_draw_channels(fb, params);
-	active_channel_display_draw(fb, state.active_channel);
+	euclid_draw_channels(state, fb, params);
+	active_channel_display_draw(fb, state->active_channel);
 }
 
-void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, Milliseconds now) {
-	euclid_handle_encoder_push(events->enc_push);
+void euclid_update(EuclidState *state, Params *params, Framebuffer *fb, const InputEvents *events,
+                   Milliseconds now) {
+	euclid_handle_encoder_push(state, events->enc_push);
 
 	// Note the param associated with a knob that was moved so we can re-generate
 	// the Euclidean rhythms and show the adjustment display.
-	const EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(params, events->enc_move);
+	const EuclidParamOpt param_knob_moved = euclid_handle_encoder_move(state, params, events->enc_move);
 
 	// Update Generated Rhythms Based On Parameter Changes
-	Channel active_channel = state.active_channel;
+	Channel active_channel = state->active_channel;
 	if (param_knob_moved.valid) {
 		const Channel channel = active_channel;
 		const uint8_t length = euclid_get_length(params, channel);
 		const uint8_t density = euclid_get_density(params, channel);
 		const uint8_t offset = euclid_get_offset(params, channel);
 
-		state.generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
+		state->generated_rhythms[channel] = euclidean_pattern_rotate(length, density, offset);
 	}
 
 	/* UPDATE SEQUENCER */
@@ -176,7 +173,7 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 
 	// Bitflags storing which output channels will fire this cycle, indexed by
 	// `OutputChannel`.
-	const uint8_t out_channels_firing = euclid_update_sequencers(params, events);
+	const uint8_t out_channels_firing = euclid_update_sequencers(state, params, events);
 
 	/* OUTPUT */
 
@@ -189,15 +186,15 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 
 	if (sequencers_updated) {
 		// Update output pulse length and timeout
-		const Milliseconds time_since_last = now - state.output_pulse.timeout.inner.start;
+		const Milliseconds time_since_last = now - state->output_pulse.timeout.inner.start;
 		const Milliseconds pulse_length = CONSTRAIN(time_since_last / 5, 2, 5);
-		state.output_pulse.timeout.inner.duration = pulse_length;
+		state->output_pulse.timeout.inner.duration = pulse_length;
 
-		timeout_once_reset(&state.output_pulse.timeout, now);
+		timeout_once_reset(&state->output_pulse.timeout, now);
 	}
 
 	// FINISH ANY PULSES THAT ARE ACTIVE
-	if (timeout_once_fired(&state.output_pulse.timeout, now)) {
+	if (timeout_once_fired(&state->output_pulse.timeout, now)) {
 		output_clear_all();
 	}
 
@@ -212,30 +209,30 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 	if (sequencers_updated) {
 		// Update playhead flash duration based on the last interval between two
 		// clock or reset signals received.
-		const Milliseconds previous_period = now - state.output_pulse.last_clock_or_reset;
-		state.playhead.flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
-		state.output_pulse.last_clock_or_reset = now;
+		const Milliseconds previous_period = now - state->output_pulse.last_clock_or_reset;
+		state->playhead.flash_timeout.inner.duration = calc_playhead_flash_time(previous_period);
+		state->output_pulse.last_clock_or_reset = now;
 
 		// Reset playhead flash
-		timeout_once_reset(&state.playhead.flash_timeout, now);
+		timeout_once_reset(&state->playhead.flash_timeout, now);
 
 		// Reset playhead idle
-		timeout_reset(&state.playhead.idle_timeout, now);
+		timeout_reset(&state->playhead.idle_timeout, now);
 	}
 
 	// Update playhead idle - Make playhead flash periodically when it hasn't
 	// moved in a certain amount of time
 	bool playhead_flash_updated = false;
-	if (timeout_fired(&state.playhead.idle_timeout, now)) {
-		if (timeout_loop(&state.playhead.idle_loop_timeout, now)) {
-			state.playhead.flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
-			timeout_once_reset(&state.playhead.flash_timeout, now);
+	if (timeout_fired(&state->playhead.idle_timeout, now)) {
+		if (timeout_loop(&state->playhead.idle_loop_timeout, now)) {
+			state->playhead.flash_timeout.inner.duration = PLAYHEAD_FLASH_TIME_DEFAULT;
+			timeout_once_reset(&state->playhead.flash_timeout, now);
 			playhead_flash_updated = true;
 		}
 	}
 
 	// Update playhead flash
-	if (timeout_once_fired(&state.playhead.flash_timeout, now)) {
+	if (timeout_once_fired(&state->playhead.flash_timeout, now)) {
 		playhead_flash_updated = true;
 	}
 
@@ -245,29 +242,29 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 	if (param_knob_moved.valid) {
 		if (param_knob_moved.inner == EUCLID_PARAM_LENGTH) {
 			// If length parameter was changed, reset the adjustment display timeout and state
-			state.adjustment_display.channel = active_channel;
-			state.adjustment_display.visible = true;
-			timeout_reset(&state.adjustment_display.timeout, now);
+			state->adjustment_display.channel = active_channel;
+			state->adjustment_display.visible = true;
+			timeout_reset(&state->adjustment_display.timeout, now);
 		} else {
 			// Otherwise, just hide the adjustment display
-			state.adjustment_display.visible = false;
+			state->adjustment_display.visible = false;
 		}
 
 		needs_redraw = true;
 	} else {
 		// If no parameters have changed, check if the adjustment display still
 		// needs to be shown, and hide it if it doesn't
-		if (state.adjustment_display.visible) {
-			bool should_be_hidden = timeout_fired(&state.adjustment_display.timeout, now);
+		if (state->adjustment_display.visible) {
+			bool should_be_hidden = timeout_fired(&state->adjustment_display.timeout, now);
 			if (should_be_hidden) {
-				state.adjustment_display.visible = false;
+				state->adjustment_display.visible = false;
 				needs_redraw = true;
 			}
 		}
 	}
 
 	if (needs_redraw) {
-		euclid_draw_channels(fb, params);
+		euclid_draw_channels(state, fb, params);
 	}
 
 	/* DRAWING - OUTPUT INDICATORS */
@@ -279,17 +276,18 @@ void euclid_update(Params *params, Framebuffer *fb, const InputEvents *events, M
 
 /* INTERNAL */
 
-static void euclid_handle_encoder_push(EncoderIdx enc_idx) {
+static void euclid_handle_encoder_push(EuclidState *state, EncoderIdx enc_idx) {
 	const ChannelOpt active_channel_new = channel_for_encoder(enc_idx);
 	if (active_channel_new.valid) {
-		state.active_channel = active_channel_new.inner;
+		state->active_channel = active_channel_new.inner;
 	}
 }
 
-static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *enc_move) {
+static EuclidParamOpt euclid_handle_encoder_move(EuclidState *state, Params *params,
+                                                 const int16_t *enc_move) {
 	EuclidParamOpt param_knob_moved = EUCLID_PARAM_OPT_NONE;
 
-	const Channel active_channel = state.active_channel;
+	const Channel active_channel = state->active_channel;
 	const ParamIdx length_idx = euclid_param_idx(active_channel, EUCLID_PARAM_LENGTH);
 	const ParamIdx density_idx = euclid_param_idx(active_channel, EUCLID_PARAM_DENSITY);
 	const ParamIdx offset_idx = euclid_param_idx(active_channel, EUCLID_PARAM_OFFSET);
@@ -303,7 +301,7 @@ static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *
 		int length = euclid_get_length(params, channel);
 		uint8_t density = euclid_get_density(params, channel);
 		uint8_t offset = euclid_get_offset(params, channel);
-		const uint8_t position = state.sequencer.positions[channel];
+		const uint8_t position = state->sequencer.positions[channel];
 
 		// Keep length in bounds
 		if (length >= PARAM_LENGTH_MAX) {
@@ -334,7 +332,7 @@ static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *
 
 		// Reset position if length has been reduced past it
 		if (position >= length) {
-			state.sequencer.positions[channel] = 0;
+			state->sequencer.positions[channel] = 0;
 		}
 	}
 
@@ -385,56 +383,56 @@ static EuclidParamOpt euclid_handle_encoder_move(Params *params, const int16_t *
 	return param_knob_moved;
 }
 
-static uint8_t euclid_update_sequencers(const Params *params, const InputEvents *events) {
+static uint8_t euclid_update_sequencers(EuclidState *state, const Params *params, const InputEvents *events) {
 	// Clock ticks merge the internal and external clocks
 	const bool clock_tick = events->trig || events->internal_clock_tick;
 
 	uint8_t out_channels_firing = 0;
 
 	if (events->reset) {
-		sequencer_handle_reset();
+		sequencer_handle_reset(state);
 	}
 
 	if (clock_tick) {
-		sequencer_handle_clock(params);
+		sequencer_handle_clock(state, params);
 
-		out_channels_firing = sequencer_read_current_step(params);
+		out_channels_firing = sequencer_read_current_step(state, params);
 	}
 
 	return out_channels_firing;
 }
 
-static void euclid_draw_channels(Framebuffer *fb, const Params *params) {
+static void euclid_draw_channels(EuclidState *state, Framebuffer *fb, const Params *params) {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		const uint8_t length = euclid_get_length(params, channel);
-		draw_channel(fb, (Channel)channel, length);
+		draw_channel(state, fb, (Channel)channel, length);
 	}
 }
 
-static void sequencer_handle_reset(void) {
+static void sequencer_handle_reset(EuclidState *state) {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		state.sequencer.positions[channel] = 0;
+		state->sequencer.positions[channel] = 0;
 	}
 
 	// Stop the sequencer
-	state.sequencer.running = false;
+	state->sequencer.running = false;
 }
 
-static void sequencer_handle_clock(const Params *params) {
+static void sequencer_handle_clock(EuclidState *state, const Params *params) {
 	// Advance sequencer if it is running
-	if (state.sequencer.running) {
+	if (state->sequencer.running) {
 		// Only advance if sequencer is running
-		sequencer_advance(params);
+		sequencer_advance(state, params);
 	} else {
 		// If sequencer is stopped, start it so that the next clock advances
-		state.sequencer.running = true;
+		state->sequencer.running = true;
 	}
 }
 
-static void sequencer_advance(const Params *params) {
+static void sequencer_advance(EuclidState *state, const Params *params) {
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		uint8_t position = state.sequencer.positions[channel];
+		uint8_t position = state->sequencer.positions[channel];
 		const uint8_t length = euclid_get_length(params, channel);
 
 		// Move sequencer playhead to next step
@@ -442,17 +440,17 @@ static void sequencer_advance(const Params *params) {
 		if (position >= length) {
 			position = 0;
 		}
-		state.sequencer.positions[channel] = position;
+		state->sequencer.positions[channel] = position;
 	}
 }
 
-static uint8_t sequencer_read_current_step(const Params *params) {
+static uint8_t sequencer_read_current_step(EuclidState *state, const Params *params) {
 	uint8_t out_channels_firing = 0;
 
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
 		const uint8_t length = euclid_get_length(params, channel);
-		const uint8_t position = state.sequencer.positions[channel];
-		const uint16_t pattern = state.generated_rhythms[channel];
+		const uint8_t position = state->sequencer.positions[channel];
+		const uint16_t pattern = state->generated_rhythms[channel];
 
 		// Turn on LEDs on the bottom row for channels where the step is active
 		bool step_is_active = pattern_read(pattern, length, position);
@@ -469,14 +467,14 @@ static uint8_t sequencer_read_current_step(const Params *params) {
 	return out_channels_firing;
 }
 
-static inline void draw_channel(Framebuffer *fb, Channel channel, uint8_t length) {
-	const uint8_t position = state.sequencer.positions[channel];
-	const uint16_t pattern = state.generated_rhythms[channel];
+static inline void draw_channel(EuclidState *state, Framebuffer *fb, Channel channel, uint8_t length) {
+	const uint8_t position = state->sequencer.positions[channel];
+	const uint16_t pattern = state->generated_rhythms[channel];
 
-	draw_channel_pattern(fb, channel, pattern, length, position);
+	draw_channel_pattern(state, fb, channel, pattern, length, position);
 
 	const bool showing_length_display =
-	    (state.adjustment_display.visible) && (channel == state.adjustment_display.channel);
+	    (state->adjustment_display.visible) && (channel == state->adjustment_display.channel);
 	if (showing_length_display) {
 		draw_channel_length(fb, channel, pattern, length);
 	}
@@ -497,9 +495,9 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 	}
 }
 
-static inline void draw_channel_pattern(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length,
-                                        uint8_t position) {
-	const bool playhead_flash_active = state.playhead.flash_timeout.active;
+static inline void draw_channel_pattern(EuclidState *state, Framebuffer *fb, Channel channel,
+                                        uint16_t pattern, uint8_t length, uint8_t position) {
+	const bool playhead_flash_active = state->playhead.flash_timeout.active;
 
 	uint16_t pixel_rows[2] = {0, 0};
 
