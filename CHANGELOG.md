@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A complete rewrite of the original firmware.
 - Patterns generated are now accurate to the original Euclidean Rhythms paper.
-- LED sleep timeout now takes into account encoder manipulations.
+- LED sleep timeout now takes into account encoder movement and presses.
 - All steps of a generated pattern are now visible at all times - no more sequencer pages.
 - The steps of a pattern are visible while adjusting its length.
 - Steps of a pattern are now visible while setting pattern length.
