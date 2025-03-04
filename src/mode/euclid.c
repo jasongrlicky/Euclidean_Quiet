@@ -83,10 +83,10 @@ static void sequencer_advance(EuclidState *state, const Params *params);
 /// @return Bitflags, indexed using `OutputChannel`. 1 = begin an output pulse this cycle for this channel, 0
 /// = do nothing for this channel
 static uint8_t sequencer_read_current_step(EuclidState *state, const Params *params);
-static void euclid_draw_channels(EuclidState *state, Framebuffer *fb, const Params *params);
-static inline void draw_channel(EuclidState *state, Framebuffer *fb, Channel channel, uint8_t length);
+static void euclid_draw_channels(const EuclidState *state, Framebuffer *fb, const Params *params);
+static inline void draw_channel(const EuclidState *state, Framebuffer *fb, Channel channel, uint8_t length);
 static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_t pattern, uint8_t length);
-static inline void draw_channel_pattern(EuclidState *state, Framebuffer *fb, Channel channel,
+static inline void draw_channel_pattern(const EuclidState *state, Framebuffer *fb, Channel channel,
                                         uint16_t pattern, uint8_t length, uint8_t position);
 /// Read a single step from a pattern
 /// @param pattern The pattern to read from, stored as 16 bitflags.
@@ -402,13 +402,6 @@ static uint8_t euclid_update_sequencers(EuclidState *state, const Params *params
 	return out_channels_firing;
 }
 
-static void euclid_draw_channels(EuclidState *state, Framebuffer *fb, const Params *params) {
-	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
-		const uint8_t length = euclid_get_length(params, channel);
-		draw_channel(state, fb, (Channel)channel, length);
-	}
-}
-
 static void sequencer_handle_reset(EuclidState *state) {
 	// Go to the first step for each channel
 	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
@@ -467,7 +460,14 @@ static uint8_t sequencer_read_current_step(EuclidState *state, const Params *par
 	return out_channels_firing;
 }
 
-static inline void draw_channel(EuclidState *state, Framebuffer *fb, Channel channel, uint8_t length) {
+static void euclid_draw_channels(const EuclidState *state, Framebuffer *fb, const Params *params) {
+	for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++) {
+		const uint8_t length = euclid_get_length(params, channel);
+		draw_channel(state, fb, (Channel)channel, length);
+	}
+}
+
+static inline void draw_channel(const EuclidState *state, Framebuffer *fb, Channel channel, uint8_t length) {
 	const uint8_t position = state->sequencer.positions[channel];
 	const uint16_t pattern = state->generated_rhythms[channel];
 
@@ -495,7 +495,7 @@ static inline void draw_channel_length(Framebuffer *fb, Channel channel, uint16_
 	}
 }
 
-static inline void draw_channel_pattern(EuclidState *state, Framebuffer *fb, Channel channel,
+static inline void draw_channel_pattern(const EuclidState *state, Framebuffer *fb, Channel channel,
                                         uint16_t pattern, uint8_t length, uint8_t position) {
 	const bool playhead_flash_active = state->playhead.flash_timeout.active;
 
