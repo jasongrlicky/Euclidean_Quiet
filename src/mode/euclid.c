@@ -130,7 +130,7 @@ void euclid_params_validate(Params *params) {
 void euclid_init(EuclidState *state, const Params *params, Framebuffer *fb) {
 	*state = EUCLID_STATE_INIT;
 
-	// Initialise generated rhythms
+	// Initialise generated rhythms based on params
 	for (int a = 0; a < NUM_CHANNELS; a++) {
 		const Channel channel = (Channel)a;
 		const uint8_t length = euclid_get_length(params, channel);
