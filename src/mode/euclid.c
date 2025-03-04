@@ -317,17 +317,14 @@ static EuclidParamOpt euclid_handle_encoder_move(EuclidState *state, Params *par
 		// Reduce density and offset to remain in line with the new length if necessary
 		if ((density >= (length + nknob)) && (density > 1)) {
 			density += nknob;
-
 			param_and_flags_set(params, density_idx, density);
 		}
 		if ((offset >= (length + nknob)) && (offset < 16)) {
 			offset += nknob;
-
 			param_and_flags_set(params, offset_idx, offset);
 		}
 
 		length += nknob;
-
 		param_and_flags_set(params, length_idx, length);
 
 		// Reset position if length has been reduced past it
@@ -354,7 +351,6 @@ static EuclidParamOpt euclid_handle_encoder_move(EuclidState *state, Params *par
 		}
 
 		density += kknob;
-
 		param_and_flags_set(params, density_idx, density);
 	}
 
@@ -376,7 +372,6 @@ static EuclidParamOpt euclid_handle_encoder_move(EuclidState *state, Params *par
 		}
 
 		offset += oknob;
-
 		param_and_flags_set(params, offset_idx, offset);
 	}
 
