@@ -13,6 +13,7 @@
 #include "mode/clock.h"
 #include "mode/euclid.h"
 #include "mode/mode.h"
+#include "mode/state.h"
 #include "ui/framebuffer.h"
 #include "ui/framebuffer_led.h"
 #include "ui/indicators.h"
@@ -21,6 +22,7 @@
 /* GLOBALS */
 
 static Mode active_mode = MODE_EUCLID;
+static ModeState mode_state;
 
 /// Stores the runtime-modifiable information for the active mode's parameters.
 /// Static information, such as addresses or names, is stored separately.
@@ -63,7 +65,7 @@ void loop() {
 
 	// Update Active Mode
 	params_reset_modified_flag(&params, active_mode);
-	mode_update(&params, &framebuffer, active_mode, &events_in, now);
+	mode_update(&mode_state, &params, &framebuffer, active_mode, &events_in, now);
 	log_all_modified_params(&params, active_mode);
 
 	// Drawing - Input Indicators
@@ -91,7 +93,7 @@ static void active_mode_switch(Mode mode) {
 	eeprom_params_load(&params, mode);
 	mode_params_validate(&params, mode);
 
-	mode_init(&params, &framebuffer, mode);
+	mode_init(&mode_state, &params, &framebuffer, mode);
 }
 
 void params_reset_modified_flag(Params *params, Mode mode) {
