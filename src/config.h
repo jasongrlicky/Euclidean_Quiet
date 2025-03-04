@@ -17,7 +17,7 @@ extern "C" {
 #define PLAYHEAD_IDLE_LOOP_PERIOD 3500 // Milliseconds for period of playhead idle flashing loop
 #define ANIM_BLINK_INTERVAL 32 // Default animation frame interval for the `COLOR_BLINK` palette color, in milliseconds
 #define ANIM_ANTS_INTERVAL 24 // Default animation frame interval for the `COLOR_ANTS` palette color, in milliseconds
-#define READ_DELAY 50 // For debouncing
+#define READ_DELAY 50 // For debouncing encoder reads
 #define INTERNAL_CLOCK_PERIOD 125 // Milliseconds between internal clock ticks
 
 /* FEATURES */
